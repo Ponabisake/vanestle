@@ -20,6 +20,7 @@ export const Base_Url = getBaseUrl();
 export const Account_API = {
   Login: Base_Url + "/VA/Usersignon",
   ChangePassword : Base_Url + "/VA/ChangePassword",
+  ForgotPassword : Base_Url + "/VA/ForgotPassword",
   Echo : "https://ebiz.pmgasia.com/iWeb/eCatalogueNestle/public/index.php/shop",
 }
 

@@ -11,9 +11,9 @@ export const labelRoutes = {
   lineItems: "/lineItems",
   suppliers: "/suppliers",
   review: "/review",
-  PageNotFound: "/pageNotFound",
+  pageNotFound: "/pageNotFound",
   enquirySuceess: "/enquirySuccess",
   projectEnquiry : "/projectEnquiry",
-  //PageNotFound: "*"
+  performanceSurvey : "/performanceSurvey",
 
 };

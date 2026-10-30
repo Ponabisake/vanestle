@@ -126,6 +126,7 @@ const EqDashboard = () => {
           projectName: item.projectDesc,
           requestedDate: item.serverTime,
           status: item.statusName,
+          statusId: item.status,
           surveyStatus: item.surveyStatusName,
           countryID: item.pmgEntity,
           userID: item.clientId,
@@ -168,19 +169,34 @@ const EqDashboard = () => {
     { field: "status", header: "Status" },
     ...(userType?.toLowerCase() === Labels.userType.supplier
       ? []
-      : [{
-        field: "surveyStatus", header: "Survey Status",
-        renderCell: (params) =>
-          userType?.toLowerCase() === Labels.userType.client ? (
-            <PButton
-              variant="contained"
-              label={"Take Survey"}
-            />
-          ) : (
-            params.value
-          ),
-      },]
-    ),
+      : [
+        {
+          field: "surveyStatus",
+          header: userType?.toLowerCase() === Labels.userType.client ? "Survey" : "Survey Status",
+          render: (row) =>
+            userType?.toLowerCase() === Labels.userType.client
+              ? [24].includes(row.statusId) && (
+                <PButton
+                  variant="contained"
+                  label="Take Survey"
+                  width={150}
+                  height={30}
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRoute(row, "Survey");
+                  }}
+                />
+              )
+              : row.surveyStatus,
+        },
+      ]),
   ];
 
   const agencyCards = {
@@ -653,8 +669,9 @@ const EqDashboard = () => {
     4: labelRoutes.review,
   }
 
-  const handleRoute = (row) => {
-    const route = row.status === "Draft" ? (stepRoutes[row.stepID]) : labelRoutes.projectEnquiry;
+  const handleRoute = (row, flag = "") => {
+    console.log(row, flag);
+    const route = flag === "Survey" ? labelRoutes.performanceSurvey : row.status === "Draft" ? stepRoutes[row.stepID] : labelRoutes.projectEnquiry;
     dispatch({
       type: userDetails,
       payload: {

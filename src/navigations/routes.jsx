@@ -4,6 +4,7 @@ import PageLayout from "../container/layout/pageLayout";
 import { labelRoutes } from "./labelRoutes";
 import PageNotFound from "../container/pageNotFound/pageNotFound";
 import { useSelector } from "react-redux";
+import PerformanceSurvey from "../container/enquiry/performanceSurvey";
 
 const UserRoute = () => {
   const verifiedUser = useSelector((state) => state.userDetails.user);
@@ -42,11 +43,12 @@ function AppRoutes() {
             <Route path={labelRoutes.review} element={<Review />} />
             <Route path={labelRoutes.enquirySuceess} element={<EnquirySuccess />} />
             <Route path={labelRoutes.projectEnquiry} element={<ProjectEnquiry />} />
+            <Route path={labelRoutes.performanceSurvey} element={<PerformanceSurvey />} />
           </Route>
         </Route>
 
         {/* Page Not Found */}
-        <Route path={labelRoutes.PageNotFound} element={<PageNotFound />} />
+        <Route path={labelRoutes.pageNotFound} element={<PageNotFound />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to={labelRoutes.home} replace />} />

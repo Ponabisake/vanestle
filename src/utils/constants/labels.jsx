@@ -152,6 +152,14 @@ export const Labels = {
     toDate: "toDate"
   },
 
+  performanceSurvey : {
+    responsive: "responsive",
+    accuracy: "accuracy",
+    quality: "quality",
+    overexperience: "overexperience",
+    comments: "comments",
+  },
+
   deliveryOrder: {
     companyName: "companyName",
     addressLineOne: "addressLineOne",
@@ -187,6 +195,7 @@ export const Labels = {
     id: "Indonesia",
     ch: "Chinese"
   },
+  
   symbols: {
     required: "*",
     optional: "?",
