@@ -186,7 +186,7 @@ function Login(props) {
             menuId: 0,
             symbol: currency[user?.currency],
           });
-          navigate(labelRoutes.dashboard);
+          navigate(labelRoutes.vaDashboard);
         } else {
           setErrors((prev) => ({
             ...prev,

@@ -73,7 +73,7 @@ const EnquirySuccess = () => {
         });
     };
     const handleBack = async () => {
-        navigate(labelRoutes.eqDashboard, {
+        navigate(labelRoutes.dashboard, {
             state: { id: 0 }
         });
     };

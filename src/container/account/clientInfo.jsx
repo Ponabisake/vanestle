@@ -329,7 +329,7 @@ const ClientInfo = () => {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.eqDashboard, {
+                        navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.dashboard, {
                             state: { id: response.data.enqId }
                         });
                     }, 500);
@@ -511,7 +511,7 @@ const ClientInfo = () => {
 
     // const handleBack = () => {
     //     if (window.history.length > 1) {
-    //         navigate(labelRoutes.eqDashboard);
+    //         navigate(labelRoutes.dashboard);
     //     } else {
     //         navigate(labelRoutes.home); // fallback route
     //     }

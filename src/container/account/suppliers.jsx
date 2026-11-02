@@ -174,7 +174,7 @@ const Suppliers = () => {
                 setAllowRedirect(true);
                 toast(Labels.status.success, response.data.message);
                 setTimeout(() => {
-                    navigate(flag ? labelRoutes.review : labelRoutes.eqDashboard, {
+                    navigate(flag ? labelRoutes.review : labelRoutes.dashboard, {
                         state: { id: response.data.enqId }
                     });
                 }, 500);

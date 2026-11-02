@@ -4,7 +4,7 @@ import PageLayout from "../container/layout/pageLayout";
 import { labelRoutes } from "./labelRoutes";
 import PageNotFound from "../container/pageNotFound/pageNotFound";
 import { useSelector } from "react-redux";
-import PerformanceSurvey from "../container/enquiry/performanceSurvey";
+
 
 const UserRoute = () => {
   const verifiedUser = useSelector((state) => state.userDetails.user);
@@ -12,16 +12,17 @@ const UserRoute = () => {
 };
 
 const LoginPage = lazy(() => import("../container/login/login"));
+const VaDashboard = lazy(() => import("../container/dashboard/vaDashboard"));
 const Dashboard = lazy(() => import("../container/dashboard/dashboard"));
-const EqDashboard = lazy(() => import("../container/dashboard/eqDashboard"));
-const ClientInfo = lazy(() => import("../container/enquiry/clientInfo"));
-const EnquiryDetails = lazy(() => import("../container/enquiry/enquiryDetails"));
-const LineItems = lazy(() => import("../container/enquiry/lineItems"));
-const Suppliers = lazy(() => import("../container/enquiry/suppliers"));
-const Review = lazy(() => import("../container/enquiry/review"));
+const ClientInfo = lazy(() => import("../container/account/clientInfo"));
+const EnquiryDetails = lazy(() => import("../container/account/enquiryDetails"));
+const LineItems = lazy(() => import("../container/account/lineItems"));
+const Suppliers = lazy(() => import("../container/account/suppliers"));
+const Review = lazy(() => import("../container/account/review"));
 const Report = lazy(() => import("../container/report/Report"));
-const EnquirySuccess = lazy(() => import("../container/enquiry/enquirySuccess"))
-const ProjectEnquiry = lazy(() => import("../container/enquiry/projectEnquiry"))
+const EnquirySuccess = lazy(() => import("../container/account/enquirySuccess"))
+const ProjectEnquiry = lazy(() => import("../container/account/projectEnquiry"))
+const PerformanceSurvey = lazy(() => import("../container/account/performanceSurvey"))
 function AppRoutes() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -33,8 +34,8 @@ function AppRoutes() {
         {/* Layout Pages */}
         <Route element={<UserRoute />}>
           <Route element={<PageLayout />}>
-            <Route path={labelRoutes.dashboard} element={<Dashboard />} />
-            <Route path={labelRoutes.eqDashboard} element={<EqDashboard />} />
+            <Route path={labelRoutes.vaDashboard} element={<VaDashboard />} />
+            <Route path={labelRoutes.dashboard} element={< Dashboard />} />
             <Route path={labelRoutes.report} element={<Report />} />
             <Route path={labelRoutes.clientInfo} element={<ClientInfo />} />
             <Route path={labelRoutes.enquiryDetails} element={<EnquiryDetails />} />

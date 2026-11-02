@@ -236,7 +236,7 @@ const EnquiryDetails = () => {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(flag ? labelRoutes.lineItems : labelRoutes.eqDashboard, {
+                        navigate(flag ? labelRoutes.lineItems : labelRoutes.dashboard, {
                             state: { id: response.data.enqId }
                         });
                     }, 500);

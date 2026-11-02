@@ -39,14 +39,14 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
     ...([1, 2, 3].includes(menuId)
       ? [{
         name: menuId === 1 ? "Enquiry" : menuId === 2 ? "E-Bidding" : "E-Catalogue",
-        route: labelRoutes.eqDashboard,
+        route: labelRoutes.dashboard,
         menuId: menuId,
         ...([Labels.userType.agency].includes(userType?.toLowerCase())
           ? {
             submenu: [
               {
                 name: menuId === 1 ? "View all jobs" : menuId === 2 ? "View Bids" : "View Catalogue",
-                route: labelRoutes.eqDashboard,
+                route: labelRoutes.dashboard,
                 menuId: menuId,
               },
               {
@@ -56,27 +56,27 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
               },
             ]
           } : {}),
-      }]
+       }]
       : []
     ),
     ...([Labels.userType.agency].includes(userType?.toLowerCase()) ? [{
-      name: getLabel("lbl150"),
-      route: labelRoutes.report,
-      menuId: menuId,
-    }]
+          name: getLabel("lbl150"),
+          route: labelRoutes.report,
+          menuId: menuId,
+        }]
       : []
     ),
     ...([1].includes(menuId) && [Labels.userType.agency].includes(userType?.toLowerCase())
       ? [{
         name: "Catalog Draft Entries",
-        route: labelRoutes.eqDashboard,
+        route: labelRoutes.dashboard,
         menuId: 2,
       }]
       : []
     ),
   ];
-
-  const isDashboard = location.pathname === labelRoutes.dashboard;
+console.log(menuId,"menuid");
+  const isDashboard = location.pathname === labelRoutes.vaDashboard;
   const open = Boolean(menuState.anchorEl);
 
   const handleOpenMenu = (event, type) => {
@@ -145,7 +145,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
       }}
       >
         <Box>
-          <Link to={labelRoutes.dashboard}><img src={VALogo} alt="Logo" style={{ height: 69, width: 65 }} /></Link>
+          <Link to={labelRoutes.vaDashboard}><img src={VALogo} alt="Logo" style={{ height: 69, width: 65 }} /></Link>
         </Box>
 
         {!isDashboard && (<Box className="navbar-menu">

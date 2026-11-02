@@ -24,7 +24,7 @@ function PageLayout() {
   const { userName } = useSelector((state) => state.userDetails.user);
   let bg = "";
   let border = {};
-  if(location.pathname == '/dashboard'){
+  if(location.pathname == labelRoutes.vaDashboard){
     bg="bg"
   }else{
     border = {

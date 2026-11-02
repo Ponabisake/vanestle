@@ -1,8 +1,8 @@
 export const labelRoutes = {
   home: "/",
   Login: "/login",
+  vaDashboard: "/vaDashboard",
   dashboard: "/dashboard",
-  eqDashboard: "/eqDashboard",
   report: "/Report",
 
   // Enquiry Pages

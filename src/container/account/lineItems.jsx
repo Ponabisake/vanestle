@@ -476,7 +476,7 @@ const LineItems = () => {
                 const response = await PostApi(LineItems_API.AddUpdateLineItems, payload);
                 if (isSuccess(response)) {
                     setAllowRedirect(true);
-                    const route = flag === true ? labelRoutes.suppliers : flag === false ? labelRoutes.LineItems : labelRoutes.eqDashboard;
+                    const route = flag === true ? labelRoutes.suppliers : flag === false ? labelRoutes.lineItems : labelRoutes.dashboard;
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
                         navigate(route, {

@@ -102,7 +102,7 @@ const Review = () => {
 
     const handleSubmit = async (e, flag) => {
         if (!flag) {
-            navigate(labelRoutes.eqDashboard, {
+            navigate(labelRoutes.dashboard, {
                 state: { id: state.id }
             });
             return;

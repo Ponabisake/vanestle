@@ -1,81 +1,54 @@
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(to bottom, #f5f7fa, #dbe3ea);
+.dashboard .MuiOutlinedInput-root {
+  border-radius: 60px !important;
+  margin-top: 0 !important;
+  border: 1px solid #16133F !important;
+  padding: 4px 9px !important;
 }
 
-.home-container {
-  text-align: center;
-  /* min-height: 100vh; */
+.dashboard .MuiOutlinedInput-root.Mui-disabled {
+  border-color: #C6C7C8 !important;
 }
 
-.username {
-  font-size: 14px;
+.dashboard .MuiOutlinedInput-root:not(.Mui-disabled):hover .MuiOutlinedInput-notchedOutline {
+  border-color: transparent !important;
 }
 
-/* Logo Section */
-.logo-section {
-  margin-top: 10px;
+.dashboard .dashboard-wrapper .col-md-12.col-lg-3 {
+  margin-top: 12px !important;
 }
 
-.logo {
-  margin-bottom: -26px;
-  height: 40px;
+.dashboard .dashboard-wrapper .col-lg-5 {
+  padding-left: 0 !important;
 }
 
-.logo-section h3 {
-  color: #1f2937;
+.dashboard .recharts-legend-item {
+  display: block !important;
 }
 
-.logo-section h2 {
-  margin-top: 2px;
+.dashboard .recharts-legend-item-text {
+  color: #171717 !important;
 }
 
-.logo-section p {
-  color: #6b7280;
+.dashboard .resetlabel {
+  font-size: 16px;
+  white-space: nowrap;
 }
 
-/* Cards */
-.card-container {
-  margin-top: 40px;
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  flex-wrap: wrap;
+@media only screen and (min-width:1200px) {
+  .dashboard .dashboard-wrapper .col-lg-3 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .dashboard .dashboard-wrapper .col-md-12.col-lg-3 {
+    margin-top: 0px !important;
+  }
 }
 
-.card {
-  width: 190px;
-  height: 170px;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+@media only screen and (min-width:1500px) {
+  .dashboard .dashboard-wrapper {
+    max-width: 1800px !important;
+  }
 }
 
-
-.card-top svg {
-  height: 100px;
-  font-size: 60px;
-  transition: transform 0.3s ease;
-}
-
-.card:hover .card-top svg {
-  transform: scale(1.15);
-}
-.card-bottom {
-  height: "80px"; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  letter-spacing: 3px;
-  margin-top: 10px;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
+/* .dashboard .MuiBox-root button:last-child{ border: 0;border-radius: 0;} */
