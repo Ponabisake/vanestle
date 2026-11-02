@@ -248,13 +248,13 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
             setAllowRedirect(false);
         }
     };
-    const showSavingsFields = true;
+
     {/*Update LineItems*/ }
     return (
         < PDialog
             open={open}
             onClose={onClose}
-            title={"Update LineItems"}
+            title={getLabel("lbl269")}
             showCloseIcon={true}
             maxWidth="lg"
             actions={
@@ -264,7 +264,6 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
                         label={getLabel("lbl125")}
                         variant="outlined"
                         onClick={onClose}
-                        //color={CommonColors.grey.main}
                         width={180}
                     />
                     <PButton
@@ -275,13 +274,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
                         color={CommonColors.dark_blue}
                         width={180}
                         disabled={loading}
-                        startIcon={
-                            <img
-                                src={arrow}
-                                alt="arrow"
-                                className="icon"
-                            />
-                        }
+                        startIcon={<img src={arrow} alt="arrow" className="icon" />}
                     />
                 </PGrid >
             }

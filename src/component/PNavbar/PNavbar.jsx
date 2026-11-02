@@ -22,6 +22,7 @@ import { useLanguage } from "../../utils/constants/language";
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import { userDetails } from "../../redux/actionType/actionType";
 import { useDispatch, useSelector } from "react-redux";
+import { Account_API } from "../../utils/api/apiUrl";
 
 const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0, toggleSidebar, }) => {
   const navigate = useNavigate();
@@ -38,44 +39,54 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
   const menuItems = [
     ...([1, 2, 3].includes(menuId)
       ? [{
-        name: menuId === 1 ? "Enquiry" : menuId === 2 ? "E-Bidding" : "E-Catalogue",
+        name: menuId === 1 ? getLabel("lbl259") : menuId === 2 ? getLabel("lbl260") : getLabel("lbl261"),
         route: labelRoutes.dashboard,
         menuId: menuId,
         ...([Labels.userType.agency].includes(userType?.toLowerCase())
           ? {
             submenu: [
               {
-                name: menuId === 1 ? "View all jobs" : menuId === 2 ? "View Bids" : "View Catalogue",
+                name: getLabel("lbl262") ,
                 route: labelRoutes.dashboard,
                 menuId: menuId,
               },
-              {
-                name: menuId === 1 ? "New Enquiry" : menuId === 2 ? "New Bid" : "New Catalogue",
-                route: labelRoutes.clientInfo,
-                menuId: menuId,
-              },
+              ...(menuId !== 3
+                ? [{
+                  name: menuId === 1 ? getLabel("lbl19") : getLabel("lbl223"),
+                  route: labelRoutes.clientInfo,
+                  menuId: menuId,
+                }]
+                : []),
             ]
           } : {}),
-       }]
+      }]
       : []
     ),
     ...([Labels.userType.agency].includes(userType?.toLowerCase()) ? [{
-          name: getLabel("lbl150"),
-          route: labelRoutes.report,
-          menuId: menuId,
-        }]
+      name: getLabel("lbl150"),
+      route: labelRoutes.report,
+      menuId: menuId,
+    }]
       : []
     ),
     ...([1].includes(menuId) && [Labels.userType.agency].includes(userType?.toLowerCase())
       ? [{
-        name: "Catalog Draft Entries",
+        name: getLabel("lbl263"),
         route: labelRoutes.dashboard,
         menuId: 2,
       }]
       : []
     ),
+    ...([3].includes(menuId) && [Labels.userType.agency].includes(userType?.toLowerCase())
+      ? [{
+        name: getLabel("lbl224"),
+        route: Account_API.Echo,
+        menuId: 3,
+      }]
+      : []
+    ),
   ];
-console.log(menuId,"menuid");
+
   const isDashboard = location.pathname === labelRoutes.vaDashboard;
   const open = Boolean(menuState.anchorEl);
 
@@ -111,6 +122,10 @@ console.log(menuId,"menuid");
 
   const handleNavigation = (item) => {
     setOpenMenu(null);
+    if (item.menuId === 3 && item.name === getLabel("lbl224")) {
+      window.open(Account_API.Echo, "_blank");
+      return;
+    }
     dispatch({
       type: userDetails,
       payload: {
@@ -121,10 +136,6 @@ console.log(menuId,"menuid");
   };
 
   const selectedStyle = {
-    // "&:hover": {
-    //   bgcolor: "#16133F",
-    //   color: "#fff",
-    // },
     "&.Mui-selected": {
       backgroundColor: "#16133F !important",
       color: "#fff"
@@ -132,16 +143,12 @@ console.log(menuId,"menuid");
     "&.Mui-selected:hover": {
       backgroundColor: "#16133F"
     },
-    // "&.Mui-focusVisible": {
-    //    backgroundColor: "#16133F"
-    // },
   };
   return (
     <AppBar position="sticky" elevation={0} sx={{ backgroundColor: "white", padding: "1rem 0" }} >
       <Toolbar sx={{
         justifyContent: "space-between", position: "relative", minHeight: 50, border: "0px solid #ccc",
-        px: 0,
-        "@media (min-width:600px)": { px: 0, },
+        px: 0, "@media (min-width:600px)": { px: 0, },
       }}
       >
         <Box>

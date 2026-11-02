@@ -80,12 +80,12 @@ return (
         <Box sx={{ py: 3 }}>
                 <PGrid container className={Labels.margin.mb4} >
                         <PTypography
-                                labelText={"Performance Survey"}
+                                labelText={getLabel("lbl271")}
                                 flag={Labels.fontFlags.header}
                                 weight={FontWeight.regular}
                         />
                         <PTypography
-                                labelText={"This Survey is for PMG to collect your feedback and improve our services"}
+                                labelText={getLabel("lbl272")}
                                 flag={Labels.fontFlags.errorLbl}
                                 color={CommonColors.primary}
                                 weight={FontWeight.regular}
@@ -95,14 +95,14 @@ return (
                         <PGrid container className={Labels.margin.mt4} >
                                 <PGrid item xs={12} sm={12} md={8}>
                                         <PTypography
-                                                labelText={`${"1. "} ${Labels.symbols.required} ${"RESPONSIVENESS"}`}
+                                                labelText={`${"1. "} ${Labels.symbols.required} ${getLabel("lbl273")}`}
                                                 flag={Labels.fontFlags.normalText}
                                                 color={CommonColors.primary}
                                                 weight={FontWeight.bold}
                                         />
                                         <PRadio
                                                 name={Labels.performanceSurvey.responsive}
-                                                label={`${"How satisfied are you with PMG contact’s responsiveness to your requests ?"}`}
+                                                label={`${getLabel("lbl274")} ${Labels.symbols.optional}`}
                                                 options={formDataList.responsive}
                                                 onChange={handleChange}
                                                 value={formData.responsive}
@@ -114,14 +114,14 @@ return (
                         <PGrid container className={Labels.margin.mt4} >
                                 <PGrid item xs={12} sm={12} md={8}>
                                         <PTypography
-                                                labelText={`${"2. "} ${Labels.symbols.required} ${"ACCURACY OF INFORMATION"}`}
+                                                labelText={`${"2. "} ${Labels.symbols.required} ${getLabel("lbl275")}`}
                                                 flag={Labels.fontFlags.normalText}
                                                 color={CommonColors.primary}
                                                 weight={FontWeight.bold}
                                         />
                                         <PRadio
                                                 name={Labels.performanceSurvey.accuracy}
-                                                label={`${"How would you rate the accuracy of the quotes and specifications supplied ?"}`}
+                                                label={`${getLabel("lbl276")} ${Labels.symbols.optional}`}
                                                 options={formDataList.responsive}
                                                 onChange={handleChange}
                                                 value={formData.accuracy}
@@ -133,14 +133,14 @@ return (
                         <PGrid container className={Labels.margin.mt4} >
                                 <PGrid item xs={12} sm={12} md={8}>
                                         <PTypography
-                                                labelText={`${"3. "} ${Labels.symbols.required} ${"QUALITY"}`}
+                                                labelText={`${"3. "} ${Labels.symbols.required} ${getLabel("lbl277")}`}
                                                 flag={Labels.fontFlags.normalText}
                                                 color={CommonColors.primary}
                                                 weight={FontWeight.bold}
                                         />
                                         <PRadio
                                                 name={Labels.performanceSurvey.quality}
-                                                label={`${"How would you rate the quality of the finished items delivered by PMG ?"}`}
+                                                label={`${getLabel("lbl278")} ${Labels.symbols.optional}`}
                                                 options={formDataList.responsive}
                                                 onChange={handleChange}
                                                 value={formData.quality}
@@ -152,14 +152,14 @@ return (
                         <PGrid container className={Labels.margin.mt4} >
                                 <PGrid item xs={12} sm={12} md={8}>
                                         <PTypography
-                                                labelText={`${"4. "} ${Labels.symbols.required} ${"OVERALL EXPERIENCE"}`}
+                                                labelText={`${"4. "} ${Labels.symbols.required} ${getLabel("lbl279")}`}
                                                 flag={Labels.fontFlags.normalText}
                                                 color={CommonColors.primary}
                                                 weight={FontWeight.bold}
                                         />
                                         <PRadio
                                                 name={Labels.performanceSurvey.overexperience}
-                                                label={`${"Overall, how was your experience with PMG on this project ?"}`}
+                                                label={`${getLabel("lbl281")} ${Labels.symbols.optional}`}
                                                 options={formDataList.responsive}
                                                 onChange={handleChange}
                                                 value={formData.overexperience}
@@ -172,7 +172,7 @@ return (
                         <PGrid container className={Labels.margin.mt4} >
                                 <PGrid item xs={12} sm={12} md={8}>
                                         <PTypography
-                                                labelText={`${"5."} ${"If you have any further comments, please enter them here:"}`}
+                                                labelText={`${"5."} ${getLabel("lbl281")}`}
                                                 flag={Labels.fontFlags.normalText}
                                                 color={CommonColors.primary}
                                                 weight={FontWeight.big}

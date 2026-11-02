@@ -2321,7 +2321,7 @@ const ProjectEnquiry = () => {
                         ...prev,
                         email: false,
                     }))}
-                    title={"Email Notification"}
+                    title={getLabel("lbl268")}
                     showCloseIcon={true}
                     maxWidth="sm"
                     actions={

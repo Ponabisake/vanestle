@@ -1166,7 +1166,6 @@ const LineItems = () => {
                                 />
                             </PGrid>
                             <PGrid item xs={12} sm={6} md={4}>
-                                {/* <div className="adjustH37"><PTypography flag={Labels.fontSize.sm} labelText={`${getLabel("lbl111")}${Labels.symbols.required}`} /></div> */}
                                 <PDropdown
                                     label={`${getLabel("lbl111")} ${Labels.symbols.required}`}
                                     value={formData.printingMethod}
@@ -1514,7 +1513,6 @@ const LineItems = () => {
                                             onClick={(e) => handleSubmit(e, false)}
                                             width={180}
                                             height={50}
-                                        // color={CommonColors.blue.main}
                                         />
                                     </PGrid>
                                 </PGrid>
@@ -1574,13 +1572,7 @@ const LineItems = () => {
                                     color={CommonColors.dark_blue}
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
-                                    startIcon={
-                                        <img
-                                            src={arrow}
-                                            alt="arrow"
-                                            className="icon"
-                                        />
-                                    }
+                                    startIcon={<img src={arrow} alt="arrow" className="icon" />}
                                 />
                             </PGrid>
                         </PGrid>
@@ -1607,7 +1599,6 @@ const LineItems = () => {
                 title={getLabel("lbl83")}
                 showCloseIcon={true}
                 maxWidth="md"
-            //actions={}
             >
                 <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={6} md={12}>

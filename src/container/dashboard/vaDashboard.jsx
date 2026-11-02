@@ -26,7 +26,7 @@ const vaDashboard = () => {
   const { userType } = useSelector((state) => state.userDetails.user);
   const apps = [
     {
-      title: "eNQUIRIES",
+      title: getLabel("lbl282"),
       icon: <DescriptionIcon />,
       iconBg: "#6366f1",
       route: labelRoutes.dashboard,
@@ -34,7 +34,7 @@ const vaDashboard = () => {
       showNavIcon: true // override default
     },
     {
-      title: "eAuction",
+      title: getLabel("lbl283"),
       icon: <AccessTimeIcon />,
       iconBg: "#8b5cf6",
       route: labelRoutes.dashboard,
@@ -42,7 +42,7 @@ const vaDashboard = () => {
       showNavIcon: false
     },
     {
-      title: userType?.toLowerCase() === Labels.userType.supplier ? getLabel("lbl203") : "eCATALOGUE",
+      title: userType?.toLowerCase() === Labels.userType.supplier ? getLabel("lbl203") : getLabel("lbl284"),
       icon: <MenuBookIcon />,
       iconBg: "#6366f1",
       route: labelRoutes.dashboard,
@@ -52,12 +52,12 @@ const vaDashboard = () => {
     ...(userType?.toLowerCase() === Labels.userType.agency
       ? [
         {
-          title: "RePORT",
+          title:getLabel("lbl285"),
           icon: <BarChartIcon />,
           iconBg: "#4f46e5",
           route: labelRoutes.report,
           menuId: 4,
-          //showNavIcon: true
+          showNavIcon: true
         }
       ]
       : [])

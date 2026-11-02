@@ -682,16 +682,16 @@ const ClientInfo = () => {
                                     </>
 
                                 ) : ( */}
-                                    <PDropdown
-                                        name={Labels.clientInfo.globalBUMapping}
-                                        label={`${getLabel("lbl91")}${Labels.symbols.required}`}
-                                        value={formData.globalBUMapping}
-                                        onChange={handleChange}
-                                        options={formDataList.globalBUMapping}
-                                        width={100}
-                                        helperText={errors?.globalBUMapping}
-                                        flag={Labels.flag.auto}
-                                    />
+                                <PDropdown
+                                    name={Labels.clientInfo.globalBUMapping}
+                                    label={`${getLabel("lbl91")}${Labels.symbols.required}`}
+                                    value={formData.globalBUMapping}
+                                    onChange={handleChange}
+                                    options={formDataList.globalBUMapping}
+                                    width={100}
+                                    helperText={errors?.globalBUMapping}
+                                    flag={Labels.flag.auto}
+                                />
                                 {/* )} */}
                             </PGrid>
                             <PGrid item xs={12} sm={6} md={6}>
@@ -827,13 +827,7 @@ const ClientInfo = () => {
                                     color={CommonColors.dark_blue}
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
-                                    startIcon={
-                                        <img
-                                            src={arrow}
-                                            alt="arrow"
-                                            className="icon"
-                                        />
-                                    }
+                                    startIcon={<img src={arrow} alt="arrow" className="icon" />}
                                 />
                             </PGrid>
 

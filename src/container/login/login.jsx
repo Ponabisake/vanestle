@@ -1,29 +1,25 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 //import { Checkbox,FormControlLabel } from "@mui/material";
 import PTypography from "../../component/PTypography/PTypography";
 import PTextField from "../../component/PTextField/PTextField";
-import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import PButton from "../../component/PButton/PButton";
 import PRadio from "../../component/PRadio/PRadio";
 import { Labels } from "../../utils/constants/labels";
-import LoginImg from "../../utils/assets/images/Login.png";
 import "./login.css";
 import { CommonColors } from "../../utils/constants/colors";
-import PContainer from "../../component/PContainer/PContainer";
 import PDialog from "../../component/PDialog/PDialog";
 import { FontWeight } from "../../utils/constants/fonts";
 import arrow from "../../utils/assets/images/arrow_white.svg";
-import { allowOnlyAlphabets, validatePassword, validateName, isSuccess } from "../../utils/commonFunction/common";
+import { validatePassword, validateName, isSuccess } from "../../utils/commonFunction/common";
 import { userDetails, clearUserDetails } from "../../redux/actionType/actionType";
 import { connect } from "react-redux";
 import { AppNavigation } from "../../navigations/appNavigation";
 import { labelRoutes } from "../../navigations/labelRoutes";
-import Logo from "../../utils/assets/Navbar/Logo.svg";
 import PMGLogo from "../../utils/assets/images/pmglogo.svg";
 import VALogo from "../../utils/assets/images/valogo.svg";
 import { PostApi } from "../../utils/api/networking";
-import { Account_API, Dashboard_API } from "../../utils/api/apiUrl";
+import { Account_API } from "../../utils/api/apiUrl";
 import PGrid from "../../component/PGrid/PGrid";
 import { useLanguage } from "../../utils/constants/language";
 
@@ -31,10 +27,8 @@ function Login(props) {
   const { navigate } = props;
   const [isLogin, setIsLogin] = useState(false);
   const [openRecover, setOpenRecover] = useState(false);
-  //const [isForgetPassword, setIsForgetPassword] = useState(false);
   const [selected, setSelected] = useState(false);
   const { getLabel } = useLanguage();
-  // ✅ Refs for focus
   const userNameRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -320,7 +314,6 @@ function Login(props) {
                     sx={{
                       "marginTop": "42px"
                     }}
-                  // onClick={(e) => handleLogin(e, true)}
                   />
                 </div>
               </div>
@@ -408,7 +401,6 @@ function Login(props) {
                     sx={{
                       "marginTop": "42px"
                     }}
-                  // onClick={(e) => handleLogin(e, true)}
                   />
                 </div>
               </div>
@@ -463,12 +455,6 @@ function Login(props) {
               onChange={handleChange}
               helperText={errors?.resetUsername}
               sx={{
-                // "& .MuiOutlinedInput-root":{
-                //   border: "1px solid #16133F"
-                // },
-                // "& .MuiOutlinedInput-notchedOutline": {
-                //   border: "1px solid #16133F",
-                // },
                 "&:hover .MuiOutlinedInput-notchedOutline": {
                   border: "1px solid #16133F",
                 },

@@ -175,14 +175,7 @@ const EnquirySuccess = () => {
                         color={CommonColors.dark_blue}
                         onClick={(e) => handleSubmit(e)}
                         width={250}
-                        startIcon={
-                            <img
-                                src={arrow}
-                                alt="arrow"
-                                className="icon"
-                            />
-                        }
-
+                        startIcon={<img src={arrow} alt="arrow" className="icon" />}
                     />
 
                     <PButton

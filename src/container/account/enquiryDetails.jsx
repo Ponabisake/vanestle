@@ -3,9 +3,8 @@ import PTypography from "../../component/PTypography/PTypography";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FontWeight } from "../../utils/constants/fonts";
-// import PCard from "../../component/PCard/PCard";
 import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
@@ -18,7 +17,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Dashboard_API, EnquiryDetails_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
-//import { PSummary } from "../../component/PSummary/PSummary";
 import { getClientInfo, getEnquiryDetails, getSummarySections } from "../../utils/constants/summary";
 import PSlaTemplate from "../../component/PSlaTemplate/PSlaTemplate";
 import { useSelector, useDispatch } from "react-redux";
@@ -576,13 +574,7 @@ const EnquiryDetails = () => {
                                     color={CommonColors.dark_blue}
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
-                                    startIcon={
-                                        <img
-                                            src={arrow}
-                                            alt="arrow"
-                                            className="icon"
-                                        />
-                                    }
+                                    startIcon={<img src={arrow} alt="arrow" className="icon" />}
                                 />
                             </PGrid>
 

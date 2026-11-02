@@ -7,7 +7,7 @@ import { CommonColors } from "../../utils/constants/colors";
 import { Container } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { userDetails } from "../../redux/actionType/actionType";
-const PDashboardList = ({ title, value, icon, subtitle, route, menuId , onClick, showNavIcon = false, iconBoxSize = 45, iconSize = 22
+const PDashboardList = ({ title, value, icon, subtitle, route, menuId, onClick, showNavIcon = false, iconBoxSize = 45, iconSize = 22
   , titleSize = 14, valueSize = 22, iconBg = "linear-gradient(135deg, #6a5af9, #9f7aea)", iconColor = "#ffffff", bgColor = "", }) => {
 
   const navigate = useNavigate();
@@ -95,12 +95,8 @@ const PDashboardList = ({ title, value, icon, subtitle, route, menuId , onClick,
             variant="contained"
             color={CommonColors.dark_blue}
             width={180}
-            onClick={handleOnClick} disabled={route ? "" : "disabled"} style={{ cursor: route ? "pointer" : "default" }}
-            startIcon={<img
-              src={arrow}
-              alt="arrow"
-              className="icon"
-            />}
+            onClick={handleOnClick} disabled={route && showNavIcon ? "" : "disabled"} style={{ cursor: route && showNavIcon ? "pointer" : "default" }}
+            startIcon={<img src={arrow} alt="arrow" className="icon" />}
           />
         </div>
       </Container>

@@ -17,8 +17,6 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import PSearch from "../../component/PSearch/PSearch";
-// import FileDownloadIcon from '@mui/icons-material/FileDownload';
-// import CheckCircleIcon from '@mui/icons-material/TaskAlt';
 import ImportExportOutlinedIcon from '@mui/icons-material/ImportExportOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import AddTaskRoundedIcon from '@mui/icons-material/AddTaskRounded';
@@ -563,7 +561,6 @@ const dashboard = () => {
   };
 
   const handleExport = () => {
-    // Format data for export
     const exportData = rows.map((item) => ({
       "Enquiry ID": item.enquiryId,
       "Project Name": item.projectName,
@@ -684,7 +681,6 @@ const dashboard = () => {
   }
 
   const handleRoute = (row, flag = "") => {
-    console.log(row, flag);
     const route = flag === "Survey" ? labelRoutes.performanceSurvey : row.status === "Draft" ? stepRoutes[row.stepID] : labelRoutes.projectEnquiry;
     dispatch({
       type: userDetails,
@@ -702,7 +698,7 @@ const dashboard = () => {
       <Box sx={{ py: 3 }}>
         <PGrid item xs={12} sm={6} md={7} style={{ paddingBottom: "30px" }}>
           <PTypography
-            labelText={[Labels.userType.client].includes(userType?.toLowerCase()) ? "Project Hub" : `${title}`}
+            labelText={[Labels.userType.client].includes(userType?.toLowerCase()) ? getLabel("lbl270") : `${title}`}
             weight={FontWeight.regular}
             flag={"big"}
             style={{ fontFamily: "'Montserrat', Tahoma, Geneva, Verdana, sans-serif", }}
@@ -745,14 +741,14 @@ const dashboard = () => {
                   <PGrid item xs={12} sm={12} md={12} lg={9}>
                     <Box sx={{ border: "1px solid #66658A", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "10px 20px" }}>
                       <PTypography
-                        labelText="For Bulk Upload"
+                        labelText= {getLabel("lbl264")}
                         flag={Labels.fontFlags.subHeader}
                         color={CommonColors.dark_blue}
                       />
 
                       <Box display="flex" alignItems="center" justifyContent="flex-end" gap={2}>
                         <PButton
-                          label="Download template"
+                          label= {getLabel("lbl265")}
                           variant="contained"
                           onClick={handleDownload}
                           width={300}
@@ -760,7 +756,7 @@ const dashboard = () => {
                           startIcon={<img src={arrow} alt="arrow" className="icon" />}
                         />
                         <PButton
-                          label="Import Excel template"
+                          label= {getLabel("lbl266")}
                           variant="outlined"
                           onClick={handleUpload}
                           width={250}
@@ -888,7 +884,7 @@ const dashboard = () => {
       <PDialog
         open={openFilter}
         onClose={handleCloseChoose}
-        title={"Date Range"}
+        title= {getLabel("lbl267")}
         showCloseIcon={true}
         actions={
           <>

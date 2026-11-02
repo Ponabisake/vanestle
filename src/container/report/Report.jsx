@@ -174,7 +174,7 @@ const Report = () => {
             <Box sx={{ py: 3 }}>
                 <PGrid container className={Labels.margin.mb4} >
                     <PTypography
-                        labelText={"Report"}
+                        labelText={getLabel("lbl150")}
                         flag={"big"}
                         weight={FontWeight.regular}
                     />
@@ -267,7 +267,6 @@ const Report = () => {
                                     variant="outlined"
                                     onClick={(e) => handleReset(e)}
                                     width={180}
-                                    // startIcon={<RestartAltIcon />}
                                     disabled={loading}
                                 />
                                 <PButton
@@ -277,13 +276,7 @@ const Report = () => {
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
                                     loading={loading}
-                                    startIcon={
-                                        <img
-                                            src={arrow}
-                                            alt="arrow"
-                                            className="icon"
-                                        />
-                                    }
+                                    startIcon={<img src={arrow} alt="arrow" className="icon" />}
                                 />
                             </PGrid>
                         </PGrid>
