@@ -70,9 +70,7 @@ const EnquirySuccess = () => {
     ];
 
     const handleSubmit = async (e) => {
-        navigate(labelRoutes.projectEnquiry, {
-            state: { id: state.id }
-        });
+        navigate(labelRoutes.projectEnquiry);
     };
     const handleBack = async () => {
         navigate(labelRoutes.dashboard);

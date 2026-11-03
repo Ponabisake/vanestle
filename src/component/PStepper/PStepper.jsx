@@ -9,7 +9,6 @@ import { useLanguage } from "../../utils/constants/language";
 import { useSelector } from "react-redux";
 
 export default function PStepper({ steps = [], activeStep = 0, allowRedirect = false }) {
-  
   const navigate = useNavigate();
   const { getLabel } = useLanguage();
   const { menuId } = useSelector((state) => state.userDetails.user);
@@ -22,8 +21,8 @@ export default function PStepper({ steps = [], activeStep = 0, allowRedirect = f
 
   const header = {
     1: getLabel("lbl19"),
-    2: "Create E-Bid Event",
-    3: "Create Ecatalogue",
+    2: getLabel("lbl286"),
+    3: getLabel("lbl287"),
   }[menuId];
 
   return (
@@ -44,7 +43,6 @@ export default function PStepper({ steps = [], activeStep = 0, allowRedirect = f
 
         {steps.map((step, index) => {
           const isCompleted = index < activeStep || (index === 4 && activeStep === 4);
-
           return (
             <React.Fragment key={index}>
               <div

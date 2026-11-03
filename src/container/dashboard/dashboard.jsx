@@ -134,7 +134,7 @@ const dashboard = () => {
           stepID: item.stepId,
           clientId: item.clientId,
           ponumber: item.ponumber,
-          attachments : item.attachments
+          attachments: item.attachments
         }));
         setRows(formattedRows);
         const formattedChartData = (data.summary?.jobStatus || []).map(
@@ -147,6 +147,12 @@ const dashboard = () => {
         setChartData(formattedChartData);
         setChartOrginalData(formattedChartData);
       }
+      dispatch({
+        type: userDetails,
+        payload: {
+          id: 0,
+        },
+      });
     } catch (error) {
       toast(Labels.status.failure, Labels.message.somethingWentWrong);
     } finally {
@@ -686,11 +692,10 @@ const dashboard = () => {
       type: userDetails,
       payload: {
         enquiryId: row.enquiryId,
-        id : row.id 
+        id: row.id
       },
     });
     navigate(route);
-    //navigate(route, { state: { id: row.id } });
   }
   const lgSizes = [4, 5, 3];
   const mdSizes = [6, 6, 12];
@@ -743,14 +748,14 @@ const dashboard = () => {
                   <PGrid item xs={12} sm={12} md={12} lg={9}>
                     <Box sx={{ border: "1px solid #66658A", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", padding: "10px 20px" }}>
                       <PTypography
-                        labelText= {getLabel("lbl264")}
+                        labelText={getLabel("lbl264")}
                         flag={Labels.fontFlags.subHeader}
                         color={CommonColors.dark_blue}
                       />
 
                       <Box display="flex" alignItems="center" justifyContent="flex-end" gap={2}>
                         <PButton
-                          label= {getLabel("lbl265")}
+                          label={getLabel("lbl265")}
                           variant="contained"
                           onClick={handleDownload}
                           width={300}
@@ -758,7 +763,7 @@ const dashboard = () => {
                           startIcon={<img src={arrow} alt="arrow" className="icon" />}
                         />
                         <PButton
-                          label= {getLabel("lbl266")}
+                          label={getLabel("lbl266")}
                           variant="outlined"
                           onClick={handleUpload}
                           width={250}
@@ -886,7 +891,7 @@ const dashboard = () => {
       <PDialog
         open={openFilter}
         onClose={handleCloseChoose}
-        title= {getLabel("lbl267")}
+        title={getLabel("lbl267")}
         showCloseIcon={true}
         actions={
           <>

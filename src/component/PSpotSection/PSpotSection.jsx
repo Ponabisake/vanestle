@@ -33,7 +33,6 @@ const PSpotSection = ({ response }) => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const { id } = useSelector((state) => state.userDetails.user);
-    //
     const [formData, setFormData] = useState({
         epdSpot: true,
         emmdSpot: true,

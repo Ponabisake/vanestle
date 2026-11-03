@@ -19,13 +19,12 @@ import { PostApi } from "../../utils/api/networking";
 import { useSelector } from "react-redux";
 
 export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layout = "row", duplicate = false, showFlag = true, lineItems = [] }) => {
-    
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(currentStep);
     const [activeItemIndex, setActiveItemIndex] = useState({ 3: 0 });
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState({});
-    const { userType, enquiryID, fkID } = useSelector((state) => state.userDetails.user);
+    const { userType, enquiryID, fkID, id } = useSelector((state) => state.userDetails.user);
     const flag = userType?.toLowerCase() === Labels.userType.agency
     const handleOpen = (data = {}) => {
         setFormData(data);
@@ -99,7 +98,7 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
         try {
             const payload = {
                 EnqdetailsId: data.enquiryId,
-                EnqId: state.id,
+                EnqId: id,
                 modifiedBy: fkID,
             };
             const response = await PostApi(LineItems_API.GetEnqDuplicate, payload);

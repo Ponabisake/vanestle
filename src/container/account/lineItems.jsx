@@ -398,7 +398,7 @@ const LineItems = () => {
     const handleSubmit = async (e, flag) => {
         if (lineItems.length > 0 && flag && !formData.itemCategory) {
             setAllowRedirect(false);
-            navigate(labelRoutes.suppliers, { state: { id: id } });
+            navigate(labelRoutes.suppliers);
             return;
         }
 
@@ -478,9 +478,7 @@ const LineItems = () => {
                     const route = flag === true ? labelRoutes.suppliers : flag === false ? labelRoutes.lineItems : labelRoutes.dashboard;
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(route, {
-                            state: { id: response.data.enqId }
-                        });
+                        navigate(route);
                     }, 500);
                     if (!flag) {
                         await handleCancel();

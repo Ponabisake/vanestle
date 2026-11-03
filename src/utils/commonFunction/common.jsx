@@ -78,8 +78,8 @@ export const getOptionValue = (options = [], label) => {
 export const getEnquirySteps = (getLabel, menuId) => {
   const labels = {
     1: [getLabel("lbl21"), getLabel("lbl22")],
-    2: ["Bid Details", "Bid Items"],
-    3: ["Catalogue Details", "Catalogue Items"],
+    2: [getLabel("lbl225") , getLabel("lbl288")],
+    3: [getLabel("lbl289")  , getLabel("lbl290")],
   };
   return [
     { text: getLabel("lbl20"), url: labelRoutes.clientInfo },

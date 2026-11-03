@@ -29,13 +29,9 @@ function PSidebar({
                 <div
                   className={`nav-item ${location.pathname === item.route ? "active" : ""
                     }`}
-                  onClick={() => {
-                    //   if (item.children) {
-                    //     setOpenMenu(openMenu === item.name ? null : item.name);
-                    //   } else {
+                  onClick={() => {        
                     navigate(item.route);
                     setIsDashborad(item.name === "Dashboard");
-                    //}
                   }}
                 >
 
