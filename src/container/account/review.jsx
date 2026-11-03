@@ -23,9 +23,9 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 
 const Review = () => {
     const { getLabel } = useLanguage();
-    const { userID, menuId } = useSelector((state) => state.userDetails.user);
+    const { userID, menuId, id } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
-    const { state } = useLocation();
+    
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ const Review = () => {
     const [openUpdateLineItems, setOpenUpdateLineItems] = useState(false);
     const [formData, setFormData] = useState({});
 
-    const id = state?.id > 0 ? state.id : 0;
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -95,25 +95,19 @@ const Review = () => {
             4: labelRoutes.suppliers
         };
         const route = routeMap[step] || labelRoutes.home;
-        navigate(route, {
-            state: { id: state.id }
-        });
+        navigate(route);
     };
 
     const handleSubmit = async (e, flag) => {
         if (!flag) {
-            navigate(labelRoutes.dashboard, {
-                state: { id: state.id }
-            });
+            navigate(labelRoutes.dashboard);
             return;
         }
         try {
             setLoading(true);
             const response = await PostApi(`${Dashboard_API.EnqReview}?enqId=${id}&createdBy=${userID}`);
             if (isSuccess(response)) {
-                navigate(labelRoutes.enquirySuceess, {
-                    state: { id: state.id }
-                });
+                navigate(labelRoutes.enquirySuceess);
             }
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);

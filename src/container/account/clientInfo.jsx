@@ -1,34 +1,33 @@
-import { Box, Tooltip, IconButton, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import PTypography from "../../component/PTypography/PTypography";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FontWeight } from "../../utils/constants/fonts";
 // import PCard from "../../component/PCard/PCard";
 import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import { allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast } from "../../utils/commonFunction/common"
-import AddIcon from "@mui/icons-material/Add"
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ClientInfo_API, Dashboard_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import PDialog from "../../component/PDialog/PDialog";
 import PTextField from "../../component/PTextField/PTextField";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
-import { PSummary } from "../../component/PSummary/PSummary";
 import { getClientInfo, getSummarySections } from "../../utils/constants/summary";
 import PRadio from "../../component/PRadio/PRadio";
 import arrow from "../../utils/assets/images/arrow_white.svg";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { userDetails } from "../../redux/actionType/actionType";
 
 const ClientInfo = () => {
-    const { state } = useLocation();
     const { getLabel } = useLanguage();
-    const { countryID, userID, fkID, role, menuId, country } = useSelector((state) => state.userDetails.user);
+    const dispatch = useDispatch();
+    const { countryID, userID, fkID, role, menuId, country, id } = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const [allowRedirect, setAllowRedirect] = useState(false);
@@ -38,7 +37,6 @@ const ClientInfo = () => {
     const [open, setOpen] = useState(false);
     const [disable, setDisable] = useState(true);
     const [type, setType] = useState("");
-    const [openSummary, setOpenSummary] = useState(true);
     const [formData, setFormData] = useState({
         division: "",
         brand: "",
@@ -111,8 +109,8 @@ const ClientInfo = () => {
     });
 
 
-    const flag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
-    const id = state?.id > 0 ? state.id : 0;
+    const flag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
+    
 
     const clientInfo = getClientInfo(fields, formData, formDataList, getLabel, getOptionLabel, id ? formDataList.clientInfo : null);
     const sections = getSummarySections({ menuId, clientInfo, getLabel });
@@ -329,10 +327,14 @@ const ClientInfo = () => {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.dashboard, {
-                            state: { id: response.data.enqId }
-                        });
+                        navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.dashboard);
                     }, 500);
+                    dispatch({
+                        type: userDetails,
+                        payload: {
+                            id: response.data.enqId,
+                        },
+                    });
                 } else {
                     setErrors((prev) => ({
                         ...prev,

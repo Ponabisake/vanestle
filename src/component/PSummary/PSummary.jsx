@@ -19,7 +19,7 @@ import { PostApi } from "../../utils/api/networking";
 import { useSelector } from "react-redux";
 
 export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layout = "row", duplicate = false, showFlag = true, lineItems = [] }) => {
-    const { state } = useLocation();
+    
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(currentStep);
     const [activeItemIndex, setActiveItemIndex] = useState({ 3: 0 });
@@ -47,9 +47,7 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
             4: labelRoutes.suppliers
         };
         const route = routeMap[step] || labelRoutes.home;
-        navigate(route, {
-            state: { id: state.id }
-        });
+        navigate(route);
     };
     const SummaryItem = ({ label, value, layout }) => (
 

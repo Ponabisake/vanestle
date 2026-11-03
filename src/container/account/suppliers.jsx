@@ -23,10 +23,10 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const Suppliers = () => {
     const { getLabel } = useLanguage();
-    const { country, currency, fkID, menuId, userID, countryID, role } = useSelector((state) => state.userDetails.user);
+    const { country, currency, fkID, menuId, userID, countryID, role, id } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const navigate = useNavigate();
-    const { state } = useLocation();
+    
     const [allowRedirect, setAllowRedirect] = useState(false);
     const [showSelected, setShowSelected] = useState(false);
     const [isValidation, setIsValidation] = useState(true);
@@ -93,8 +93,8 @@ const Suppliers = () => {
         { field: "country", header: "Country" },
         { field: "suppliercode", header: "Supplier Code" },
     ];
-    const flag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
-    const id = state?.id > 0 ? state.id : 0;
+    
+    
 
     useEffect(() => {
         if (formDataList.supplier?.length) {
@@ -174,9 +174,7 @@ const Suppliers = () => {
                 setAllowRedirect(true);
                 toast(Labels.status.success, response.data.message);
                 setTimeout(() => {
-                    navigate(flag ? labelRoutes.review : labelRoutes.dashboard, {
-                        state: { id: response.data.enqId }
-                    });
+                    navigate(flag ? labelRoutes.review : labelRoutes.dashboard);
                 }, 500);
             } else {
                 toast(Labels.status.failure, response.data.message);
@@ -189,9 +187,7 @@ const Suppliers = () => {
     };
     const handleBack = () => {
         if (window.history.length > 1) {
-            navigate(labelRoutes.lineItems, {
-                state: { id: id }
-            });
+            navigate(labelRoutes.lineItems);
         } else {
             navigate(labelRoutes.home); // fallback route
         }

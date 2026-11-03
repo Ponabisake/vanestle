@@ -28,17 +28,19 @@ import { Dashboard_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { toast } from "../../utils/commonFunction/common";
 import arrow from "../../utils/assets/images/arrow_white.svg";
+import { useSelector } from "react-redux";
 const EnquirySuccess = () => {
-    const { state } = useLocation();
+    
     const { getLabel } = useLanguage();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const { id } = useSelector((state) => state.userDetails.user);
     const [formDataList, setFormDataList] = useState({
         clientInfo: [],
         enquiryDetails: []
     });
 
-    const id = state?.id > 0 ? state.id : 0;
+    
     useEffect(() => {
         fetchData();
     }, []);
@@ -73,9 +75,7 @@ const EnquirySuccess = () => {
         });
     };
     const handleBack = async () => {
-        navigate(labelRoutes.dashboard, {
-            state: { id: 0 }
-        });
+        navigate(labelRoutes.dashboard);
     };
 
     const columnWidths = [2, 3, 2, 2, 3];

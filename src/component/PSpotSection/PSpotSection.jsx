@@ -27,11 +27,13 @@ import { ProjectEnquiry_API, Spot_API } from "../../utils/api/apiUrl";
 import { useLocation } from "react-router-dom";
 import { GetApi, PostApi } from "../../utils/api/networking";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useSelector } from "react-redux";
 
 const PSpotSection = ({ response }) => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
-    const { state } = useLocation();
+    const { id } = useSelector((state) => state.userDetails.user);
+    //
     const [formData, setFormData] = useState({
         epdSpot: true,
         emmdSpot: true,
@@ -88,7 +90,7 @@ const PSpotSection = ({ response }) => {
         }
     };
 
-    const id = state?.id > 0 ? state.id : 0;
+    
     useEffect(() => {
         fetchData();
     }, []);

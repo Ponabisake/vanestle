@@ -686,9 +686,11 @@ const dashboard = () => {
       type: userDetails,
       payload: {
         enquiryId: row.enquiryId,
+        id : row.id 
       },
     });
-    navigate(route, { state: { id: row.id } });
+    navigate(route);
+    //navigate(route, { state: { id: row.id } });
   }
   const lgSizes = [4, 5, 3];
   const mdSizes = [6, 6, 12];

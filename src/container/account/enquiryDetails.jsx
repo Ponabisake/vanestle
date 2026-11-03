@@ -24,11 +24,11 @@ import { userDetails } from "../../redux/actionType/actionType";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import PRadio from "../../component/PRadio/PRadio";
 const EnquiryDetails = () => {
-    const { state } = useLocation();
+    //
     const { getLabel } = useLanguage();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { countryID, role, fkID, menuId, userID } = useSelector((state) => state.userDetails.user);
+    const { countryID, role, fkID, menuId, userID, id } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const [allowRedirect, setAllowRedirect] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -82,8 +82,8 @@ const EnquiryDetails = () => {
         clientInfo: [],
         enquiryDetails: []
     });
-    const flag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
-    const id = state?.id > 0 ? state.id : 0;
+
+    
 
     const startTime = Array.from({ length: 48 }, (_, index) => {
         const hours = Math.floor(index / 2);
@@ -234,9 +234,7 @@ const EnquiryDetails = () => {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(flag ? labelRoutes.lineItems : labelRoutes.dashboard, {
-                            state: { id: response.data.enqId }
-                        });
+                        navigate(flag ? labelRoutes.lineItems : labelRoutes.dashboard);
                     }, 500);
                 } else {
                     setErrors((prev) => ({
@@ -288,9 +286,7 @@ const EnquiryDetails = () => {
 
     const handleBack = () => {
         if (window.history.length > 1) {
-            navigate(labelRoutes.clientInfo, {
-                state: { id: id }
-            });
+            navigate(labelRoutes.clientInfo);
         } else {
             navigate(labelRoutes.home); // fallback route
         }

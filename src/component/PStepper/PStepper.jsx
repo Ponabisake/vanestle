@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PGrid from "../PGrid/PGrid";
 import PTypography from "../PTypography/PTypography";
 import { Labels } from "../../utils/constants/labels";
@@ -9,15 +9,17 @@ import { useLanguage } from "../../utils/constants/language";
 import { useSelector } from "react-redux";
 
 export default function PStepper({ steps = [], activeStep = 0, allowRedirect = false }) {
+  
   const navigate = useNavigate();
   const { getLabel } = useLanguage();
   const { menuId } = useSelector((state) => state.userDetails.user);
+  
   const handleRedirect = (step) => {
-    if (step.url && allowRedirect) {
+    if (step.url) {
       navigate(step.url);
     }
   };
-  
+
   const header = {
     1: getLabel("lbl19"),
     2: "Create E-Bid Event",
@@ -40,29 +42,31 @@ export default function PStepper({ steps = [], activeStep = 0, allowRedirect = f
           <span className="p-dot" />
         </div>
 
-        {steps.map((step, index) => (
-          <React.Fragment key={index}>
+        {steps.map((step, index) => {
+          const isCompleted = index < activeStep || (index === 4 && activeStep === 4);
 
-            <div
-              className={`p-line ${index < activeStep || (index === 4 && activeStep === 4) ? "completed" : ""}`}
-              onClick={index < activeStep ? () => handleRedirect(step) : undefined}
-            >
-              <div className="p-label">{step.text}</div>
-            </div>
+          return (
+            <React.Fragment key={index}>
+              <div
+                className={`p-line ${isCompleted ? "completed" : ""}`}
+              >
+                <div
+                  className="p-label"
+                  onClick={isCompleted ? () => handleRedirect(step) : undefined}
+                  style={{ cursor: isCompleted ? "pointer" : "default" }}
+                >
+                  {step.text}
+                </div>
+              </div>
 
-            <div
-              className={`p-circle ${index < activeStep || (index === 4 && activeStep === 4)
-                ? "completed"
-                : index + 1 === activeStep
-                  ? "active"
-                  : ""
-                }`}
-            >
-              <span className="p-dot" />
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
+              <div className={`p-circle ${isCompleted ? "completed" : index + 1 === activeStep ? "active" : ""
+                }`}>
+                <span className="p-dot" />
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div >
       <style>
         {`
         .p-stepper {

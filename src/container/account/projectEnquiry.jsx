@@ -41,13 +41,13 @@ import PCard from "../../component/PCard/PCard";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const ProjectEnquiry = () => {
-    const { state } = useLocation();
+    
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [dynamicData, setDynamicData] = useState({});
-    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email } = useSelector((state) => state.userDetails.user);
-    const id = state?.id > 0 ? state.id : 0;
-    const actionFlag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
+    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id } = useSelector((state) => state.userDetails.user);
+    
+    const actionFlag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
     const today = formatDate(new Date());
 
     //State & list states
@@ -981,7 +981,7 @@ const ProjectEnquiry = () => {
                 actualDeliveryDate: formDataList.clientInfo.actualdeliverydate
             }),
             ...(formDataList.clientInfo?.managementFee && {
-                managementFee: formDataList.clientInfo.managementFee
+                managementFee: Number(formDataList.clientInfo.managementFee).toFixed(2)
             }),
             ...(formDataList.enquiryDetails?.projectNo && {
                 projectNo: formDataList.enquiryDetails.projectNo

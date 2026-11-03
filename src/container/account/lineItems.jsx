@@ -10,10 +10,10 @@ import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import PTextField from "../../component/PTextField/PTextField";
-import { allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast } from "../../utils/commonFunction/common";
+import { allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isSuccess, toast } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Dashboard_API, LineItems_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
@@ -27,9 +27,8 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
 const LineItems = () => {
-    const { state } = useLocation();
-    const { getLabel } = useLanguage();
-    const { fkID, menuId, role, countryID, userID } = useSelector((state) => state.userDetails.user);
+    const { getLabel } = useLanguage(); 
+    const { fkID, menuId, role, countryID, userID , id} = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
@@ -393,8 +392,8 @@ const LineItems = () => {
         }));
     };
 
-    const flag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
-    const id = state?.id > 0 ? state.id : 0;
+   
+    
 
     const handleSubmit = async (e, flag) => {
         if (lineItems.length > 0 && flag && !formData.itemCategory) {
@@ -507,9 +506,7 @@ const LineItems = () => {
 
     const handleBack = () => {
         if (window.history.length > 1) {
-            navigate(labelRoutes.enquiryDetails, {
-                state: { id: id }
-            });
+            navigate(labelRoutes.enquiryDetails);
         } else {
             navigate(labelRoutes.home); // fallback route
         }

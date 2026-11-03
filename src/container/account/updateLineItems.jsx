@@ -16,11 +16,11 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => {
     const { getLabel } = useLanguage();
-    const { state } = useLocation();
+    
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [allowRedirect, setAllowRedirect] = useState(false);
-    const { fkID } = useSelector((state) => state.userDetails.user);
+    const { fkID , id} = useSelector((state) => state.userDetails.user);
     const [formData, setFormData] = useState({
         enquiryId: "",
         itemName: "",
@@ -195,9 +195,8 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
         return Object.keys(newErrors).length === 0;
     };
 
-    const route = step === 4 ? labelRoutes.suppliers : step === 5 ? labelRoutes.review : labelRoutes.LineItems;
-    const flag = isNotEmpty(state?.id) && state?.id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
-    const id = state?.id > 0 ? state.id : 0;
+    const route = step === 4 ? labelRoutes.suppliers : step === 5 ? labelRoutes.review : labelRoutes.lineItems;
+    
     // ✅ Submit
     const handleSubmit = async () => {
         const isValid = LineItemsValidation();
@@ -215,6 +214,8 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
                     DigitalInnovation: getOptionLabel(formDataList.yesNoNa, formData.digitalInnovation),
                     Innovation: getOptionLabel(formDataList.yesNoNa, formData.innovation),
                     Sourcinglocation: getOptionLabel(formDataList.sourcingLocation, formData.sourcingLocation),
+                    savingstype: getOptionLabel(formDataList.savingsType, formData.savingsType),
+                    savingsreason: getOptionLabel(formDataList.savingsReason, formData.savingsReason),
                     harmonizedOrder: formData.globalOrderWindowCatalogueName == 1 ? "No" : "Yes",
                     Version: formData.noOfVersion,
                     SpecNote: formData.specifications,
@@ -227,9 +228,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
                     setTimeout(() => {
-                        navigate(route, {
-                            state: { id: response.data.enqId }
-                        });
+                        navigate(route);
                     }, 500);
                     onClose();
                     await refreshSummary();
@@ -479,7 +478,6 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
                 </PGrid>
             )}
         </PDialog >
-
     );
 };
 

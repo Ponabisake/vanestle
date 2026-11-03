@@ -16,11 +16,12 @@ import { PostApi } from "../../utils/api/networking";
 import { ProjectEnquiry_API } from "../../utils/api/apiUrl";
 import { useLocation } from "react-router-dom";
 import arrow from "../../utils/assets/images/arrow_white.svg";
+import { useSelector } from "react-redux";
 const PDeliveryOrder = (props) => {
     const [loading, setLoading] = useState(true);
     const { getLabel } = useLanguage();
-    const { state } = useLocation();
-    const id = state?.id > 0 ? state.id : 0;
+    const { id } = useSelector((state) => state.userDetails.user);
+    
     const [formData, setFormData] = useState({
         companyName: "",
         addressLineOne: "",
@@ -68,11 +69,6 @@ const PDeliveryOrder = (props) => {
                 <EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
         }],
     })
-
-
-    // useEffect(() => {
-    //     fetchData();
-    // }, []);
 
     const handleSearch = async () => {
         try {
