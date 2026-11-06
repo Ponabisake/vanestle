@@ -1162,7 +1162,7 @@ const LineItems = () => {
                             </PGrid>
                             <PGrid item xs={12} sm={6} md={4}>
                                 <PDropdown
-                                    label={`${getLabel("lbl111")} ${Labels.symbols.required}`}
+                                    label={`${getLabel("lbl80")} ${Labels.symbols.required}`}
                                     value={formData.printingMethod}
                                     onChange={handleChange}
                                     helperText={errors?.printingMethod}

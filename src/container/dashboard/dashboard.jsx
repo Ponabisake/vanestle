@@ -151,6 +151,7 @@ const dashboard = () => {
         type: userDetails,
         payload: {
           id: 0,
+          enquiryId : 0,
         },
       });
     } catch (error) {
@@ -165,12 +166,12 @@ const dashboard = () => {
   }, [menuId]);
 
   const columns = [
-    { field: "enquiryId", header: "Enquiry ID" },
-    { field: "projectNumber", header: "Project Number" },
+    { field: "enquiryId", header: getLabel("lbl162")},
+    { field: "projectNumber", header: getLabel("lbl163") },
     ...(userType?.toLowerCase() === Labels.userType.client
       ? [{ field: "ponumber", header: "Do No" }]
       : [{ field: "requestedDate", header: "Requested Date" }]),
-    { field: "projectName", header: "Project Name" },
+    { field: "projectName", header:  getLabel("lbl155") },
     {
       field: "status", header: "Status",
       render: (row) => (
@@ -401,7 +402,7 @@ const dashboard = () => {
       position: "end",
     },
     {
-      title: getLabel("lbl211"),
+      title: getLabel("lbl55"),
       value: summary.proof,
       subtitle: getLabel("lbl214"),
       iconColor: Labels.primary,
@@ -412,7 +413,7 @@ const dashboard = () => {
       position: "end",
     },
     {
-      title: getLabel("lbl212"),
+      title: getLabel("lbl56"),
       value: summary.production,
       subtitle: getLabel("lbl221"),
       iconColor: Labels.primary,
@@ -788,7 +789,7 @@ const dashboard = () => {
         <PGrid container spacing={2} className={Labels.margin.mb3} style={{ display: "flex", alignItems: "stretch" }}>
           <PGrid item xs={12} lg={8} xl={9} style={{ display: "flex", flexDirection: "column" }}>
             <PGrid className={Labels.margin.mb3}>
-              <PSearch width="100%" placeholder={"Seach by Enquiry ID, Project Number, Project Name"} onChange={(e) => setFormData({ ...formData, search: e.target.value })} value={formData.search} />
+              <PSearch width="100%" placeholder={getLabel("lbl298")} onChange={(e) => setFormData({ ...formData, search: e.target.value })} value={formData.search} />
             </PGrid>
 
             <PGrid container className={Labels.margin.mb3} spacing={0}>
@@ -917,7 +918,7 @@ const dashboard = () => {
           <PGrid item xs={12} sm={12} md={12} lg={12}>
             <PDatepicker
               name={Labels.dashboard.startDate}
-              label={getLabel("lbl120")}
+              label={getLabel("lbl52")}
               value={formData.startDate}
               onChange={handleChange}
               width={100}
@@ -928,7 +929,7 @@ const dashboard = () => {
           <PGrid item xs={12} sm={12} md={12} lg={12}>
             <PDatepicker
               name={Labels.dashboard.endDate}
-              label={getLabel("lbl121")}
+              label={getLabel("lbl53")}
               value={formData.endDate}
               onChange={handleChange}
               width={100}

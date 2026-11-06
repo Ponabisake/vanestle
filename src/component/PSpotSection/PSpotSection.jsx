@@ -61,7 +61,7 @@ const PSpotSection = ({ response }) => {
         environmentalType: [],
         impactDetails: [],
 
-        emissionFactors: [{ field: "country", header: "Country" }, { field: "emissionFactor", header: "EmissionFactor" }],
+        emissionFactors: [{ field: "country", header: getLabel("lbl09") }, { field: "emissionFactor", header: getLabel("lbl189") }],
         emissionFactorsData: [{ country: "Australia", emissionFactor: 0.76 }, { country: "China", emissionFactor: 0.8953 },
         { country: "India", emissionFactor: 0.9405 }, { country: "Indonesia", emissionFactor: 0.811 },
         { country: "Japan", emissionFactor: 0.471 }, { country: "Malaysia", emissionFactor: 0.67 },
@@ -474,41 +474,41 @@ const PSpotSection = ({ response }) => {
         handleRowChange(row.id, field, e.target.label);
     };
 
-    const mainMaterial = [{ field: "materialused", header: "Material Used", ...renderDropdownField("materialused", response) }
-        , { field: "material", header: "Main Material", ...renderDropdownField("material", formDataList.bindMaterial) }
-        , { field: "typeofmaterial", header: "Type Material", ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
-        , { field: "weight", header: "Weight", ...renderTextInputField("weight") }
-        , { field: "unit", header: "Unit", ...renderDropdownField("unit", unit) }
-        , { field: "action", header: "Action", render: (row) => renderActions(row) }
+    const mainMaterial = [{ field: "materialused", header: getLabel("lbl201"), ...renderDropdownField("materialused", response) }
+        , { field: "material", header: getLabel("lbl197"), ...renderDropdownField("material", formDataList.bindMaterial) }
+        , { field: "typeofmaterial", header: getLabel("lbl311"), ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
+        , { field: "weight", header: getLabel("lbl313"), ...renderTextInputField("weight") }
+        , { field: "unit", header: getLabel("lbl314"), ...renderDropdownField("unit", unit) }
+        , { field: "action", header: getLabel("lbl315"), render: (row) => renderActions(row) }
     ]
 
     const packagingMaterial = [
-        { field: "materialused", header: "Material Used", ...renderDropdownField("materialused", response) }
-        , { field: "material", header: "Package Material", ...renderDropdownField("material", formDataList.bindMaterial) }
-        , { field: "typeofmaterial", header: "Type Material", ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
-        , { field: "weight", header: "Weight", ...renderTextInputField("weight") }
-        , { field: "unit", header: "Unit of Measurement", ...renderDropdownField("unit", unit) }
-        , { field: "action", header: "Action", render: (row) => renderActions(row) }
+        { field: "materialused", header: getLabel("lbl201"), ...renderDropdownField("materialused", response) }
+        , { field: "material", header: getLabel("lbl312"), ...renderDropdownField("material", formDataList.bindMaterial) }
+        , { field: "typeofmaterial", header: getLabel("lbl311"), ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
+        , { field: "weight", header: getLabel("lbl313"), ...renderTextInputField("weight") }
+        , { field: "unit", header: getLabel("lbl316"), ...renderDropdownField("unit", unit) }
+        , { field: "action", header: getLabel("lbl315"), render: (row) => renderActions(row) }
     ]
 
-    const impactMaterial = [{ field: "itemnumber", header: "Item Number" }
-        , { field: "environmentalPaperGrade", header: "Type", render: (row) => row.type === Labels.flag.total ? row.environmentalPaperName : row.environmentalPaperGrade }
-        , { field: "environmentalGhg", header: "Embodied Carbon" }, { field: "environmentalWater", header: "Water Usage" }
-        , { field: "environmentalEnergy", header: "Total Energy" }, { field: "environmentalWood", header: "Wood" }
-        , { field: "explanation", header: "Explanation", render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "impact") : "" }
+    const impactMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+        , { field: "environmentalPaperGrade", header: getLabel("lbl318"), render: (row) => row.type === Labels.flag.total ? row.environmentalPaperName : row.environmentalPaperGrade }
+        , { field: "environmentalGhg", header: getLabel("lbl319") }, { field: "environmentalWater", header: getLabel("lbl320") }
+        , { field: "environmentalEnergy", header: getLabel("lbl321") }, { field: "environmentalWood", header: getLabel("lbl322") }
+        , { field: "explanation", header: getLabel("lbl323"), render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "impact") : "" }
     ]
 
-    const comparativeImpactMaterial = [{ field: "itemnumber", header: "Item Number" }
-        , { field: "compareEnvironmentalPaperGrade", header: "Type", render: (row) => row.type === Labels.flag.total ? row.compareEnvironmentalPaperName : row.compareEnvironmentalPaperGrade }
-        , { field: "compareEnvironmentalGhg", header: "Embodied Carbon" }, { field: "compareEnvironmentalWater", header: "Water Usage" }
-        , { field: "compareEnvironmentalEnergy", header: "Total Energy" }, { field: "compareEnvironmentalWood", header: "Wood" }
-        , { field: "explanation", header: "Explanation", render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "compare") : "" }
+    const comparativeImpactMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+        , { field: "compareEnvironmentalPaperGrade", header: getLabel("lbl318"), render: (row) => row.type === Labels.flag.total ? row.compareEnvironmentalPaperName : row.compareEnvironmentalPaperGrade }
+        , { field: "compareEnvironmentalGhg", header: getLabel("lbl319") }, { field: "compareEnvironmentalWater", header: getLabel("lbl320") }
+        , { field: "compareEnvironmentalEnergy", header: getLabel("lbl321") }, { field: "compareEnvironmentalWood", header: getLabel("lbl322") }
+        , { field: "explanation", header: getLabel("lbl323"), render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "compare") : "" }
     ]
 
-    const totalMaterial = [{ field: "itemnumber", header: "Item Number" }
-        , { field: "itemName", header: "Item Name" }
+    const totalMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+        , { field: "itemName", header: getLabel("lbl66") }
         , {
-        field: "embodiedCarbon", header: "Embodied Carbon",
+        field: "embodiedCarbon", header: getLabel("lbl319"),
         render: (row) => (
             <span style={{ color: getCompareColor(row.embodiedCarbon) }}>
                 {formatCompareValue(row.embodiedCarbon)}
@@ -516,35 +516,35 @@ const PSpotSection = ({ response }) => {
         )
     }
         , {
-        field: "water", header: "Water Usage",
+        field: "water", header: getLabel("lbl320"),
         render: (row) => (
             <span style={{ color: getCompareColor(row.water) }}>
                 {formatCompareValue(row.water)}
             </span>)
     }
         , {
-        field: "energy", header: "Total Energy", render: (row) => (
+        field: "energy", header: getLabel("lbl321"), render: (row) => (
             <span style={{ color: getCompareColor(row.energy) }}>
                 {formatCompareValue(row.energy)}
             </span>)
     }
         , {
-        field: "wood", header: "Wood", render: (row) => (
+        field: "wood", header: getLabel("lbl322"), render: (row) => (
             <span style={{ color: getCompareColor(row.wood) }}>
                 {formatCompareValue(row.wood)}
             </span>)
     }
-        , { field: "explanation", header: "Explanation", render: (row) => renderViewActions(row, "total") }
+        , { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "total") }
     ]
 
-    const enviromantalImpactMaterial = [{ field: "environmentalPaperGrade", header: "Type" }, { field: "environmentalGhg", header: "Embodied Carbon" }
-        , { field: "environmentalWater", header: "Water Usage" }, { field: "environmentalEnergy", header: "Total Energy" }
-        , { field: "environmentalWood", header: "Wood" }, { field: "explanation", header: "Explanation", render: (row) => renderViewActions(row, "impact") }
+    const enviromantalImpactMaterial = [{ field: "environmentalPaperGrade", header: getLabel("lbl318") }, { field: "environmentalGhg", header: getLabel("lbl319") }
+        , { field: "environmentalWater", header: getLabel("lbl320") }, { field: "environmentalEnergy", header: getLabel("lbl321") }
+        , { field: "environmentalWood", header: getLabel("lbl322") }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "impact") }
     ]
 
-    const packageComparativeImpact = [{ field: "compareEnvironmentalPaperName", header: "Type" }, { field: "compareEnvironmentalGhg", header: "Embodied Carbon" }
-        , { field: "compareEnvironmentalWater", header: "Water Usage" }, { field: "compareEnvironmentalEnergy", header: "Total Energy" }
-        , { field: "compareEnvironmentalWood", header: "Wood" }, { field: "explanation", header: "Explanation", render: (row) => renderViewActions(row, "compare") }
+    const packageComparativeImpact = [{ field: "compareEnvironmentalPaperName", header: getLabel("lbl318") }, { field: "compareEnvironmentalGhg", header: getLabel("lbl319") }
+        , { field: "compareEnvironmentalWater", header: getLabel("lbl320") }, { field: "compareEnvironmentalEnergy", header: getLabel("lbl321") }
+        , { field: "compareEnvironmentalWood", header: getLabel("lbl322") }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "compare") }
     ]
 
     const getCompareColor = (value) => {
@@ -559,8 +559,8 @@ const PSpotSection = ({ response }) => {
         }
         return CommonColors.gray.main;
     };
-    const title = "Print/POSM/PROMO Materials";
-    const subTitle = "Type & weight"
+    const title = getLabel("lbl307");
+    const subTitle = getLabel("lbl308")
     const formatCompareValue = (value) => !isNaN(value) && value !== "" ? Math.abs(Number(value)) : value;
     return (
         <>
@@ -688,8 +688,7 @@ const PSpotSection = ({ response }) => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} sm={6} md={8}>
                             <PTypography
-                                //getLabel("lbl195")
-                                labelText={`${"Comparative Impact and Savings summary"} ( ${title} )`}
+                                labelText={`${getLabel("lbl309")} ( ${title} )`}
                                 weight={FontWeight.bold}
                                 flag={Labels.fontFlags.normalText}
                             />
@@ -758,7 +757,7 @@ const PSpotSection = ({ response }) => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} sm={6} md={8}>
                             <PTypography
-                                labelText={`${"Comparative Impact Calculator"} ( ${getLabel("lbl198")} )`}
+                                labelText={`${getLabel("lbl195")} ( ${getLabel("lbl198")} )`}
                                 weight={FontWeight.bold}
                                 flag={Labels.fontFlags.normalText}
                             />
@@ -800,7 +799,7 @@ const PSpotSection = ({ response }) => {
                     ...prev,
                     compare: false,
                 }))}
-                title={`${"Compare Environmental Impact"}`}
+                title={getLabel("lbl211")}
                 showCloseIcon={true}
                 maxWidth="sm"
                 actions={
@@ -818,7 +817,7 @@ const PSpotSection = ({ response }) => {
                         />
                         <PButton
                             fullWidth
-                            label={"Update"}
+                            label={getLabel("lbl120")}
                             variant={Labels.contained}
                             onClick={(e) => handleUpdate(e, "compare")}
                             color={CommonColors.dark_blue}
@@ -830,7 +829,7 @@ const PSpotSection = ({ response }) => {
             >
                 <PGrid container className={Labels.margin.mb3}>
                     <PDropdown
-                        label={`${"Material"} ${Labels.symbols.required}`}
+                        label={`${getLabel("lbl258")} ${Labels.symbols.required}`}
                         name={"material"}
                         value={formData.material}
                         options={formDataList.bindMaterial}
@@ -844,7 +843,7 @@ const PSpotSection = ({ response }) => {
                 </PGrid>
                 <PGrid container className={Labels.margin.mb3}>
                     <PDropdown
-                        label="Type *"
+                        label={`${getLabel("lbl318")} ${Labels.suppliers.required}`}
                         name={"type"}
                         value={formData.type}
                         options={formDataList.environmentalType}
@@ -858,7 +857,7 @@ const PSpotSection = ({ response }) => {
                 <PGrid container className={Labels.margin.mb3}>
                     <PGrid item xs={12} sm={12} md={12}>
                         <PTextField
-                            label="Weight *"
+                            label= {`${getLabel("lbl313")} ${Labels.suppliers.required}`}
                             name={"weight"}
                             value={formData.weight}
                             onChange={handleChange}
@@ -934,7 +933,7 @@ const PSpotSection = ({ response }) => {
                     ...prev,
                     nonCompare: false,
                 }))}
-                title={`${"Reason to proceed without Alternate Material"}`}
+                title={getLabel("lbl227")}
                 showCloseIcon={true}
                 maxWidth="sm"
                 actions={
@@ -954,7 +953,7 @@ const PSpotSection = ({ response }) => {
                         />
                         <PButton
                             fullWidth
-                            label={"Update"}
+                            label={getLabel("lbl120")}
                             variant={Labels.contained}
                             onClick={(e) => handleUpdate(e, "nonCompare")}
                             color={CommonColors.dark_blue}
@@ -967,7 +966,7 @@ const PSpotSection = ({ response }) => {
                 <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={12} md={12}>
                         <PTextField
-                            label="Reason *"
+                            label= {getLabel("lbl212")}
                             name={"reason"}
                             value={formData.reason}
                             onChange={handleChange}

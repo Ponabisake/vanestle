@@ -21,7 +21,7 @@ const PDeliveryOrder = (props) => {
     const [loading, setLoading] = useState(true);
     const { getLabel } = useLanguage();
     const { id } = useSelector((state) => state.userDetails.user);
-    
+
     const [formData, setFormData] = useState({
         companyName: "",
         addressLineOne: "",
@@ -30,7 +30,8 @@ const PDeliveryOrder = (props) => {
         nameorDept: "",
         contactNo: "",
         remarks: "",
-        id: 0
+        id: 0,
+        order: false
     });
     const [errors, setErrors] = useState({
         companyName: "",
@@ -61,12 +62,11 @@ const PDeliveryOrder = (props) => {
     };
 
     const [formDataList, setFormDataList] = useState({
-        deliveryOrder: [{ field: "companyName", header: "Company Name" }, { field: "addressLineOne", header: "Address Line1" }
-            , { field: "addressLineTwo", header: "Address Line2" }, { field: "addressLineThree", header: "Address Line3" }
-            , { field: "nameorDept", header: "Name/Dept" }, { field: "contactNo", header: "Contact No" }, { field: "remarks", header: "Remarks" }
+        deliveryOrder: [{ field: "companyName", header: getLabel("lbl326") }, { field: "addressLineOne", header: getLabel("lbl327") }
+            , { field: "addressLineTwo", header: getLabel("lbl328") }, { field: "addressLineThree", header: getLabel("lbl329") }
+            , { field: "nameorDept", header: getLabel("lbl330") }, { field: "contactNo", header: getLabel("lbl331") }, { field: "remarks", header: getLabel("lbl332") }
             , {
-            field: "id", header: "", render: (row) => (
-                <EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
+                field: "id", header: "", render: (row) => (<EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
         }],
     })
 
@@ -133,7 +133,10 @@ const PDeliveryOrder = (props) => {
         const isValid = DeliveryOrderValidation();
         if (isValid) {
             try {
-                setLoading(true);
+                setFormData(prev => ({
+                    ...prev,
+                    order : true,
+                }))
                 const response = await PostApi(ProjectEnquiry_API.AddUpdateDeliveryAddress,
                     {
                         Enqid: id,
@@ -159,7 +162,10 @@ const PDeliveryOrder = (props) => {
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
             } finally {
-                setLoading(false);
+                setFormData(prev => ({
+                    ...prev,
+                    order : false,
+                }))
             }
         }
 
@@ -194,7 +200,7 @@ const PDeliveryOrder = (props) => {
                 <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={6} md={10}>
                         <PTextField
-                            label={`${"Company Name"} ${Labels.symbols.required}`}
+                            label={`${getLabel("lbl326")} ${Labels.symbols.required}`}
                             value={formData.companyName}
                             onChange={handleChange}
                             helperText={errors?.companyName}
@@ -215,7 +221,7 @@ const PDeliveryOrder = (props) => {
                 <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Address Line1"} ${Labels.symbols.required}`}
+                            label={`${getLabel("lbl327")} ${Labels.symbols.required}`}
                             value={formData.addressLineOne}
                             onChange={handleChange}
                             helperText={errors?.addressLineOne}
@@ -224,7 +230,7 @@ const PDeliveryOrder = (props) => {
                     </PGrid>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Name/Dept"} ${Labels.symbols.required}`}
+                            label={`${getLabel("lbl330")} ${Labels.symbols.required}`}
                             value={formData.nameorDept}
                             onChange={handleChange}
                             helperText={errors?.nameorDept}
@@ -235,7 +241,7 @@ const PDeliveryOrder = (props) => {
                 <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Address Line2"}`}
+                            label={`${getLabel("lbl328")}`}
                             value={formData.addressLineTwo}
                             onChange={handleChange}
                             helperText={errors?.addressLineTwo}
@@ -244,7 +250,7 @@ const PDeliveryOrder = (props) => {
                     </PGrid>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Contact No"} ${Labels.symbols.required}`}
+                            label={`${getLabel("lbl331")} ${Labels.symbols.required}`}
                             value={formData.contactNo}
                             onChange={handleChange}
                             helperText={errors?.contactNo}
@@ -256,7 +262,7 @@ const PDeliveryOrder = (props) => {
                 <PGrid container className={Labels.margin.mb2}>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Address Line3"}`}
+                            label={`${getLabel("lbl329")}`}
                             value={formData.addressLineThree}
                             onChange={handleChange}
                             helperText={errors?.addressLineThree}
@@ -265,7 +271,7 @@ const PDeliveryOrder = (props) => {
                     </PGrid>
                     <PGrid item xs={12} sm={6} md={6}>
                         <PTextField
-                            label={`${"Remarks"}`}
+                            label={`${getLabel("lbl332")}`}
                             value={formData.remarks}
                             onChange={handleChange}
                             helperText={errors?.remarks}
@@ -290,14 +296,8 @@ const PDeliveryOrder = (props) => {
                             color={CommonColors.dark_blue}
                             onClick={(e) => handleSave()}
                             width={320}
-                            startIcon={
-                                <img
-                                    src={arrow}
-                                    alt="arrow"
-                                    className="icon"
-                                />
-                            }
-                            loading={loading}
+                            startIcon={<img src={arrow} alt="arrow" className="icon" />}
+                            loading={formData.order}
                         />
                     </PGrid>
                 </PGrid>

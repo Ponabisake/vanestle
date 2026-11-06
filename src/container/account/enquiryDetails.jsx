@@ -463,7 +463,7 @@ const EnquiryDetails = () => {
                                     <PGrid item xs={12} sm={6} md={4}>
                                         <PDatepicker
                                             name={Labels.enquiryDetails.startDate}
-                                            label={`${getLabel("lbl227")} ${Labels.symbols.required}`}
+                                            label={`${getLabel("lbl52")} ${Labels.symbols.required}`}
                                             value={formData.startDate}
                                             onChange={handleChange}
                                             helperText={errors?.startDate}
