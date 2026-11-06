@@ -73,6 +73,10 @@ export const ProjectEnquiry_API = {
   UpdatePreviewQuotes : Base_Url + "/VA/UpdatePreviewQuotes",
   GetPreviewQuotes : Base_Url + "/VA/GetPreviewQuotes",
   UpdateSurvey : Base_Url + "/VA/UpdateSurvey",
+
+  GetClientQuotes : Base_Url + "/VA/GetClientQuotes",
+  GetSupplierQuotes : Base_Url + "/VA/GetSupplierQuotes",
+  SaveSupplierQuotes : Base_Url + "/VA/SaveSupplierQuotes",
 }
 
 export const Spot_API = {

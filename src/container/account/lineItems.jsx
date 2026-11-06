@@ -28,7 +28,7 @@ import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
 const LineItems = () => {
     const { getLabel } = useLanguage(); 
-    const { fkID, menuId, role, countryID, userID , id} = useSelector((state) => state.userDetails.user);
+    const { fkID, menuId, role, countryID, userID , id, userType} = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
@@ -204,9 +204,9 @@ const LineItems = () => {
     const flatSize = type === 3 ? (+formData.length || 0) * (+formData.width || 0) * (+formData.depth || 0) : (+formData.length || 0) * (+formData.width || 0);
     const totalSize = flatSize * (+formData.quantity || 0);
 
-    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo);
-    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails);
-    const rawLineItems = getLineneItems(formData, formDataList, getLabel, getOptionLabel, formDataList.lineItems);
+    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, userType);
+    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, userType);
+    const rawLineItems = getLineneItems(formData, formDataList, getLabel, getOptionLabel, formDataList.lineItems, userType);
     const lineItems = rawLineItems.map((item, index) => ({
         subTitle: `${item.itemTitle}`,
         enquiryId: item.enquiryId,

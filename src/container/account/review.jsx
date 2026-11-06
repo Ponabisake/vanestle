@@ -23,7 +23,7 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 
 const Review = () => {
     const { getLabel } = useLanguage();
-    const { userID, menuId, id } = useSelector((state) => state.userDetails.user);
+    const { userID, menuId, id , userType } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     
     const navigate = useNavigate();
@@ -73,9 +73,9 @@ const Review = () => {
         }
     };
 
-    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo);
-    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails);
-    const lineItems = getLineneItems({}, {}, getLabel, getOptionLabel, formDataList.lineItems);
+    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, "" ,userType);
+    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, userType);
+    const lineItems = getLineneItems({}, {}, getLabel, getOptionLabel, formDataList.lineItems, userType);
 
     const handleOpen = (data = {}) => {
         setFormData(data);
