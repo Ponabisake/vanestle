@@ -31,6 +31,8 @@ export default function PDialog({
             textAlign: "left",
             fontWeight: 600,
             position: "relative",
+            pr: showCloseIcon ? 7 : 3,
+            borderBottom: "1px solid #ECEAF3",
           }}
         >
           {title}
@@ -46,7 +48,7 @@ export default function PDialog({
         </DialogTitle>
       )}
 
-      <DialogContent sx={{ mt: 1 }}>
+      <DialogContent sx={{ pt: title ? "20px !important" : undefined }}>
         {children}
       </DialogContent>
 

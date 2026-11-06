@@ -41,6 +41,12 @@ body {
   zoom: var(--app-zoom, 1);
 }
 
+/* MUI focuses the dialog panel itself when it opens (focus trap); hide the browser's
+   ring on the panel – controls inside the dialog keep their own focus styles */
+.MuiDialog-paper:focus {
+  outline: none;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

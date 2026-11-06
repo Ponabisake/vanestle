@@ -1,17 +1,14 @@
 
-import { Box } from "@mui/material";
-import PTypography from "../../component/PTypography/PTypography";
+import { Box, Button, Skeleton } from "@mui/material";
 import PGrid from "../../component/PGrid/PGrid";
 import { Labels } from "../../utils/constants/labels";
 import { useState, useEffect } from "react";
-import { FontWeight } from "../../utils/constants/fonts";
-import PCard from "../../component/PCard/PCard";
 import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import { getEnquirySteps, getOptionLabel, isSuccess, toast } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Dashboard_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { getClientInfo, getEnquiryDetails, getLineneItems } from "../../utils/constants/summary";
@@ -20,17 +17,87 @@ import UpdateLineItems from "./updateLineItems";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
 import { useSelector } from "react-redux";
 import arrow from "../../utils/assets/images/arrow_white.svg";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import "./review.css";
+
+const isEmptyValue = (v) => v === null || v === undefined || String(v).trim() === "" || String(v).trim() === "-";
+
+/** Card for one review section: coloured top edge, icon, step number, title and an Edit action. */
+function ReviewSection({ step, title, count, icon, accent, action, children }) {
+    return (
+        <section className="review-section" style={{ "--accent": accent }}>
+            <header className="review-section-head">
+                <div className="review-section-icon">{icon}</div>
+                <div className="review-section-titles">
+                    <div className="review-section-step">Step {step}</div>
+                    <h2 className="review-section-title">
+                        {title}
+                        {count != null && <span className="review-section-count">({count})</span>}
+                    </h2>
+                </div>
+                {action}
+            </header>
+            <div className="review-section-body">{children}</div>
+        </section>
+    );
+}
+
+/** Label / value tiles. Shows placeholder tiles while loading. */
+function FieldGrid({ fields = [], loading }) {
+    if (loading) {
+        return (
+            <div className="review-fields">
+                {Array.from({ length: 8 }, (_, i) => (
+                    <div className="review-field" key={i}>
+                        <Skeleton variant="text" width="45%" height={16} />
+                        <Skeleton variant="text" width="75%" height={22} />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    return (
+        <div className="review-fields">
+            {fields.map((field, i) => {
+                const empty = isEmptyValue(field.value);
+                return (
+                    <div className="review-field" key={i}>
+                        <span className="review-field-label">{field.label}</span>
+                        <span className={`review-field-value ${empty ? "is-empty" : ""}`}>{empty ? "—" : field.value}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+const EditButton = ({ label = "Edit", icon = <EditOutlinedIcon sx={{ fontSize: 18 }} />, onClick }) => (
+    <Button className="review-edit-btn" startIcon={icon} onClick={onClick} disableRipple>
+        {label}
+    </Button>
+);
+
+const initials = (name = "") =>
+    name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
 
 const Review = () => {
     const { getLabel } = useLanguage();
     const { userID, menuId, id , userType } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
-    
+
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(0); // first item open by default
     const [openDraft, setOpenDraft] = useState();
+    const [hasLoaded, setHasLoaded] = useState(false); // placeholders only until the first load (not while submitting)
 
     const [formDataList, setFormDataList] = useState({
         clientInfo: [],
@@ -42,7 +109,7 @@ const Review = () => {
     const [openUpdateLineItems, setOpenUpdateLineItems] = useState(false);
     const [formData, setFormData] = useState({});
 
-    
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -70,8 +137,11 @@ const Review = () => {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
         } finally {
             setLoading(false);
+            setHasLoaded(true);
         }
     };
+
+    const showSkeleton = !hasLoaded;
 
     const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, "" ,userType);
     const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, userType);
@@ -125,180 +195,133 @@ const Review = () => {
                 <PGrid container className={Labels.margin.mb3} >
                     <PStepper steps={enquirySteps} activeStep={4} allowRedirect={allowRedirect}></PStepper>
                 </PGrid>
-                <PGrid container className={Labels.margin.mb4} >
-                    <PGrid item xs={12} sm={12} md={12}>
 
-                        {/*Client Info*/}
-                        <div style={{ background: "#ED3B25", width: "36px", height: "11px" }}></div>
-                        <PGrid item xs={12} sm={12} md={12} className={Labels.margin.mb5}>
-                            <PCard title={`${getLabel("lbl25")}`}
-                                className="review"
-                                rightAction={<PButton label="Edit" variant="outlined1" size="small"
-                                    onClick={(e) => handleEdit(1)}
-                                    sx={{ color: "#0371D0", borderColor: "#fff", "&:hover": { borderColor: "#fff" } }}
-                                />
-                                }>
-                                <PGrid container className="g-4 pt-3">
-                                    {clientInfo.map((item, i) => (
-                                        <PGrid item xs={12} md={6} xl={3} key={i}>
-                                            <PGrid className={``}>
-                                                <PTypography
-                                                    labelText={item.label}
-                                                    weight={FontWeight.bold}
-                                                    flag={Labels.fontFlags.xs}
-                                                />
-                                                <PTypography
-                                                    labelText={item.value}
-                                                    color={CommonColors.black}
-                                                    weight={FontWeight.regular}
-                                                    flag={Labels.fontFlags.xs}
-                                                />
-                                            </PGrid>
-                                        </PGrid>
-                                    ))}
+                <div className="review-page">
+                    <div className="review-intro">
+                        <div className="review-intro-icon"><FactCheckOutlinedIcon /></div>
+                        <div>
+                            <strong>Almost there – please review your enquiry</strong>
+                            <span>Check the details below. Use <b>Edit</b> on any section to make changes, then submit.</span>
+                        </div>
+                    </div>
 
-                                </PGrid>
-                            </PCard>
-                        </PGrid>
+                    {/* Client Info */}
+                    <ReviewSection
+                        step={1}
+                        title={getLabel("lbl25")}
+                        icon={<BusinessOutlinedIcon />}
+                        accent="#ED3B25"
+                        action={<EditButton onClick={() => handleEdit(1)} />}
+                    >
+                        <FieldGrid fields={clientInfo} loading={showSkeleton} />
+                    </ReviewSection>
 
-                        {/*Enquiry Details*/}
-                        <div style={{ background: "#991D52", width: "36px", height: "11px" }}></div>
-                        <PGrid item xs={12} sm={12} md={12} className={Labels.margin.mb5}>
-                            <PCard title={`${getLabel("lbl21")}`}
-                                className="review"
-                                rightAction={<PButton label="Edit" variant="outlined1" size="small"
-                                    onClick={(e) => handleEdit(2)}
-                                    sx={{ color: "#0371D0", borderColor: "#fff", "&:hover": { borderColor: "#fff" } }}
-                                />
-                                }>
-                                <PGrid container className="g-4 pt-3">
-                                    {enquiryDetails.map((item, i) => (
-                                        <PGrid item xs={12} md={6} xl={3} key={i}>
-                                            <PGrid >
-                                                <PTypography
-                                                    labelText={item.label}
-                                                    weight={FontWeight.bold}
-                                                    flag={Labels.fontFlags.xs}
-                                                />
-                                                <PTypography
-                                                    labelText={item.value}
-                                                    color={CommonColors.black}
-                                                    weight={FontWeight.regular}
-                                                    flag={Labels.fontFlags.xs}
-                                                />
-                                            </PGrid>
-                                        </PGrid>
-                                    ))}
-                                </PGrid>
-                            </PCard>
-                        </PGrid>
-                        {/*Line items*/}
-                        <div style={{ background: "#00916B", width: "36px", height: "11px" }}></div>
-                        <PGrid item xs={12} sm={12} md={12} className={Labels.margin.mb5}>
-                            <PCard title={`${getLabel("lbl22")}`}
-                                className="review"
-                                rightAction={<PButton label="+ Add" variant="outlined1" size="small"
-                                    onClick={(e) => handleEdit(3)}
-                                    sx={{ color: "#0371D0", whiteSpace: "nowrap", borderColor: "#fff", "&:hover": { borderColor: "#fff" } }}
-                                />
+                    {/* Enquiry Details */}
+                    <ReviewSection
+                        step={2}
+                        title={getLabel("lbl21")}
+                        icon={<AssignmentOutlinedIcon />}
+                        accent="#991D52"
+                        action={<EditButton onClick={() => handleEdit(2)} />}
+                    >
+                        <FieldGrid fields={enquiryDetails} loading={showSkeleton} />
+                    </ReviewSection>
 
-                                }>
-                                {lineItems.map((item, index) => (
-                                    <PCard key={index} className="mt-3 p-0" title={item.itemTitle}
-                                        color={CommonColors.gray} collapsible
-                                        isOpen={open === index}
-                                        onToggle={() => setOpen((prev) => (prev === index ? null : index))}
-                                        rightAction={
-                                            <PButton
-                                                label="Edit"
-                                                variant="outlined1"
-                                                size="small"
-                                                // startIcon={<EditIcon />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation(), handleEdit(3, item.enquiryId)
-                                                }}
-                                                sx={{
-                                                    color: "#0371D0",
-                                                    minWidth: "auto",
-                                                    padding: "0 12px 0px 0", backgroundColor: "#F4F6FA",
-                                                    "&:hover": {
-                                                        borderColor: "#F4F6FA",
-                                                        backgroundColor: "#F4F6FA"
+                    {/* Line Items */}
+                    <ReviewSection
+                        step={3}
+                        title={getLabel("lbl22")}
+                        count={showSkeleton ? null : lineItems.length}
+                        icon={<Inventory2OutlinedIcon />}
+                        accent="#00916B"
+                        action={<EditButton label="Add item" icon={<AddRoundedIcon sx={{ fontSize: 18 }} />} onClick={() => handleEdit(3)} />}
+                    >
+                        {showSkeleton ? (
+                            <FieldGrid loading />
+                        ) : lineItems.length === 0 ? (
+                            <div className="review-empty">No line items added yet.</div>
+                        ) : (
+                            <div className="review-items">
+                                {lineItems.map((item, index) => {
+                                    const isOpen = open === index;
+                                    return (
+                                        <div className={`review-item ${isOpen ? "is-open" : ""}`} key={index}>
+                                            <div
+                                                className="review-item-head"
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-expanded={isOpen}
+                                                onClick={() => setOpen((prev) => (prev === index ? null : index))}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" || e.key === " ") {
+                                                        e.preventDefault();
+                                                        setOpen((prev) => (prev === index ? null : index));
                                                     }
                                                 }}
+                                            >
+                                                <span className="review-item-badge">{item.itemTitle}</span>
+                                                <span className="review-item-name">{item.itemName || ""}</span>
+                                                <span onClick={(e) => e.stopPropagation()}>
+                                                    <EditButton onClick={() => handleEdit(3, item.enquiryId)} />
+                                                </span>
+                                                <ExpandMoreRoundedIcon className="review-item-chevron" />
+                                            </div>
+                                            {isOpen && (
+                                                <div className="review-item-body">
+                                                    <FieldGrid fields={item.items} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </ReviewSection>
 
-                                            />
-                                        }
-                                    >
-                                        <PGrid container className="g-4 pt-3">
-                                            {item.items.map((field, i) => (
-                                                <PGrid item xs={12} md={6} xl={3} key={i}>
-                                                    <PGrid className="px-3 py-0">
-                                                        <PTypography labelText={field.label} weight={FontWeight.bold} />
-                                                        <PTypography
-                                                            labelText={field.value}
-                                                            color={CommonColors.black}
-                                                            weight={FontWeight.regular}
-                                                            flag={Labels.fontFlags.normalText}
-                                                        />
-                                                    </PGrid>
-                                                </PGrid>
-                                            ))}
-                                        </PGrid>
-                                    </PCard>
+                    {/* Suppliers */}
+                    <ReviewSection
+                        step={4}
+                        title={getLabel("lbl23")}
+                        count={showSkeleton ? null : formDataList.suppliers.length}
+                        icon={<StorefrontOutlinedIcon />}
+                        accent="#512668"
+                        action={<EditButton onClick={() => handleEdit(4)} />}
+                    >
+                        {showSkeleton ? (
+                            <div className="review-suppliers">
+                                {[0, 1, 2].map((i) => <Skeleton key={i} variant="rounded" width={180} height={44} sx={{ borderRadius: "999px" }} />)}
+                            </div>
+                        ) : formDataList.suppliers.length === 0 ? (
+                            <div className="review-empty">No suppliers selected yet.</div>
+                        ) : (
+                            <div className="review-suppliers">
+                                {formDataList.suppliers.map((item, index) => (
+                                    <span className="review-supplier" key={index}>
+                                        <span className="review-supplier-avatar">{initials(item.name)}</span>
+                                        {item.name}
+                                    </span>
                                 ))}
-                            </PCard>
-                        </PGrid>
-                        {/* Suppliers */}
-                        <div style={{ background: "#512668", width: "36px", height: "11px" }}></div>
-                        <PGrid item xs={12} sm={12} md={12} className={Labels.margin.mb5}>
-                            <PCard title={`${getLabel("lbl23")}`}
-                                className="review"
-                                rightAction={<PButton label="Edit" variant="outlined1" size="small"
-                                    onClick={(e) => handleEdit(4)}
-                                    sx={{ color: "#0371D0", borderColor: "#fff", "&:hover": { borderColor: "#fff" } }}
-                                />
-                                }>
-                                <PGrid container className="g-3 pt-3">
+                            </div>
+                        )}
+                    </ReviewSection>
 
-                                    {formDataList.suppliers.map((item, index) => (
-                                        <PGrid item xs={12} md={6} lg={3} key={index}>
-                                            <PTypography
-                                                labelText={item.name}
-                                                color={CommonColors.black}
-                                                weight={FontWeight.regular}
-                                                flag={Labels.fontFlags.normalText}
-                                            />
-                                        </PGrid>
-                                    ))}
-                                </PGrid>
-                            </PCard>
-                        </PGrid>
-
-                        <PGrid container className="d-flex align-items-center justify-content-between">
-                            <PGrid item xs={12} sm={6} md={6}>
-                                <PButton
-                                    label={getLabel("lbl37")}
-                                    variant="outlined"
-                                    onClick={(e) => handleExitDraft(e)}
-                                    width={200}
-
-                                />
-                            </PGrid>
-                            <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
-                                <PButton
-                                    label={getLabel("lbl127")}
-                                    variant="contained"
-                                    color={CommonColors.dark_blue}
-                                    onClick={(e) => handleSubmit(e, true)}
-                                    width={220}
-                                    startIcon={<img src={arrow} alt="arrow" className="icon" />}
-                                />
-                            </PGrid>
-                        </PGrid>
-
-                    </PGrid>
-                </PGrid>
+                    <div className="review-actions">
+                        <PButton
+                            label={getLabel("lbl37")}
+                            variant="outlined"
+                            onClick={(e) => handleExitDraft(e)}
+                            width={200}
+                        />
+                        <PButton
+                            label={getLabel("lbl127")}
+                            variant="contained"
+                            color={CommonColors.dark_blue}
+                            onClick={(e) => handleSubmit(e, true)}
+                            width={220}
+                            startIcon={<img src={arrow} alt="arrow" className="icon" />}
+                        />
+                    </div>
+                </div>
             </Box >
 
             <UpdateLineItems

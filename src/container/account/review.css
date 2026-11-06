@@ -1,0 +1,268 @@
+/* =====================================================================
+   Review step (step 5) – card layout
+   ===================================================================== */
+
+.review-page {
+  --rv-navy: #16133f;
+  --rv-muted: #6b7280;
+  --rv-line: #ece9f3;
+  --rv-tile: #f8f7fb;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Intro banner */
+.review-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(250, 176, 27, 0.16), rgba(250, 176, 27, 0.04));
+  border: 1px solid rgba(250, 176, 27, 0.35);
+  color: var(--rv-navy);
+}
+.review-intro-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fab01b;
+  color: var(--rv-navy);
+}
+.review-intro strong {
+  display: block;
+  font-size: 16px;
+}
+.review-intro span {
+  font-size: 14px;
+  color: #4b5063;
+}
+
+/* Section card */
+.review-section {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--rv-line);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(22, 19, 63, 0.05);
+  overflow: hidden;
+}
+.review-section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--accent, #cf7729);
+}
+.review-section-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--rv-line);
+}
+.review-section-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent, #cf7729);
+  background: color-mix(in srgb, var(--accent, #cf7729) 12%, #fff);
+}
+.review-section-titles {
+  flex: 1;
+  min-width: 0;
+}
+.review-section-step {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #cf7729);
+}
+.review-section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--rv-navy);
+  line-height: 1.25;
+}
+.review-section-count {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rv-muted);
+}
+.review-section-body {
+  padding: 18px 22px 22px;
+}
+
+/* Edit / Add buttons */
+.review-page .review-edit-btn {
+  flex-shrink: 0;
+  text-transform: none;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 999px;
+  padding: 4px 14px;
+  color: #2d2f75;
+  border: 1px solid rgba(45, 47, 117, 0.35);
+  background: #fff;
+}
+.review-page .review-edit-btn:hover {
+  background: #2d2f75;
+  border-color: #2d2f75;
+  color: #fff;
+}
+
+/* Field tiles */
+.review-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.review-field {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--rv-tile);
+  border: 1px solid #f0eef5;
+  min-width: 0;
+}
+.review-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rv-muted);
+  margin-bottom: 3px;
+}
+.review-field-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--rv-navy);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.review-field-value.is-empty {
+  color: #b3b6c2;
+  font-weight: 400;
+}
+
+/* Line items (collapsible) */
+.review-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.review-item {
+  border: 1px solid var(--rv-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.review-item-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #faf9fc;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--rv-navy);
+}
+.review-item-head:hover {
+  background: #f4f2f9;
+  border-color: transparent;
+}
+.review-item.is-open .review-item-head {
+  border-bottom: 1px solid var(--rv-line);
+}
+.review-item-badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 145, 107, 0.12);
+  color: #00916b;
+}
+.review-item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-item-chevron {
+  color: var(--rv-muted);
+  transition: transform 0.2s ease;
+}
+.review-item.is-open .review-item-chevron {
+  transform: rotate(180deg);
+}
+.review-item-body {
+  padding: 16px;
+  background: #fff;
+}
+
+/* Suppliers */
+.review-suppliers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.review-supplier {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 999px;
+  background: var(--rv-tile);
+  border: 1px solid #ebe8f2;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rv-navy);
+}
+.review-supplier-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: #512668;
+}
+
+.review-empty {
+  font-size: 14px;
+  color: var(--rv-muted);
+  font-style: italic;
+}
+
+/* Footer actions */
+.review-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}

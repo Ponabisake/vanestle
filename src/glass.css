@@ -13,7 +13,7 @@
 :root {
   --glass-blur: 16px;
   --glass-saturate: 160%;
-  --glass-white: rgba(255, 255, 255, 0.78);
+  --glass-white: rgba(255, 255, 255, 0.94); /* menus/lists: mostly opaque so text over tables stays readable */
   --glass-edge: rgba(255, 255, 255, 0.6);
   --glass-edge-soft: rgba(255, 255, 255, 0.35);
   --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -121,14 +121,20 @@
   body .MuiPaper-root.MuiMenu-paper,
   body .MuiPaper-root.MuiAutocomplete-paper,
   body .MuiPaper-root.MuiPickersPopper-paper,
-  body .MuiPickersPopper-root .MuiPaper-root,
-  body .MuiDialog-paper.MuiPaper-root {
+  body .MuiPickersPopper-root .MuiPaper-root {
     background-color: var(--glass-white);
     background-image: var(--glass-sheen);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     border: 1px solid var(--glass-edge);
     box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+  }
+
+  /* Dialogs stay solid white for readability – only the page behind is blurred */
+  body .MuiDialog-paper.MuiPaper-root {
+    background-color: #fff;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(22, 19, 63, 0.22);
   }
 
   /* Dialog overlay keeps its colour, just blurs the page behind it */

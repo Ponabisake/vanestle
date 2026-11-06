@@ -15,7 +15,7 @@ import { ClientInfo_API, Dashboard_API, EnquiryDetails_API, LineItems_API, Suppl
 import { formatDate, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast } from "../../utils/commonFunction/common";
 import { PSummary } from "../../component/PSummary/PSummary";
 import PTable from "../../component/PTable/PTable";
-import { GetApi, PostApi } from "../../utils/api/networking";
+import { PostApi } from "../../utils/api/networking";
 import PTextField from "../../component/PTextField/PTextField";
 import PDatepicker from "../../component/PDatepicker/PDatepicker";
 import PDialog from "../../component/PDialog/PDialog";
@@ -245,7 +245,6 @@ const ProjectEnquiry = () => {
                 Country: country
             });
 
-            //const projectQuotes = await GetApi(`${ProjectEnquiry_API.GetClientQuotes}?enqId=${id}`);
 
             const revisedQuotes = [...new Map(projectResponse.revisedQuotes.map(x => [x.itemNumber, x])).values()]
                 .map(x => ({
@@ -308,8 +307,7 @@ const ProjectEnquiry = () => {
                 deliveryOrder: projectResponse.deliveryOrder,
                 status: projectResponse.projectStatus,
                 previewSupplierQuotes: previewQuotes,
-                materialUsed: enqResponse.materialUsed,
-                //projectQuotes: projectQuotes.items
+                materialUsed: enqResponse.materialUsed
             }));
             setFormData(prev => ({
                 ...prev,
@@ -324,6 +322,7 @@ const ProjectEnquiry = () => {
                 isSpot: response.spotNeeded,
                 isProject: response.isprojectsavings
             }));
+
             await clientInfoMaster(response.enqClientinfo.divisionid);
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -1223,7 +1222,7 @@ const ProjectEnquiry = () => {
     });
     const supplierQuotes = [
         { field: "itemName", header: "Item Name" },
-        { field: "initialQuote", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("initialQuote")) },
+        { field: "initialQuote", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("initialQuote"))},
         { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")) },
     ]
 

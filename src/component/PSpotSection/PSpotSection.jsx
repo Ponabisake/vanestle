@@ -23,6 +23,7 @@ import PTextField from "../PTextField/PTextField";
 import PDropdown from "../PDropdown/PDropdown";
 import { getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import PDialog from "../PDialog/PDialog";
+import ImpactSummary from "./ImpactSummary";
 import { ProjectEnquiry_API, Spot_API } from "../../utils/api/apiUrl";
 import { useLocation } from "react-router-dom";
 import { GetApi, PostApi } from "../../utils/api/networking";
@@ -881,50 +882,7 @@ const PSpotSection = ({ response }) => {
                 title={formDataList.impactDetails?.title}
                 maxWidth="md"
             >
-                {(formDataList.impactDetails?.lines ?? []).length > 0 ? (
-                    formDataList.impactDetails.lines.map((line, index) => (
-                        <Box key={index} sx={{ mb: 2 }}>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                                <PTypography
-                                    labelText={line.title}
-                                    weight={FontWeight.bold}
-                                    flag={Labels.fontFlags.xs}
-                                    sx={{ lineHeight: 1.8, mb: 2 }}
-                                />
-
-                                <PTypography
-                                    labelText={line.environmental}
-                                    color={CommonColors.grey.main}
-                                    flag={Labels.fontFlags.normalText}
-                                    //weight={FontWeight.bold}
-                                    sx={{ lineHeight: 1.8, fontStyle: "normal" }}
-                                />
-
-                                <PTypography
-                                    labelText={line.comparative}
-                                    color={CommonColors.grey.main}
-                                    flag={Labels.fontFlags.normalText}
-                                    //weight={FontWeight.bold}
-                                   sx={{ lineHeight: 1.8, fontStyle: "normal" }}
-                                />
-
-                                <PTypography
-                                    labelText={line.saving}
-                                    color={getCompareColor(line.color)}
-                                    weight={FontWeight.bold}
-                                    flag={Labels.fontFlags.normalText}
-                                    sx={{ lineHeight: 1.8, fontStyle: "italic" }}
-                                />
-                            </Box>
-                        </Box>
-                    ))
-                ) : (
-                    <PTypography
-                        labelText="No data available"
-                        color={CommonColors.grey.main}
-                        flag={Labels.fontFlags.smallText}
-                    />
-                )}
+                <ImpactSummary lines={formDataList.impactDetails?.lines ?? []} />
             </PDialog >
 
             {/* reason dialog */}
