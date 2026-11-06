@@ -20,6 +20,7 @@ const LineItems = lazy(() => import("../container/account/lineItems"));
 const Suppliers = lazy(() => import("../container/account/suppliers"));
 const Review = lazy(() => import("../container/account/review"));
 const Report = lazy(() => import("../container/report/Report"));
+const VaReports = lazy(() => import("../container/vaReports/VaReports"));
 const EnquirySuccess = lazy(() => import("../container/account/enquirySuccess"))
 const ProjectEnquiry = lazy(() => import("../container/account/projectEnquiry"))
 const PerformanceSurvey = lazy(() => import("../container/account/performanceSurvey"))
@@ -37,6 +38,7 @@ function AppRoutes() {
             <Route path={labelRoutes.vaDashboard} element={<VaDashboard />} />
             <Route path={labelRoutes.dashboard} element={< Dashboard />} />
             <Route path={labelRoutes.report} element={<Report />} />
+            <Route path={labelRoutes.vaReports} element={<VaReports />} />
             <Route path={labelRoutes.clientInfo} element={<ClientInfo />} />
             <Route path={labelRoutes.enquiryDetails} element={<EnquiryDetails />} />
             <Route path={labelRoutes.lineItems} element={<LineItems />} />

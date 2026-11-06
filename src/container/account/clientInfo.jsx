@@ -9,7 +9,7 @@ import { FontWeight } from "../../utils/constants/fonts";
 import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
-import { allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast } from "../../utils/commonFunction/common"
+import { allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common"
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate } from "react-router-dom";
@@ -326,15 +326,15 @@ const ClientInfo = () => {
                 if (isSuccess(response)) {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
-                    setTimeout(() => {
-                        navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.dashboard);
-                    }, 500);
                     dispatch({
                         type: userDetails,
                         payload: {
                             id: response.data.enqId,
                         },
                     });
+                    // keep the button spinner until we leave the page
+                    await new Promise((r) => setTimeout(r, 500));
+                    navigate(submit ? labelRoutes.enquiryDetails : labelRoutes.dashboard);
                 } else {
                     setErrors((prev) => ({
                         ...prev,
@@ -373,6 +373,7 @@ const ClientInfo = () => {
         });
 
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -391,6 +392,7 @@ const ClientInfo = () => {
             }
         });
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -405,6 +407,7 @@ const ClientInfo = () => {
             }
         });
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 

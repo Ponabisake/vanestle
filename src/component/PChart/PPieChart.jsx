@@ -1,5 +1,9 @@
 import React, { useMemo } from "react";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, Label } from "recharts";
+
+// ring centre as a fraction of the plot area – shared by <Pie> and the centre "Total" label
+const PIE_CX = 0.5;
+const PIE_CY = 0.6;
 
 const PPieChart = ({ data = [], onSliceClick }) => {
   const consolidatedData = useMemo(() => {
@@ -76,8 +80,8 @@ const PPieChart = ({ data = [], onSliceClick }) => {
             outerRadius={120}
             paddingAngle={5}
             cornerRadius={4}
-            cx="50%"
-            cy="60%"
+            cx={`${PIE_CX * 100}%`}
+            cy={`${PIE_CY * 100}%`}
             startAngle={80}
             endAngle={450}
             labelLine={true}
@@ -89,17 +93,29 @@ const PPieChart = ({ data = [], onSliceClick }) => {
                 fill={colorMap[index % colorMap.length]}
               />
             ))}
+            {/* total sits at the ring's own centre (cx/cy), wherever the legend pushes the ring */}
+            <Label
+              position="center"
+              content={({ viewBox }) => {
+                // Pie gives its Label the plot area (x/y/width/height); the ring centre is at
+                // the same PIE_CX / PIE_CY fractions of it that the <Pie> itself uses.
+                const vb = viewBox || {};
+                const cx = vb.cx ?? (vb.x != null ? vb.x + vb.width * PIE_CX : null);
+                const cy = vb.cy ?? (vb.y != null ? vb.y + vb.height * PIE_CY : null);
+                if (cx == null || cy == null) return null;
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" pointerEvents="none">
+                    <tspan x={cx} dy="0.1em" fontSize={String(total).length > 3 ? 22 : 28} fontWeight="bold" fill="#171717">
+                      {total}
+                    </tspan>
+                    <tspan x={cx} dy="1.4em" fontSize="14" fill="#171717">
+                      Total
+                    </tspan>
+                  </text>
+                );
+              }}
+            />
           </Pie>
-
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" pointerEvents="none">
-            <tspan x="50%" dy="-8" fontSize={String(total).length > 3 ? 22 : 28} fontWeight="bold" fill="#171717">
-              {total}
-            </tspan>
-
-            <tspan x="50%" dy="24" fontSize="14" fill="#171717">
-              Total
-            </tspan>
-          </text>
 
           <Tooltip content={<CustomTooltip />} />
 

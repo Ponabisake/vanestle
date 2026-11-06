@@ -11,7 +11,7 @@ import { CommonColors } from "../../utils/constants/colors";
 import PDialog from "../../component/PDialog/PDialog";
 import { FontWeight } from "../../utils/constants/fonts";
 import arrow from "../../utils/assets/images/arrow_white.svg";
-import { validatePassword, validateName, isSuccess } from "../../utils/commonFunction/common";
+import { validatePassword, validateName, isSuccess, notifyValidation } from "../../utils/commonFunction/common";
 import { userDetails, clearUserDetails } from "../../redux/actionType/actionType";
 import { connect } from "react-redux";
 import { AppNavigation } from "../../navigations/appNavigation";
@@ -214,6 +214,7 @@ function Login(props) {
     });
 
     setErrors(newErrors);
+    notifyValidation(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
@@ -233,6 +234,7 @@ function Login(props) {
     });
 
     setErrors(newErrors);
+    notifyValidation(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 

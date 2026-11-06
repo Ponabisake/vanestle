@@ -173,9 +173,9 @@ const Suppliers = () => {
             if (isSuccess(response)) {
                 setAllowRedirect(true);
                 toast(Labels.status.success, response.data.message);
-                setTimeout(() => {
-                    navigate(flag ? labelRoutes.review : labelRoutes.dashboard);
-                }, 500);
+                // keep the button spinner until we leave the page
+                await new Promise((r) => setTimeout(r, 500));
+                navigate(flag ? labelRoutes.review : labelRoutes.dashboard);
             } else {
                 toast(Labels.status.failure, response.data.message);
             }

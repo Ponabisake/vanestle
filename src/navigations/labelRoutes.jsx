@@ -4,6 +4,7 @@ export const labelRoutes = {
   vaDashboard: "/vaDashboard",
   dashboard: "/dashboard",
   report: "/Report",
+  vaReports: "/vaReports",
 
   // Enquiry Pages
   clientInfo: "/clientInfo",

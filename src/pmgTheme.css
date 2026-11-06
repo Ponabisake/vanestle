@@ -1,0 +1,118 @@
+/* =====================================================================
+   PMG THEME
+   ---------------------------------------------------------------------
+   Colours taken from the PMG logo (utils/assets/images/pmglogo.svg):
+     gold #FAB01B · orange #CF7729 · red #ED3B25 · green #00916B
+     berry #991D52 · purple #512668 · indigo #2D2F75 · navy #16133F
+   Works together with glass.css (frosted surfaces).
+   ===================================================================== */
+
+:root {
+  --pmg-gold: #fab01b;
+  --pmg-gold-dark: #e89c00;
+  --pmg-gold-soft: rgba(250, 176, 27, 0.16);
+  --pmg-gold-softer: rgba(250, 176, 27, 0.08);
+  --pmg-orange: #cf7729;
+  --pmg-purple: #512668;
+  --pmg-indigo: #2d2f75;
+  --pmg-navy: #16133f;
+
+  /* soft "mesh" of logo colours on a warm off-white base */
+  --pmg-app-bg:
+    radial-gradient(1100px 620px at -5% -10%, rgba(250, 176, 27, 0.30), transparent 62%),
+    radial-gradient(900px 620px at 105% -5%, rgba(81, 38, 104, 0.22), transparent 60%),
+    radial-gradient(1000px 700px at 100% 105%, rgba(207, 119, 41, 0.22), transparent 62%),
+    radial-gradient(900px 640px at -5% 105%, rgba(45, 47, 117, 0.20), transparent 60%),
+    radial-gradient(700px 500px at 50% 50%, rgba(153, 29, 82, 0.06), transparent 70%),
+    #f7f4fa;
+}
+
+/* ---------------------------------------------------------------------
+   1. Background – whole app (the landing page keeps its own photo)
+   --------------------------------------------------------------------- */
+body {
+  background: var(--pmg-app-bg) fixed;
+}
+.app-container:not(.bg) {
+  background: var(--pmg-app-bg);
+}
+
+/* Top bar: one full-width frosted-glass band (the AppBar itself sits inside a
+   padded Container, so the glass goes on its full-width wrapper instead) */
+.app-container:not(.bg) > div:first-child {
+  background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 1px 0 rgba(22, 19, 63, 0.06), 0 6px 24px rgba(22, 19, 63, 0.04);
+  position: relative;
+  z-index: 2;
+}
+.app-container:not(.bg) header.MuiAppBar-root {
+  background-color: transparent !important;
+}
+
+/* Cards: translucent white so the background shows through the frost */
+.pcard-container:not(.review) {
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+/* ---------------------------------------------------------------------
+   4. Dropdowns – hover / selected option in PMG gold (all MUI lists)
+   --------------------------------------------------------------------- */
+.MuiAutocomplete-popper .MuiAutocomplete-option.Mui-focused,
+.MuiMenu-paper .MuiMenuItem-root:hover {
+  background-color: var(--pmg-gold-soft) !important;
+}
+.MuiAutocomplete-popper .MuiAutocomplete-option[aria-selected="true"],
+.MuiMenu-paper .MuiMenuItem-root.Mui-selected {
+  background-color: var(--pmg-gold) !important;
+  color: var(--pmg-navy);
+  font-weight: 600;
+}
+.MuiAutocomplete-popper .MuiAutocomplete-option[aria-selected="true"].Mui-focused,
+.MuiMenu-paper .MuiMenuItem-root.Mui-selected:hover {
+  background-color: var(--pmg-gold-dark) !important;
+}
+
+/* Dropdown lists render outside the fit-to-screen zoomed #root, so scale their
+   content to match the page (width is matched to the field in PDropdown.jsx). */
+.pdropdown-popper .MuiAutocomplete-paper,
+.pdropdown-menu .MuiMenu-list {
+  zoom: var(--app-zoom, 1);
+}
+
+/* ---------------------------------------------------------------------
+   6. Date picker (flatpickr) – PMG gold hover / selected / today
+   --------------------------------------------------------------------- */
+.flatpickr-calendar .flatpickr-day:not(.flatpickr-disabled):not(.selected):hover,
+.flatpickr-calendar .flatpickr-day:not(.flatpickr-disabled):not(.selected):focus,
+.flatpickr-calendar .flatpickr-day.inRange {
+  background: var(--pmg-gold-soft);
+  border-color: var(--pmg-gold-soft);
+  color: var(--pmg-navy);
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.selected:hover,
+.flatpickr-calendar .flatpickr-day.selected:focus,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange {
+  background: var(--pmg-gold);
+  border-color: var(--pmg-gold);
+  color: var(--pmg-navy);
+  font-weight: 600;
+}
+.flatpickr-calendar .flatpickr-day.today:not(.selected) {
+  border-color: var(--pmg-gold);
+}
+.flatpickr-calendar .flatpickr-day.today:not(.selected):hover {
+  background: var(--pmg-gold-soft);
+  border-color: var(--pmg-gold);
+  color: var(--pmg-navy);
+}
+.flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover svg {
+  fill: var(--pmg-gold-dark);
+}

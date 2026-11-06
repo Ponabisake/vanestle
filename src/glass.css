@@ -1,0 +1,170 @@
+/* =====================================================================
+   GLASS EFFECT LAYER
+   ---------------------------------------------------------------------
+   Purely visual. Adds frosted blur, light edges and a soft sheen to
+   existing surfaces.
+   - No brand / palette colour values are changed. Only neutral white
+     and black alpha tints are used for highlights and shadows.
+   - White surfaces stay white, just slightly see-through so the blur
+     can show what's behind them.
+   - Delete this file (and its import in App.jsx) to remove the effect.
+   ===================================================================== */
+
+:root {
+  --glass-blur: 16px;
+  --glass-saturate: 160%;
+  --glass-white: rgba(255, 255, 255, 0.78);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-edge-soft: rgba(255, 255, 255, 0.35);
+  --glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --glass-shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.12);
+  --glass-sheen: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.08) 38%,
+    rgba(255, 255, 255, 0) 60%
+  );
+}
+
+/* ---------------------------------------------------------------------
+   1. Content cards (PCard) – sheen + light edge + soft shadow.
+      Background colour is untouched; the sheen is an image layer on top.
+   --------------------------------------------------------------------- */
+.pcard-container:not(.review) {
+  background-image: var(--glass-sheen);
+  border: 1px solid var(--glass-edge-soft);
+  box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+}
+
+/* ---------------------------------------------------------------------
+   2. Dashboard status cards (PDashboardCard / PDashboardList).
+      The card's own colour (inline bgColor) stays as background-color;
+      the sheen is layered over it as background-image.
+   --------------------------------------------------------------------- */
+/* Not on the VA landing page (.app-container.bg) – it has its own photo background */
+.app-container:not(.bg) .dashboard-card {
+  background-image: var(--glass-sheen) !important;
+  box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+  border: 1px solid var(--glass-edge-soft);
+  backdrop-filter: blur(8px) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(8px) saturate(var(--glass-saturate));
+}
+.app-container:not(.bg) .dashboard-card:hover {
+  box-shadow: var(--glass-shadow-hover), var(--glass-inner-highlight);
+}
+
+/* Landing-page tiles (old .card style in vaDashboard.css) */
+.card-container .card {
+  background-image: var(--glass-sheen);
+  border: 1px solid var(--glass-edge-soft);
+}
+
+/* ---------------------------------------------------------------------
+   3. Tables – soft glass frame around the PTable paper (no row changes).
+   --------------------------------------------------------------------- */
+.page-content .MuiPaper-root:has(> .MuiTableContainer-root) {
+  box-shadow: var(--glass-shadow), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ---------------------------------------------------------------------
+   4. Contained buttons – glossy top highlight via ::after.
+      (Outlined buttons already use ::before for their hover wipe.)
+   --------------------------------------------------------------------- */
+.MuiButton-contained:not(.Mui-disabled) {
+  position: relative;
+  overflow: hidden;
+}
+.MuiButton-contained:not(.Mui-disabled)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0) 51%
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+/* VA landing page keeps plain, flat buttons */
+.app-container.bg .MuiButton-contained::after {
+  content: none;
+}
+
+/* ---------------------------------------------------------------------
+   5. Login box – already semi-transparent; add the frost.
+   --------------------------------------------------------------------- */
+.login-box {
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+  border-radius: 12px;
+}
+
+/* ---------------------------------------------------------------------
+   6. (removed) The VA landing page header stays plain and transparent over
+      its photo – the glass top bar is applied to the other pages in pmgTheme.css.
+   --------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------
+   7. Floating surfaces – menus, dropdown lists, date pickers, dialogs,
+      toasts. These sit above page content, so the frost is visible.
+      Only applied where the browser supports backdrop-filter; otherwise
+      they stay solid white exactly as before.
+   --------------------------------------------------------------------- */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body .MuiPaper-root.MuiPopover-paper,
+  body .MuiPaper-root.MuiMenu-paper,
+  body .MuiPaper-root.MuiAutocomplete-paper,
+  body .MuiPaper-root.MuiPickersPopper-paper,
+  body .MuiPickersPopper-root .MuiPaper-root,
+  body .MuiDialog-paper.MuiPaper-root {
+    background-color: var(--glass-white);
+    background-image: var(--glass-sheen);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+  }
+
+  /* Dialog overlay keeps its colour, just blurs the page behind it */
+  body .MuiDialog-root .MuiBackdrop-root:not(.MuiBackdrop-invisible) {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Toast alerts keep their status colour; add frost + edge */
+  body .MuiSnackbar-root .MuiAlert-root {
+    background-image: var(--glass-sheen);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-edge-soft);
+    box-shadow: var(--glass-shadow), var(--glass-inner-highlight);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   8. Accessibility – honour users who ask for less transparency.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-transparency: reduce) {
+  body .MuiPaper-root.MuiPopover-paper,
+  body .MuiPaper-root.MuiMenu-paper,
+  body .MuiPaper-root.MuiAutocomplete-paper,
+  body .MuiPaper-root.MuiPickersPopper-paper,
+  body .MuiPickersPopper-root .MuiPaper-root,
+  body .MuiDialog-paper.MuiPaper-root {
+    background-color: #fff;
+  }
+  .dashboard-card,
+  .login-box,
+  .app-container.bg header.MuiAppBar-root,
+  body .MuiDialog-root .MuiBackdrop-root,
+  body .MuiSnackbar-root .MuiAlert-root {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

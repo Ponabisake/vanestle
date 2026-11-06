@@ -10,7 +10,7 @@ import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import PTextField from "../../component/PTextField/PTextField";
-import { allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isSuccess, toast } from "../../utils/commonFunction/common";
+import { allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate } from "react-router-dom";
@@ -477,13 +477,15 @@ const LineItems = () => {
                     setAllowRedirect(true);
                     const route = flag === true ? labelRoutes.suppliers : flag === false ? labelRoutes.lineItems : labelRoutes.dashboard;
                     toast(Labels.status.success, response.data.message);
-                    setTimeout(() => {
-                        navigate(route);
-                    }, 500);
                     if (!flag) {
+                        setTimeout(() => navigate(route), 500);
                         await handleCancel();
                         await fetchData();
-                    };
+                    } else {
+                        // keep the button spinner until we leave the page
+                        await new Promise((r) => setTimeout(r, 500));
+                        navigate(route);
+                    }
                 } else {
                     setErrors((prev) => ({
                         ...prev,
@@ -601,6 +603,7 @@ const LineItems = () => {
         });
 
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 

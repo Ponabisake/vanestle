@@ -66,6 +66,10 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
       name: getLabel("lbl150"),
       route: labelRoutes.report,
       menuId: menuId,
+    }, {
+      name: "VA Reports",
+      route: labelRoutes.vaReports,
+      menuId: menuId,
     }]
       : []
     ),

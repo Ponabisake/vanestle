@@ -3,6 +3,7 @@
   display:flex;
   flex-direction:column;
   height:100vh;
+  height:var(--app-height, 100vh); /* 100vh in the fit-to-screen zoomed space */
   width:100%;
   background:#fff;
   overflow:hidden;
@@ -271,6 +272,14 @@
 }
 .select-btn.has-icon:hover {
   gap: 8px;
+}
+
+/* Loading (PButton is-busy): outlined buttons keep the navy fill so the white spinner stays visible */
+.outlined-btn.is-busy::before {
+  left: 0;
+}
+.outlined-btn.is-busy {
+  color: #fff !important;
 }
 
 .outlined-btn {

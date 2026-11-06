@@ -18,7 +18,7 @@ import PRadio from "../../component/PRadio/PRadio";
 const PerformanceSurvey = () => {
 const { getLabel } = useLanguage();
 const { userID, userType, role, countryID } = useSelector((state) => state.userDetails.user);
-const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(false);
 const [formData, setFormData] = useState({
         responsive: "",
         accuracy: "",

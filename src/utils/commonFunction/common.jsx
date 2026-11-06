@@ -105,6 +105,24 @@ export const toast = (status, message) => {
 };
 
 /**
+ * Tell the user (toast) when a form fails validation.
+ * Call with the errors object a validation function builds, e.g. { userName: "Required" }.
+ * Returns true when there are no errors.
+ */
+export const notifyValidation = (errors = {}) => {
+  const messages = Object.values(errors).filter(Boolean);
+  if (!messages.length) return true;
+  const requiredCount = messages.filter((m) => m === Labels.commonLabel.required).length;
+  const message = requiredCount === messages.length
+    ? requiredCount === 1
+      ? "A required field is missing. Please fill in the field highlighted in red."
+      : `${requiredCount} required fields are missing. Please fill in the fields highlighted in red.`
+    : "Please check the fields highlighted in red.";
+  toast(Labels.status.failure, message);
+  return false;
+};
+
+/**
  * Export JSON data to Excel
  * @param {Array} data - Array of objects to export
  * @param {String} fileName - Name of the Excel file (without extension)

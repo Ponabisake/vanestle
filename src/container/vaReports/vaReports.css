@@ -1,0 +1,257 @@
+/* VA Reports – uses the existing dashboard tokens (navy #16133F, indigo #2D2F75, orange #CF7729,
+   amber #FAB01B, cream #fab01b1a, zebra #F4F6FA). Light theme only, like the rest of the app. */
+
+.va-reports {
+  --va-navy: #16133F;
+  --va-indigo: #2D2F75;
+  --va-orange: #CF7729;
+  --va-amber: #FAB01B;
+  --va-cream: #fab01b1a;
+  --va-zebra: #F4F6FA;
+  --va-border: #e6e4ee;
+  --va-text: #171717;
+  --va-muted: #52514e;
+  --va-radius: 10px;
+  padding: 24px 0 8px;
+  color: var(--va-text);
+}
+
+.va-pagehead { margin-bottom: 16px; }
+.va-pagesub { margin: 6px 0 0; color: var(--va-muted); font-size: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.va-badge {
+  font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 3px 10px; border-radius: 99px;
+  background: var(--va-cream); color: #8a4d12; border: 1px solid #f3d38d;
+}
+.va-denied p { margin-top: 12px; }
+
+/* ---------------------------------------------------------------- filter bar (sticky) */
+.va-filterbar {
+  position: sticky; top: 0; z-index: 30;
+  background: #fff;
+  border: 1px solid var(--va-border);
+  border-radius: var(--va-radius);
+  padding: 14px 16px 10px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 16px -12px rgba(22, 19, 63, .35);
+}
+.va-filterhead { display: flex; align-items: center; gap: 10px; }
+.va-reports .va-filtertoggle {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border-radius: 8px;
+  background: #fff; border: 1px solid var(--va-indigo); color: var(--va-indigo);
+  font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .2s, color .2s;
+}
+.va-reports .va-filtertoggle:hover { background: var(--va-indigo); color: #fff; border-color: var(--va-indigo); }
+.va-reports .va-filtertoggle:focus-visible { outline: 2px solid var(--va-indigo); outline-offset: 2px; }
+.va-filtercount {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--va-orange); color: #fff;
+  font-size: 12px; line-height: 20px; text-align: center;
+}
+.va-filterchevron { transition: transform .2s ease; }
+.va-filterbar.is-open .va-filterchevron { transform: rotate(180deg); }
+.va-filterhint { font-size: 13px; color: var(--va-muted); }
+.va-filterbar.is-open .va-filters { margin-top: 12px; }
+.va-filterbar.is-closed { padding-bottom: 12px; }
+
+.va-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px 14px;
+  align-items: end;
+}
+.va-filter { min-width: 0; }
+.va-filter .MuiTypography-root { font-size: 14px !important; margin-bottom: 4px !important; color: var(--va-muted) !important; }
+.va-filter .MuiAutocomplete-root .MuiOutlinedInput-root { min-height: 50px; padding-top: 4px; padding-bottom: 4px; border-radius: 12px !important; }
+.va-filter .MuiAutocomplete-root .MuiOutlinedInput-root .MuiAutocomplete-input { font-size: 15px; }
+.va-filter-date .flatpickr-calendar { z-index: 40; }
+.va-filter-reset button { width: 100%; }
+
+.va-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; min-height: 30px; }
+.va-chip.MuiChip-root { background: var(--va-cream); border: 1px solid #f3d38d; color: var(--va-navy); font-weight: 500; }
+.va-chip .MuiChip-deleteIcon { color: var(--va-orange); }
+.va-chips-empty { color: var(--va-muted); font-size: 14px; }
+.va-share { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+
+.va-linkbtn {
+  background: none !important; border: 0; padding: 2px 4px; font: inherit; font-size: 14px; font-weight: 600;
+  color: var(--va-indigo); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px;
+}
+.va-linkbtn:hover { color: var(--va-navy); }
+.va-linkbtn:focus-visible, .va-legend-btn:focus-visible, .va-cell:focus-visible, .va-clickable:focus-visible {
+  outline: 2px solid var(--va-indigo); outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- KPI strip */
+.va-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.va-kpi {
+  background: var(--va-cream);
+  border-radius: 6px;
+  padding: 16px 18px 14px;
+  min-height: 118px;
+  display: flex; flex-direction: column; gap: 4px;
+  position: relative;
+}
+.va-kpi::after { content: ""; position: absolute; left: 18px; bottom: 0; width: 36px; height: 6px; background: var(--va-orange); }
+.va-kpi-hero { background: var(--va-amber); }
+.va-kpi-hero::after { background: #ED3B25; }
+.va-kpi-label { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--va-text); }
+.va-kpi-label svg { color: var(--va-muted); cursor: help; }
+.va-kpi-value { font-size: 34px; line-height: 1.15; font-weight: 400; color: #000; font-variant-numeric: tabular-nums; }
+.va-kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 600; flex-wrap: wrap; }
+.va-kpi-delta .muted, .va-kpi-delta.muted { color: var(--va-muted); font-weight: 400; }
+.va-kpi-hero .va-kpi-delta .muted, .va-kpi-hero .va-kpi-delta.muted { color: #3b3a36; }
+
+/* ---------------------------------------------------------------- widget grid: 3 / 2 / 1 columns */
+.va-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.va-widget {
+  background: #fff;
+  border: 1px solid var(--va-border);
+  border-radius: var(--va-radius);
+  padding: 16px 18px 14px;
+  min-width: 0;
+  display: flex; flex-direction: column;
+}
+.va-widget.span-2 { grid-column: span 2; }
+.va-widget-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.va-widget-titles { min-width: 0; }
+.va-widget-titles h3 { margin: 0; font-size: 17px; font-weight: 600; color: var(--va-navy); line-height: 1.3; }
+.va-widget-titles p { margin: 2px 0 0; font-size: 13px; color: var(--va-muted); }
+.va-widget-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.va-widget-actions .MuiIconButton-root { color: var(--va-indigo); border-radius: 8px; padding: 6px; }
+.va-viewtoggle .MuiToggleButton-root { padding: 4px 7px; color: var(--va-indigo); border-color: #d5d4e3; }
+.va-viewtoggle .MuiToggleButton-root.Mui-selected { background: var(--va-indigo) !important; color: #fff !important; }
+.va-widget-controls { margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.va-widget-body { flex: 1; min-width: 0; }
+.va-hint { margin: 8px 0 0; font-size: 12px; color: var(--va-muted); }
+
+.va-seg .MuiToggleButton-root { text-transform: none; padding: 3px 12px; font-size: 13px; font-weight: 600; color: var(--va-indigo); border-color: #d5d4e3; }
+.va-seg .MuiToggleButton-root.Mui-selected { background: var(--va-indigo) !important; color: #fff !important; }
+
+/* buttons inside charts must not inherit the global index.css button style */
+.va-reports .va-legend-btn, .va-reports .va-cell { border-radius: 4px; }
+
+/* states */
+.va-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px;
+  color: var(--va-muted); background: #fafafc; border: 1px dashed #dedcea; border-radius: 8px; padding: 16px;
+}
+.va-state svg { font-size: 30px; color: #9b99b5; }
+.va-state p { margin: 4px 0 0; font-size: 14px; color: var(--va-text); }
+.va-state small { font-size: 12px; }
+.va-state-error svg { color: #B3261E; }
+
+/* charts */
+.va-chart { min-width: 0; }
+.va-chart .recharts-wrapper, .va-chart svg { outline: none; }
+.va-barlabel { fill: var(--va-muted); font-size: 12px; }
+.va-tooltip {
+  background: #fff; border: 1px solid var(--va-border); border-radius: 8px; padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(22, 19, 63, .14); font-size: 13px; min-width: 160px; max-width: 280px;
+}
+.va-tooltip-title { font-weight: 600; margin-bottom: 4px; color: var(--va-navy); }
+.va-tooltip-row { display: flex; align-items: center; gap: 6px; }
+.va-tooltip-name { color: var(--va-muted); flex: 1; }
+.va-tooltip-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+.va-tooltip-pct { font-weight: 400; color: var(--va-muted); }
+.va-tooltip-extra { margin-top: 4px; color: var(--va-muted); font-size: 12px; }
+.va-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+
+.va-legend { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--va-muted); }
+.va-legend li { display: flex; align-items: center; gap: 6px; transition: opacity .15s; }
+.va-reports .va-legend-btn {
+  display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 2px 4px;
+  font: inherit; color: inherit; cursor: pointer;
+}
+.va-legend-value { color: var(--va-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.va-donut { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.va-donut-chart { position: relative; min-width: 0; }
+.va-donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.va-donut-center strong { font-size: 26px; font-weight: 600; color: var(--va-navy); }
+.va-donut-center span { font-size: 12px; color: var(--va-muted); }
+.va-donut .va-legend { flex-direction: column; flex-wrap: nowrap; gap: 4px; }
+
+.va-statrow { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.va-stat { background: var(--va-cream); border-radius: 6px; padding: 8px 12px; min-width: 110px; flex: 1; }
+.va-stat-value { font-size: 20px; font-weight: 600; color: var(--va-navy); font-variant-numeric: tabular-nums; }
+.va-stat-label { font-size: 12px; color: var(--va-muted); }
+
+.va-crumbs { font-size: 14px; }
+.va-crumbs [aria-current] { font-weight: 600; color: var(--va-navy); }
+
+/* heatmap */
+.va-heatmap-wrap { overflow-x: auto; }
+.va-heatmap { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 13px; }
+.va-heatmap th { font-weight: 600; color: var(--va-muted); text-align: center; padding: 4px 6px; font-size: 12px; line-height: 1.2; }
+.va-heatmap tbody th { text-align: left; color: var(--va-text); font-weight: 500; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.va-heatmap td { padding: 0; text-align: center; transition: opacity .15s; }
+.va-reports .va-cell {
+  display: block; width: 100%; min-width: 40px; height: 26px; line-height: 26px; border: 0; padding: 0;
+  font: inherit; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.va-cell-zero { color: #c9c8d6; cursor: default; background: #fafafc; }
+.va-cell-total { font-weight: 600; color: var(--va-navy); }
+.va-scale { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--va-muted); margin-top: 8px; justify-content: flex-end; }
+.va-scale-bar { width: 120px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, rgba(75,79,166,.12), rgba(75,79,166,1)); }
+
+/* widget tables */
+.va-wtable { overflow: auto; border: 1px solid var(--va-border); border-radius: 8px; }
+.va-wtable .MuiTableCell-head { background: #fff; font-weight: 700; color: var(--va-navy); font-size: 13px; white-space: nowrap; border-bottom: 2px solid var(--va-orange); }
+.va-wtable .MuiTableCell-body { font-size: 13px; border-bottom: 0; }
+.va-wtable .MuiTableRow-root:nth-of-type(even) .MuiTableCell-body { background: var(--va-zebra); }
+.va-wtable .MuiTableRow-root.Mui-selected .MuiTableCell-body { background: #fde9c2; }
+.va-clickable { cursor: pointer; }
+
+/* full screen dialog */
+.va-full-title { display: flex !important; justify-content: space-between; align-items: center; gap: 12px; color: var(--va-navy); font-weight: 600 !important; }
+.va-full-actions { display: flex; align-items: center; gap: 6px; }
+
+/* ---------------------------------------------------------------- detail grid */
+.va-grid-card { margin-bottom: 8px; }
+.va-grid-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.va-grid-tools > div:first-child { margin-top: 0 !important; height: 44px !important; padding: 8px 12px !important; }
+.va-iconbtn.MuiIconButton-root { border: 1px solid var(--va-indigo); color: var(--va-indigo); width: 44px; height: 44px; }
+.va-iconbtn.MuiIconButton-root:hover { background: var(--va-indigo); color: #fff; }
+.va-grid-scroll { overflow-x: auto; border-radius: 6px; }
+.va-grid .MuiTableCell-head { background: var(--va-orange); color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap; border: 0; padding-top: 12px; padding-bottom: 12px; }
+.va-grid .MuiTableSortLabel-root, .va-grid .MuiTableSortLabel-root:hover, .va-grid .MuiTableSortLabel-root.Mui-active { color: #fff !important; }
+.va-grid .MuiTableSortLabel-icon { color: #fff !important; }
+.va-grid .MuiTableCell-body { font-size: 14px; border: 0; white-space: nowrap; padding-top: 10px; padding-bottom: 10px; }
+.va-grid .MuiTableCell-body.va-wrap { white-space: normal; min-width: 180px; }
+.va-grid .MuiTableRow-root:nth-of-type(even) .MuiTableCell-body { background: var(--va-zebra); }
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width: 1199px) {
+  .va-grid-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .va-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .va-grid-layout { grid-template-columns: minmax(0, 1fr); }
+  .va-widget.span-2 { grid-column: auto; }
+  .va-filterbar { position: static; }
+  .va-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .va-kpi-value { font-size: 28px; }
+  .va-donut { grid-template-columns: minmax(0, 1fr); }
+  .va-donut .va-legend { flex-direction: row; flex-wrap: wrap; }
+  .va-grid-tools { justify-content: flex-start; }
+  .va-grid-tools > div:first-child { width: 100% !important; }
+  .va-widget-head { flex-direction: column; }
+}
+@media (max-width: 420px) {
+  .va-filters { grid-template-columns: minmax(0, 1fr); }
+  .va-kpis { gap: 10px; }
+  .va-kpi { padding: 12px 12px 14px; min-height: 104px; }
+  .va-kpi-label { font-size: 13px; }
+  .va-kpi-value { font-size: 24px; }
+  .va-kpi-delta .muted { display: none; }
+}

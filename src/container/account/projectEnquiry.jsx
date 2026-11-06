@@ -1381,25 +1381,53 @@ const ProjectEnquiry = () => {
                 <PGrid container className={Labels.margin.mb1}>
                     <PGrid item xs={12} sm={6} md={12}>
                         <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap", mb: 3 }}>
-                            {tabs.map((tab) => (
-                                <Tooltip title={tab.label} key={tab.label}>
-                                    <Box key={tab.label} onClick={async () => {
-                                        setFormData(prev => ({ ...prev, activeTab: tab.label }));
-                                        if (tab.label === "Project Savings") await fetchData()
-                                    }}
+                            {tabs.map((tab) => {
+                                const isActive = formData.activeTab === tab.label;
+                                const selectTab = async () => {
+                                    setFormData(prev => ({ ...prev, activeTab: tab.label }));
+                                    if (tab.label === "Project Savings") await fetchData()
+                                };
+                                return (
+                                    <Box key={tab.label}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-pressed={isActive}
+                                        onClick={selectTab}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectTab(); }
+                                        }}
                                         sx={{
-                                            width: 50, height: 50, borderRadius: "50%", cursor: "pointer",
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                            bgcolor: formData.activeTab === tab.label ? "#16133F" : "#fff",
-                                            color: formData.activeTab === tab.label ? "#fff" : "#16133F",
-                                            transition: "0.3s", "&:hover": { background: "#16133F", color: "#fff" },
-                                            border: formData.activeTab === tab.label ? "1px solid #16133F" : "1px solid #16133F"
+                                            width: 84, display: "flex", flexDirection: "column", alignItems: "center", gap: 0.75,
+                                            cursor: "pointer", outline: "none",
+                                            "&:hover .tab-circle, &:focus-visible .tab-circle": { background: "#16133F", color: "#fff" },
+                                            "&:focus-visible .tab-circle": { boxShadow: "0 0 0 3px rgba(22,19,63,0.25)" }
                                         }}
                                     >
-                                        {tab.icon}
+                                        <Box className="tab-circle"
+                                            sx={{
+                                                width: 50, height: 50, borderRadius: "50%",
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                                bgcolor: isActive ? "#16133F" : "#fff",
+                                                color: isActive ? "#fff" : "#16133F",
+                                                transition: "0.3s",
+                                                border: "1px solid #16133F"
+                                            }}
+                                        >
+                                            {tab.icon}
+                                        </Box>
+                                        <Box component="span"
+                                            sx={{
+                                                fontSize: 12, lineHeight: 1.25, textAlign: "center", color: "#16133F",
+                                                fontWeight: isActive ? 700 : 500,
+                                                borderBottom: isActive ? "2px solid #16133F" : "2px solid transparent",
+                                                pb: 0.25
+                                            }}
+                                        >
+                                            {tab.label}
+                                        </Box>
                                     </Box>
-                                </Tooltip>
-                            ))}
+                                );
+                            })}
                         </Box>
                     </PGrid>
                 </PGrid>
@@ -2219,7 +2247,7 @@ const ProjectEnquiry = () => {
 
                         <PGrid container className={Labels.margin.mb4}>
                             <PGrid item xs={12} sm={6} md={12}>
-                                <PTable columns={attachments} rows={formDataList.data} />
+                                <PTable columns={attachments} rows={formDataList.data} emptyTitle="No attachments yet" emptyMessage="Files uploaded for this enquiry will be listed here." />
                             </PGrid>
                         </PGrid>
                     </div>

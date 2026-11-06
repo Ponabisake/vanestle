@@ -10,7 +10,7 @@ import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import PTextField from "../../component/PTextField/PTextField";
 import PDatepicker from "../../component/PDatepicker/PDatepicker";
-import { formatDate, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast } from "../../utils/commonFunction/common";
+import { formatDate, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -233,9 +233,9 @@ const EnquiryDetails = () => {
                 if (isSuccess(response)) {
                     setAllowRedirect(true);
                     toast(Labels.status.success, response.data.message);
-                    setTimeout(() => {
-                        navigate(flag ? labelRoutes.lineItems : labelRoutes.dashboard);
-                    }, 500);
+                    // keep the button spinner until we leave the page
+                    await new Promise((r) => setTimeout(r, 500));
+                    navigate(flag ? labelRoutes.lineItems : labelRoutes.dashboard);
                 } else {
                     setErrors((prev) => ({
                         ...prev,
@@ -281,6 +281,7 @@ const EnquiryDetails = () => {
         });
 
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 

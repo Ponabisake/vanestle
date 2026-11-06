@@ -14,13 +14,14 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { Divider } from "@mui/material";
 import { PostApi } from "../../utils/api/networking";
 import { Dashboard_API, Report_API } from "../../utils/api/apiUrl";
-import { getOptionLabel, toast } from "../../utils/commonFunction/common";
+import { getOptionLabel, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { useSelector } from "react-redux";
 
 const Report = () => {
     const { getLabel } = useLanguage();
     const { userID, userType, role, countryID } = useSelector((state) => state.userDetails.user);
     const [loading, setLoading] = useState(true);
+    const [generating, setGenerating] = useState(false); // Generate report button only
     const [formData, setFormData] = useState({
         clientName: "",
         typeOfReport: "",
@@ -130,6 +131,7 @@ const Report = () => {
             }
         });
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -137,7 +139,7 @@ const Report = () => {
         const isValid = ReportValidation();
         if (isValid) {
             try {
-                setLoading(true);
+                setGenerating(true);
                 const response = await PostApi(Report_API.GetReport, {
                     startDate: formData.fromDate,
                     endDate: formData.toDate,
@@ -164,7 +166,7 @@ const Report = () => {
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
             } finally {
-                setLoading(false);
+                setGenerating(false);
             }
         }
     }
@@ -267,7 +269,7 @@ const Report = () => {
                                     variant="outlined"
                                     onClick={(e) => handleReset(e)}
                                     width={180}
-                                    disabled={loading}
+                                    disabled={loading || generating}
                                 />
                                 <PButton
                                     label={<span className="text">{getLabel("lbl126")}</span>}
@@ -275,7 +277,8 @@ const Report = () => {
                                     color={CommonColors.dark_blue}
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
-                                    loading={loading}
+                                    loading={generating}
+                                    disabled={loading}
                                     startIcon={<img src={arrow} alt="arrow" className="icon" />}
                                 />
                             </PGrid>

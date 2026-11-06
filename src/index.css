@@ -33,6 +33,14 @@ body {
   background: #f4f2ff;
 }
 
+/* Fit-to-screen: scale the app so it fits screens narrower than the 1920px design
+   (see utils/commonFunction/fitToScreen.js). Menus / popovers / tooltips render outside
+   #root, so their positioning is unaffected; centred dialogs are scaled to match the page. */
+#root,
+.MuiDialog-paper:not(.MuiDialog-paperFullScreen) {
+  zoom: var(--app-zoom, 1);
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

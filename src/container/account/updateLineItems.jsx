@@ -4,7 +4,7 @@ import { CommonColors } from "../../utils/constants/colors";
 import { Labels } from "../../utils/constants/labels";
 import PGrid from "../../component/PGrid/PGrid";
 import { useLanguage } from "../../utils/constants/language";
-import { allowOnlyNumbers, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast } from "../../utils/commonFunction/common";
+import { allowOnlyNumbers, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { PostApi } from "../../utils/api/networking";
 import { LineItems_API } from "../../utils/api/apiUrl";
 import PButton from "../../component/PButton/PButton";
@@ -192,6 +192,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
         });
 
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 

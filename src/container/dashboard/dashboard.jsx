@@ -24,7 +24,7 @@ import { FontWeight } from '../../utils/constants/fonts'
 import { useLanguage } from "../../utils/constants/language";
 import { Account_API, Dashboard_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
-import { exportToExcel, isNotEmpty, isSuccess } from "../../utils/commonFunction/common";
+import { exportToExcel, isNotEmpty, isSuccess, notifyValidation } from "../../utils/commonFunction/common";
 import { useNavigate } from "react-router-dom";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import PDialog from "../../component/PDialog/PDialog";
@@ -151,7 +151,7 @@ const dashboard = () => {
         type: userDetails,
         payload: {
           id: 0,
-          enquiryId : 0,
+          enquiryId: "", // no enquiry open – avoids showing a previous enquiry ID in the stepper
         },
       });
     } catch (error) {
@@ -624,6 +624,7 @@ const dashboard = () => {
     });
 
     setErrors(newErrors);
+    notifyValidation(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -855,7 +856,7 @@ const dashboard = () => {
                 {loading ? (
                   <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
                 ) : (
-                  <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} />
+                  <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} columnChooser storageKey={`dashboard.${userType?.toLowerCase() || "all"}`} emptyTitle="No enquiries found" emptyMessage="Try adjusting the search or filters, or reset them to see all enquiries." />
                 )}
               </div>
             </PGrid>

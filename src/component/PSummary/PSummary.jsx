@@ -8,6 +8,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState, Fragment } from "react";
+import { Tooltip } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import PButton from "../PButton/PButton";
 import { labelRoutes } from "../../navigations/labelRoutes";
@@ -17,6 +18,15 @@ import { isSuccess, toast } from "../../utils/commonFunction/common";
 import { LineItems_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { useSelector } from "react-redux";
+
+// compact square icon button for the line-item Edit / Duplicate actions
+const itemActionBtnSx = {
+    minWidth: 0,
+    width: 28,
+    height: 28,
+    padding: 0,
+    "& .MuiButton-startIcon": { margin: 0 },
+};
 
 export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layout = "row", duplicate = false, showFlag = true, lineItems = [] }) => {
     const navigate = useNavigate();
@@ -197,7 +207,37 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                                                     </PGrid>
                                                     {isItemOpen && (
                                                         <>
-                                                            <PGrid className="mt-2">
+                                                            {/* item actions sit above the first field (Category) so they're easy to find */}
+                                                            {section.step && (
+                                                                <PGrid container>
+                                                                    <PGrid item xs={12} className="d-flex justify-content-end gap-2 pb-2">
+                                                                        <Tooltip title="Edit item" arrow>
+                                                                            <span>
+                                                                                <PButton
+                                                                                    variant="outlined"
+                                                                                    startIcon={<EditIcon sx={{ fontSize: "16px !important" }} />}
+                                                                                    sx={itemActionBtnSx}
+                                                                                    onClick={() => handleEdit(section.step, item.enquiryId)}
+                                                                                />
+                                                                            </span>
+                                                                        </Tooltip>
+                                                                        {duplicate &&
+                                                                            <Tooltip title="Duplicate item" arrow>
+                                                                                <span>
+                                                                                    <PButton
+                                                                                        variant="outlined"
+                                                                                        startIcon={<ContentCopyIcon sx={{ fontSize: "16px !important" }} />}
+                                                                                        sx={itemActionBtnSx}
+                                                                                        onClick={() => handleDuplicate(section.step, item)}
+                                                                                    />
+                                                                                </span>
+                                                                            </Tooltip>
+                                                                        }
+                                                                    </PGrid>
+                                                                </PGrid>
+                                                            )}
+
+                                                            <PGrid className="mt-1 mb-2">
                                                                 {(item.items || []).map((subItem, j) => (
                                                                     <SummaryItem
                                                                         key={j}
@@ -207,42 +247,6 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                                                                     />
                                                                 ))}
                                                             </PGrid>
-
-                                                            {section.step && (
-                                                                <PGrid container>
-                                                                    <PGrid item xs={12} className="d-flex gap-2 py-2">
-                                                                        <PButton
-                                                                            // label="Edit"
-                                                                            variant="outlined"
-                                                                            //color={CommonColors.grey.main}
-                                                                            startIcon={<EditIcon />}
-                                                                            width={30}
-                                                                            sx={{
-                                                                                "& .MuiButton-startIcon": {
-                                                                                    marginRight: 0,
-                                                                                },
-                                                                            }}
-                                                                            onClick={() => handleEdit(section.step, item.enquiryId)}
-                                                                        />
-                                                                        {duplicate &&
-                                                                            <PButton
-                                                                                //label="Duplicate"
-                                                                                variant="outlined"
-                                                                                // color={CommonColors.green.main}
-                                                                                startIcon={<ContentCopyIcon />}
-                                                                                sx={{
-                                                                                    "& .MuiButton-startIcon": {
-                                                                                        marginRight: 0,
-                                                                                    },
-                                                                                }}
-                                                                                width={30}
-                                                                                onClick={() => handleDuplicate(section.step, item)}
-                                                                            />
-                                                                        }
-
-                                                                    </PGrid>
-                                                                </PGrid>
-                                                            )}
                                                         </>
                                                     )}
                                                 </Fragment>

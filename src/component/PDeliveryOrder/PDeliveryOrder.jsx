@@ -11,14 +11,16 @@ import { useLanguage } from "../../utils/constants/language";
 import PTextField from "../PTextField/PTextField";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
-import { isSuccess, toast } from "../../utils/commonFunction/common";
+import { isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { PostApi } from "../../utils/api/networking";
 import { ProjectEnquiry_API } from "../../utils/api/apiUrl";
 import { useLocation } from "react-router-dom";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const PDeliveryOrder = (props) => {
-    const [loading, setLoading] = useState(true);
+    // separate flags so each button only spins for its own action
+    const [searching, setSearching] = useState(false);
+    const [saving, setSaving] = useState(false);
     const { getLabel } = useLanguage();
     const { id } = useSelector((state) => state.userDetails.user);
 
@@ -66,13 +68,13 @@ const PDeliveryOrder = (props) => {
             , { field: "addressLineTwo", header: getLabel("lbl328") }, { field: "addressLineThree", header: getLabel("lbl329") }
             , { field: "nameorDept", header: getLabel("lbl330") }, { field: "contactNo", header: getLabel("lbl331") }, { field: "remarks", header: getLabel("lbl332") }
             , {
-                field: "id", header: "", render: (row) => (<EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
+            field: "id", header: "", render: (row) => (<EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
         }],
     })
 
     const handleSearch = async () => {
         try {
-            setLoading(true);
+            setSearching(true);
             const response = await PostApi(ProjectEnquiry_API.CheckDeliveryAddress, {
                 CompanyName: formData.companyName
             });
@@ -108,7 +110,7 @@ const PDeliveryOrder = (props) => {
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
         } finally {
-            setLoading(false);
+            setSearching(false);
         }
     };
 
@@ -126,6 +128,7 @@ const PDeliveryOrder = (props) => {
             }
         });
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -133,10 +136,7 @@ const PDeliveryOrder = (props) => {
         const isValid = DeliveryOrderValidation();
         if (isValid) {
             try {
-                setFormData(prev => ({
-                    ...prev,
-                    order : true,
-                }))
+                setSaving(true);
                 const response = await PostApi(ProjectEnquiry_API.AddUpdateDeliveryAddress,
                     {
                         Enqid: id,
@@ -162,10 +162,7 @@ const PDeliveryOrder = (props) => {
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
             } finally {
-                setFormData(prev => ({
-                    ...prev,
-                    order : false,
-                }))
+                setSaving(false);
             }
         }
 
@@ -214,6 +211,7 @@ const PDeliveryOrder = (props) => {
                             onClick={handleSearch}
                             width={120}
                             startIcon={<SearchIcon />}
+                            loading={searching}
                         />
 
                     </PGrid>
@@ -297,7 +295,8 @@ const PDeliveryOrder = (props) => {
                             onClick={(e) => handleSave()}
                             width={320}
                             startIcon={<img src={arrow} alt="arrow" className="icon" />}
-                            loading={formData.order}
+                            loading={saving}
+                            disabled={searching}
                         />
                     </PGrid>
                 </PGrid>

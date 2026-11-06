@@ -49,8 +49,9 @@ export const PDraftDialog = ({ open, onClose, onSave, onDelete }) => {
         setMode('delete');
     };
 
-    const handleSaveSubmit = () => {
-        onSave?.(formData);
+    const handleSaveSubmit = async () => {
+        // awaited so the Save button shows its spinner while the draft is saved
+        await onSave?.(formData);
         handleClose();
     };
 

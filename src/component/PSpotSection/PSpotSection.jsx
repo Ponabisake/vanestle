@@ -21,7 +21,7 @@ import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import PTextField from "../PTextField/PTextField";
 import PDropdown from "../PDropdown/PDropdown";
-import { getOptionLabel, getOptionValue, isSuccess, toast } from "../../utils/commonFunction/common";
+import { getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import PDialog from "../PDialog/PDialog";
 import { ProjectEnquiry_API, Spot_API } from "../../utils/api/apiUrl";
 import { useLocation } from "react-router-dom";
@@ -344,6 +344,7 @@ const PSpotSection = ({ response }) => {
             }
         });
         setErrors(newErrors);
+        notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
     }
 

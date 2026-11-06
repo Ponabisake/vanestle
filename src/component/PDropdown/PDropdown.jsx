@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FormControl,
   InputLabel,
@@ -17,9 +17,30 @@ import { CommonColors } from "../../utils/constants/colors";
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import { FormControlBaseStyle } from "../../utils/constants/styles";
 
+/**
+ * Popper.js modifier: make the option list exactly as wide as the field *on screen*.
+ * (MUI uses the field's layout width, which is wider than what is shown when the
+ * fit-to-screen zoom is active – see utils/commonFunction/fitToScreen.js.)
+ */
+const matchFieldWidth = {
+  name: "matchFieldWidth",
+  enabled: true,
+  phase: "beforeWrite",
+  requires: ["computeStyles"],
+  fn: ({ state }) => {
+    state.styles.popper.width = `${state.rects.reference.width}px`;
+  },
+  effect: ({ state }) => {
+    state.elements.popper.style.width = `${state.elements.reference.getBoundingClientRect().width}px`;
+  },
+};
+const popperModifiers = [matchFieldWidth];
+
 const PDropdown = ({ name = "", label, value = "", onChange, options = [], required = false, helperText = "",
-  width = "", mt = 0.4, flag = "", disabled = false, readOnly = false, sx = {}, labelMode = "" }) => {
+  width = "", mt = 0, flag = "", disabled = false, readOnly = false, sx = {}, labelMode = "" }) => {
   const defaultValueRef = useRef(false);
+  const selectRef = useRef(null);
+  const [menuWidth, setMenuWidth] = useState(null);
   useEffect(() => {
     if (value !== undefined && value !== null && value !== "") {
       defaultValueRef.current = false;
@@ -164,6 +185,9 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
           slots={{
             popupIndicator: KeyboardArrowDownOutlinedIcon,
           }}
+          slotProps={{
+            popper: { className: "pdropdown-popper", modifiers: popperModifiers },
+          }}
           //disableClearable={!selectedOption}
           getOptionLabel={(option) => option?.label || ""}
           isOptionEqualToValue={(option, value) => option.value === value?.value}
@@ -189,23 +213,30 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
   }
 
   return (
+    <>
+    {/* label sits outside the FormControl (like PTextField) so labels and boxes line up across a row */}
+    {labelMode === "" && (
+      <Tooltip title={label?.length > 30 ? label : ""} arrow placement="top">
+        <Typography style={{ fontSize: "16px", color: "#171717", marginBottom: "8px", whiteSpace: "nowrap", cursor: label?.length > 30 ? "pointer" : "default", }}>
+          {label?.length > 30 ? `${label.slice(0, 30)}...` : label}
+        </Typography>
+      </Tooltip>
+    )}
     <FormControl
       fullWidth
-      size="small"
       required={required}
       error={!!helperText}
       sx={baseSx}
       disabled={readOnly}
+      ref={selectRef}
     >
-      {labelMode === "" && (
-        <Tooltip title={label?.length > 30 ? label : ""} arrow placement="top">
-          <Typography style={{ fontSize: "16px", color: "#171717", marginBottom: "8px", whiteSpace: "nowrap", cursor: label?.length > 30 ? "pointer" : "default", }}>
-            {label?.length > 30 ? `${label.slice(0, 30)}...` : label}
-          </Typography>
-        </Tooltip>
-
-      )}
       <Select
+        onOpen={() => setMenuWidth(selectRef.current?.getBoundingClientRect().width ?? null)}
+        MenuProps={{
+          className: "pdropdown-menu",
+          // list as wide as the field on screen (see matchFieldWidth above)
+          slotProps: { paper: { style: menuWidth ? { minWidth: menuWidth } : undefined } },
+        }}
         displayEmpty
         value={internalValue}
         name={name}
@@ -241,6 +272,7 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
 
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
+    </>
   );
 };
 

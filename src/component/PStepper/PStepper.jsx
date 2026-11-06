@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import PGrid from "../PGrid/PGrid";
 import PTypography from "../PTypography/PTypography";
 import { Labels } from "../../utils/constants/labels";
 import { CommonColors } from "../../utils/constants/colors";
@@ -11,7 +10,9 @@ import { useSelector } from "react-redux";
 export default function PStepper({ steps = [], activeStep = 0, allowRedirect = false }) {
   const navigate = useNavigate();
   const { getLabel } = useLanguage();
-  const { menuId } = useSelector((state) => state.userDetails.user);
+  const { menuId, enquiryId } = useSelector((state) => state.userDetails.user);
+  // Steps 2–5 (activeStep >= 1): show which enquiry is being worked on, e.g. ENQ000031
+  const showEnquiryId = activeStep >= 1 && !!enquiryId;
   
   const handleRedirect = (step) => {
     if (step.url) {
@@ -27,14 +28,22 @@ export default function PStepper({ steps = [], activeStep = 0, allowRedirect = f
 
   return (
     <>
-      <PGrid container className="text-center">
+      {/* Title, with the enquiry ID beside it in small type: "Create Enquiry – ENQ000031" */}
+      {/* plain flex line (not PGrid/.row – Bootstrap makes every .row child 100% wide, which wrapped the ID) */}
+      <div className="p-stepper-title">
         <PTypography
           labelText={header}
           flag={Labels.fontFlags.mainHeader}
           color={CommonColors.primary}
           weight={FontWeight.regular}
         />
-      </PGrid>
+        {showEnquiryId && (
+          <span className="p-enquiry-id" title={getLabel("lbl162") || "Enquiry ID"}>
+            <span className="p-enquiry-id-sep">–</span>
+            {enquiryId}
+          </span>
+        )}
+      </div>
 
       <div className="p-stepper">
         <div className={`p-circle completed`}>
@@ -67,6 +76,29 @@ export default function PStepper({ steps = [], activeStep = 0, allowRedirect = f
       </div >
       <style>
         {`
+        .p-stepper-title {
+          display: flex;
+          flex-wrap: nowrap;
+          justify-content: center;
+          align-items: baseline;
+          column-gap: 12px;
+          text-align: center;
+        }
+        .p-stepper-title > p {
+          margin: 0;
+        }
+        .p-enquiry-id {
+          font-size: 18px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          color: #CF7729;
+          white-space: nowrap;
+        }
+        .p-enquiry-id-sep {
+          color: #9CA3AF;
+          font-weight: 400;
+          margin-right: 10px;
+        }
         .p-stepper {
           display: flex;
           align-items: center;
