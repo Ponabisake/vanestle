@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {TextField, InputAdornment} from "@mui/material";
 import {UploadFile as UploadFileIcon } from "@mui/icons-material";
 import { FontFamily, FontSize } from "../../utils/constants/fonts";
 
-export default function PFileUpload({ label = "", value = [], onChange, disabled = false, name = "", helperText = "",
+/**
+ * Controlled: the selected files are always `value` (the parent's list). onChange receives
+ * { target: { name, files, value } } with the new list ({ name, file, url, size } per file).
+ * Keeping no copy of its own means a list cleared or shortened by the parent (after a save,
+ * after removing an attachment) is not brought back on the next selection.
+ */
+export default function PFileUpload({ label = "", value, onChange, disabled = false, name = "", helperText = "",
     variant = "outlined", multiple = false, maxLength = 5, width = "100%", placeholder = "" }) {
 
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const selectedFiles = Array.isArray(value) ? value : [];
     const [fileError, setFileError] = useState("");
 
     const allowedExtensions = [
@@ -14,12 +20,6 @@ export default function PFileUpload({ label = "", value = [], onChange, disabled
         "doc", "docx", "ppt", "pptx",
         "xls", "xlsx", "msg"
     ];
-
-    useEffect(() => {
-        if (value?.length) {
-            setSelectedFiles(value);
-        }
-    }, [value]);
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files || []);
@@ -48,10 +48,14 @@ export default function PFileUpload({ label = "", value = [], onChange, disabled
                 break;
             }
 
+            // the same file picked again: keep one copy
+            if (updatedFiles.some((f) => f.name === file.name && f.size === file.size)) {
+                continue;
+            }
+
             updatedFiles.push({ name: file.name, file, url: URL.createObjectURL(file), size: file.size });
         }
-        setSelectedFiles(updatedFiles);
-        onChange?.({ target: { name, files: updatedFiles } });
+        onChange?.({ target: { name, files: updatedFiles, value: updatedFiles } });
         setFileError(errorMsg);
         e.target.value = "";
     };

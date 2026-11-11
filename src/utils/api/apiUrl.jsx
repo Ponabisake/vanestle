@@ -19,9 +19,9 @@ const getBaseUrl = () => {
 export const Base_Url = getBaseUrl();
 export const Account_API = {
   Login: Base_Url + "/VA/Usersignon",
-  ChangePassword: Base_Url + "/VA/ChangePassword",
-  ForgotPassword: Base_Url + "/VA/ForgotPassword",
-  Echo: "https://ebiz.pmgasia.com/iWeb/eCatalogueNestle/public/index.php/shop",
+  ChangePassword : Base_Url + "/VA/ChangePassword",
+  ForgotPassword : Base_Url + "/VA/ForgotPassword",
+  Echo : "https://ebiz.pmgasia.com/iWeb/eCatalogueNestle/public/index.php/shop",
 }
 
 export const Language_API = {
@@ -51,47 +51,47 @@ export const EnquiryDetails_API = {
 
 export const LineItems_API = {
   AddUpdateLineItems: Base_Url + "/VA/EnqLineItemDetails",
+  // multipart: "data" = the AddUpdateLineItems JSON, "files" = the item's quote files
+  AddUpdateLineItemsWithFiles: Base_Url + "/VA/EnqLineItemDetailsWithFiles",
+  // GET ?enqDetailsId=&fileName= : one of the item's files (listed in quoteFiles of GetDetails)
+  GetLineItemFile: Base_Url + "/VA/LineItemFile",
   GetEnqLineItemsMaster: Base_Url + "/VA/EnqLineItemsDropdowns",
-  GetEnqDuplicate: Base_Url + "/VA/EB_Duplicate",
-  GetExistingspecification: Base_Url + "/VA/GetExistingspecification"
+  GetEnqDuplicate: Base_Url + "/VA/EB_Duplicate"
 }
 export const Suppliers_API = {
   GetEnqSupplierMaster: Base_Url + "/VA/GetSupplier",
   AddUpdateSuppliers: Base_Url + "/VA/EnqSupplierInfo",
-  AddSuppliers: Base_Url + "/VA/AddSuppliers",
-}
+  AddSuppliers : Base_Url + "/VA/AddSuppliers",
+} 
 
 export const ProjectEnquiry_API = {
-  GetProjectDetails: Base_Url + "/VA/GetProjectDetails",
-  PostSupplierQuotes: Base_Url + "/VA/PostSupplierQuotes",
-  UpdateJobStatus: Base_Url + "/VA/UpdateJobStatus",
+  GetProjectDetails : Base_Url + "/VA/GetProjectDetails",
+  PostSupplierQuotes : Base_Url + "/VA/PostSupplierQuotes",
+  UpdateJobStatus : Base_Url + "/VA/UpdateJobStatus",
   CalculateSavings: Base_Url + "/VA/CalculateSavings",
-  PostRefPrice: Base_Url + "/VA/PostRefprice",
-  CheckDeliveryAddress: Base_Url + "/VA/CheckDeliveryAddress",
-  AddUpdateDeliveryAddress: Base_Url + "/VA/AddUpdateDeliveryAddress",
-  UpdateSavingsReasons: Base_Url + "/VA/UpdateSavingsReasons",
-  UpdateJobSummary: Base_Url + "/VA/UpdateJobSummary",
-  UpdatePreviewQuotes: Base_Url + "/VA/UpdatePreviewQuotes",
-  GetPreviewQuotes: Base_Url + "/VA/GetPreviewQuotes",
-  UpdateSurvey: Base_Url + "/VA/UpdateSurvey",
-  GetClientQuotes: Base_Url + "/VA/GetClientQuotes",
-  GetSupplierQuotes: Base_Url + "/VA/GetSupplierQuotes",
-  SaveSupplierQuotes: Base_Url + "/VA/SaveSupplierQuotes"
+  PostRefPrice : Base_Url + "/VA/PostRefprice",
+  CheckDeliveryAddress : Base_Url + "/VA/CheckDeliveryAddress",
+  AddUpdateDeliveryAddress : Base_Url + "/VA/AddUpdateDeliveryAddress",
+  UpdateSavingsReasons : Base_Url + "/VA/UpdateSavingsReasons",
+  UpdateJobSummary : Base_Url + "/VA/UpdateJobSummary",
+  UpdatePreviewQuotes : Base_Url + "/VA/UpdatePreviewQuotes",
+  GetPreviewQuotes : Base_Url + "/VA/GetPreviewQuotes",
+  UpdateSurvey : Base_Url + "/VA/UpdateSurvey",
 }
 
 export const Spot_API = {
-  GetSpotEnvironmentResult: Base_Url + "/VA/GetSpotEnvironmentResult",
-  GetSpotEnvItems: Base_Url + "/VA/SpotEnvItems",
-  BindMaterial: Base_Url + "/VA/BindMaterial",
-  GetEnvironmentalType: Base_Url + "/VA/GetEnvironmentalType",
-  UpdateEnvironmental: Base_Url + "/VA/UpdateEnvironmental",
-  UpdateComparativeEnvironmental: Base_Url + "/VA/UpdateComparativeEnvironmental",
-  UpdateNoCompareReason: Base_Url + "/VA/UpdateNoCompareReason",
-  GetEnvironmentImpactDetails: Base_Url + "/VA/GetEnvironmentImpactDetails",
-  GetComparativeImpactDetails: Base_Url + "/VA/GetComparativeImpactDetails",
-  GetTotalImpactDetails: Base_Url + "/VA/GetTotalImpactDetails"
+  GetSpotEnvironmentResult : Base_Url + "/VA/GetSpotEnvironmentResult",
+  GetSpotEnvItems : Base_Url +  "/VA/SpotEnvItems",
+  BindMaterial : Base_Url + "/VA/BindMaterial",
+  GetEnvironmentalType : Base_Url + "/VA/GetEnvironmentalType",
+  UpdateEnvironmental : Base_Url + "/VA/UpdateEnvironmental",
+  UpdateComparativeEnvironmental : Base_Url + "/VA/UpdateComparativeEnvironmental",
+  UpdateNoCompareReason : Base_Url + "/VA/UpdateNoCompareReason",
+  GetEnvironmentImpactDetails : Base_Url + "/VA/GetEnvironmentImpactDetails",
+  GetComparativeImpactDetails : Base_Url + "/VA/GetComparativeImpactDetails",
+  GetTotalImpactDetails : Base_Url + "/VA/GetTotalImpactDetails"
 }
-
+ 
 export const Report_API = {
-  GetReport: Base_Url + "/VA/GetReport"
+  GetReport : Base_Url + "/VA/GetReport"
 }

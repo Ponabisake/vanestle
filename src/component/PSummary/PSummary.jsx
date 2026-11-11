@@ -8,7 +8,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState, Fragment } from "react";
-import { Tooltip } from "@mui/material";
+import { PLineItem, PPillButton } from "../PLineItem/PLineItem";
 import { useNavigate, useLocation } from "react-router-dom";
 import PButton from "../PButton/PButton";
 import { labelRoutes } from "../../navigations/labelRoutes";
@@ -18,15 +18,6 @@ import { isSuccess, toast } from "../../utils/commonFunction/common";
 import { LineItems_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { useSelector } from "react-redux";
-
-// compact square icon button for the line-item Edit / Duplicate actions
-const itemActionBtnSx = {
-    minWidth: 0,
-    width: 28,
-    height: 28,
-    padding: 0,
-    "& .MuiButton-startIcon": { margin: 0 },
-};
 
 export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layout = "row", duplicate = false, showFlag = true, lineItems = [] }) => {
     const navigate = useNavigate();
@@ -184,74 +175,41 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                             {isOpen && (
                                 <PGrid container className={Labels.margin.mt1}>
                                     {section.step === 3 ? (
-                                        section.items?.map((item, i) => {
-                                            const isItemOpen = activeItemIndex[3] === i;
-                                            return (
-                                                <Fragment key={i}>
-                                                    {i != 0 && <hr className="mb-3 mt-1" />}
-                                                    <PGrid container className="w-100 d-flex align-items-center justify-content-between pb-2"
-                                                        style={{ cursor: "pointer" }}
-                                                        onClick={() => setActiveItemIndex((prev) => ({ ...prev, 3: prev[3] === i ? null : i }))}
-                                                    >
-                                                        <PGrid item xs={12} sm={6} md={8}>
-                                                            <PTypography
-                                                                labelText={item.subTitle}
-                                                                weight={FontWeight.bold}
-                                                                flag={Labels.fontFlags.subHeader}
-                                                            />
-                                                        </PGrid>
-
-                                                        <PGrid item xs={12} sm={6} md={4} className="d-flex justify-content-end align-items-center m-0 p-0">
-                                                            {isItemOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                                        </PGrid>
-                                                    </PGrid>
-                                                    {isItemOpen && (
-                                                        <>
-                                                            {/* item actions sit above the first field (Category) so they're easy to find */}
-                                                            {section.step && userType?.toLowerCase() === Labels.userType.agency && (
-                                                                <PGrid container>
-                                                                    <PGrid item xs={12} className="d-flex justify-content-end gap-2 pb-2">
-                                                                        <Tooltip title="Edit item" arrow>
-                                                                            <span>
-                                                                                <PButton
-                                                                                    variant="outlined"
-                                                                                    startIcon={<EditIcon sx={{ fontSize: "16px !important" }} />}
-                                                                                    sx={itemActionBtnSx}
-                                                                                    onClick={() => handleEdit(section.step, item.enquiryId)}
-                                                                                />
-                                                                            </span>
-                                                                        </Tooltip>
-                                                                        {duplicate &&
-                                                                            <Tooltip title="Duplicate item" arrow>
-                                                                                <span>
-                                                                                    <PButton
-                                                                                        variant="outlined"
-                                                                                        startIcon={<ContentCopyIcon sx={{ fontSize: "16px !important" }} />}
-                                                                                        sx={itemActionBtnSx}
-                                                                                        onClick={() => handleDuplicate(section.step, item)}
-                                                                                    />
-                                                                                </span>
-                                                                            </Tooltip>
-                                                                        }
-                                                                    </PGrid>
-                                                                </PGrid>
-                                                            )}
-
-                                                            <PGrid className="mt-1 mb-2">
-                                                                {(item.items || []).map((subItem, j) => (
-                                                                    <SummaryItem
-                                                                        key={j}
-                                                                        label={subItem.label}
-                                                                        value={subItem.value}
-                                                                        layout={layout}
+                                        // same line-item rows as the Review step: "Item 1 : Name" badge, Edit (+ Duplicate), chevron
+                                        <div className="pli-list">
+                                            {(section.items || []).map((item, i) => {
+                                                const compact = layout === "row"; // narrow side panel → icon-only buttons
+                                                return (
+                                                    <PLineItem
+                                                        key={i}
+                                                        title={item.subTitle}
+                                                        name={item.itemName}
+                                                        fields={item.items || []}
+                                                        files={item.files}
+                                                        enqDetailsId={item.enquiryId}
+                                                        isOpen={activeItemIndex[3] === i}
+                                                        onToggle={() => setActiveItemIndex((prev) => ({ ...prev, 3: prev[3] === i ? null : i }))}
+                                                        actions={section.step ? (
+                                                            <>
+                                                                <PPillButton
+                                                                    label={compact ? "Edit item" : "Edit"}
+                                                                    iconOnly={compact}
+                                                                    onClick={() => handleEdit(section.step, item.enquiryId)}
+                                                                />
+                                                                {duplicate && (
+                                                                    <PPillButton
+                                                                        label={compact ? "Duplicate item" : "Duplicate"}
+                                                                        iconOnly={compact}
+                                                                        icon={<ContentCopyIcon sx={{ fontSize: 16 }} />}
+                                                                        onClick={() => handleDuplicate(section.step, item)}
                                                                     />
-                                                                ))}
-                                                            </PGrid>
-                                                        </>
-                                                    )}
-                                                </Fragment>
-                                            );
-                                        })
+                                                                )}
+                                                            </>
+                                                        ) : null}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
                                     ) : (
                                         <>
                                             {(section.items || []).map((item, i) => (

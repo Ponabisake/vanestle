@@ -1,0 +1,212 @@
+/* =====================================================================
+   Shared line-item row + label/value tiles
+   (Review step, Project Enquiry → Line Items, step summaries)
+   ===================================================================== */
+
+/* Label / value tiles */
+.pli-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.pli-field {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f8f7fb;
+  border: 1px solid #f0eef5;
+  min-width: 0;
+}
+.pli-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 3px;
+}
+.pli-field-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #16133f;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.pli-field-value.is-empty {
+  color: #b3b6c2;
+  font-weight: 400;
+}
+
+/* Collapsible line-item rows */
+.pli-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.pli-item {
+  border: 1px solid #ece9f3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+.pli-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #faf9fc;
+  cursor: pointer;
+  color: #16133f;
+}
+.pli-head:hover {
+  background: #f4f2f9;
+}
+.pli-head:focus-visible {
+  outline: 2px solid #2d2f75;
+  outline-offset: -2px;
+}
+.pli-item.is-open .pli-head {
+  border-bottom: 1px solid #ece9f3;
+}
+.pli-badge {
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(0, 145, 107, 0.12);
+  color: #00916b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pli-spacer {
+  flex: 1;
+}
+.pli-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.pli-chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+.pli-item.is-open .pli-chevron {
+  transform: rotate(180deg);
+}
+.pli-body {
+  padding: 14px;
+}
+
+/* Item attachments (PItemFiles) */
+.pli-files {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f8f7fb;
+  border: 1px solid #f0eef5;
+}
+.pli-file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.pli-file {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  border: 1px solid #e3e0ec;
+  border-radius: 999px;
+  background: #fff;
+  padding-right: 4px;
+}
+.pli-file-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 6px 5px 12px;
+  border: 0;
+  background: none;
+  color: #2d2f75;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+}
+.pli-file-main:hover:not(:disabled) .pli-file-name {
+  text-decoration: underline;
+}
+.pli-file-main:focus-visible {
+  outline: 2px solid #2d2f75;
+  outline-offset: 1px;
+}
+.pli-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pli-file-size {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+.pli-file .pli-file-download {
+  color: #2d2f75;
+}
+.pli-file.is-missing {
+  border-style: dashed;
+  padding-right: 6px;
+}
+.pli-file.is-missing .pli-file-main {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+.pli-file-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* Pill action buttons (Edit / Duplicate / Add) */
+.pli-btn.MuiButton-root {
+  flex-shrink: 0;
+  min-width: 0;
+  text-transform: none;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+  border-radius: 999px;
+  padding: 4px 14px;
+  color: #2d2f75;
+  border: 1px solid rgba(45, 47, 117, 0.35);
+  background: #fff;
+}
+.pli-btn.MuiButton-root:hover {
+  background: #2d2f75;
+  border-color: #2d2f75;
+  color: #fff;
+}
+.pli-btn.is-icon.MuiButton-root {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+.pli-btn.is-icon .MuiButton-startIcon {
+  margin: 0;
+}

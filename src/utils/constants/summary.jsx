@@ -142,7 +142,7 @@ export const getLineneItems = (formData = {}, formDataList = {}, getLabel, getOp
     ...(userType?.toLowerCase() === Labels.userType.client ? [{ key: "printornonprint", label: "lbl62" }] : []),
     { key: "quoteType", label: "lbl89" },
     { key: "quoteQtyOrSize", label: "lbl87" },
-    { label: "Attachment", value: "No Files" },
+    // attachments are shown below the fields (files, from quoteFiles)
     { key: "version", label: "lbl85" },
     { key: "specNote", label: "lbl83" },
     { key: "sNote", label: "lbl86" }
@@ -157,12 +157,14 @@ export const getLineneItems = (formData = {}, formDataList = {}, getLabel, getOp
     itemTitle: `${getLabel("lbl310")} ${item.itemNumber} : ${item.itemName}`,
     itemColor: "warning",
     enquiryId: item.enqdetailsId,
+    // the item's attachments from GetDetails: [{ fileName, size, exists }]
+    files: item.quoteFiles || [],
     items: lineItemMapping
       .filter(field => field.key !== "incoterm" || item.printornonprint === "Promo")
       .filter(field => field.key !== "competetiveWinningSupplier" || item.eauction === "Yes")
       .map(field => ({
-        label: field.label === "Attachment" ? field.label : getLabel(field.label),
-        value: field.key ? item[field.key] ?? "-" : field.value
+        label: getLabel(field.label),
+        value: item[field.key] ?? "-"
       }))
   }));
   return lineItems;

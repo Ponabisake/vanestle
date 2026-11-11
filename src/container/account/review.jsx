@@ -1,5 +1,5 @@
 
-import { Box, Button, Skeleton } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 import PGrid from "../../component/PGrid/PGrid";
 import { Labels } from "../../utils/constants/labels";
 import { useState, useEffect } from "react";
@@ -22,12 +22,9 @@ import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import { PFieldGrid, PLineItem, PPillButton } from "../../component/PLineItem/PLineItem";
 import "./review.css";
-
-const isEmptyValue = (v) => v === null || v === undefined || String(v).trim() === "" || String(v).trim() === "-";
 
 /** Card for one review section: coloured top edge, icon, step number, title and an Edit action. */
 function ReviewSection({ step, title, count, icon, accent, action, children }) {
@@ -49,40 +46,9 @@ function ReviewSection({ step, title, count, icon, accent, action, children }) {
     );
 }
 
-/** Label / value tiles. Shows placeholder tiles while loading. */
-function FieldGrid({ fields = [], loading }) {
-    if (loading) {
-        return (
-            <div className="review-fields">
-                {Array.from({ length: 8 }, (_, i) => (
-                    <div className="review-field" key={i}>
-                        <Skeleton variant="text" width="45%" height={16} />
-                        <Skeleton variant="text" width="75%" height={22} />
-                    </div>
-                ))}
-            </div>
-        );
-    }
-    return (
-        <div className="review-fields">
-            {fields.map((field, i) => {
-                const empty = isEmptyValue(field.value);
-                return (
-                    <div className="review-field" key={i}>
-                        <span className="review-field-label">{field.label}</span>
-                        <span className={`review-field-value ${empty ? "is-empty" : ""}`}>{empty ? "—" : field.value}</span>
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
-
-const EditButton = ({ label = "Edit", icon = <EditOutlinedIcon sx={{ fontSize: 18 }} />, onClick }) => (
-    <Button className="review-edit-btn" startIcon={icon} onClick={onClick} disableRipple>
-        {label}
-    </Button>
-);
+// shared with Project Enquiry → Line Items and the step summaries
+const FieldGrid = PFieldGrid;
+const EditButton = ({ label = "Edit", icon, onClick }) => <PPillButton label={label} icon={icon} onClick={onClick} />;
 
 const initials = (name = "") =>
     name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
@@ -241,39 +207,20 @@ const Review = () => {
                         ) : lineItems.length === 0 ? (
                             <div className="review-empty">No line items added yet.</div>
                         ) : (
-                            <div className="review-items">
-                                {lineItems.map((item, index) => {
-                                    const isOpen = open === index;
-                                    return (
-                                        <div className={`review-item ${isOpen ? "is-open" : ""}`} key={index}>
-                                            <div
-                                                className="review-item-head"
-                                                role="button"
-                                                tabIndex={0}
-                                                aria-expanded={isOpen}
-                                                onClick={() => setOpen((prev) => (prev === index ? null : index))}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter" || e.key === " ") {
-                                                        e.preventDefault();
-                                                        setOpen((prev) => (prev === index ? null : index));
-                                                    }
-                                                }}
-                                            >
-                                                <span className="review-item-badge">{item.itemTitle}</span>
-                                                <span className="review-item-name">{item.itemName || ""}</span>
-                                                <span onClick={(e) => e.stopPropagation()}>
-                                                    <EditButton onClick={() => handleEdit(3, item.enquiryId)} />
-                                                </span>
-                                                <ExpandMoreRoundedIcon className="review-item-chevron" />
-                                            </div>
-                                            {isOpen && (
-                                                <div className="review-item-body">
-                                                    <FieldGrid fields={item.items} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                            <div className="pli-list">
+                                {lineItems.map((item, index) => (
+                                    <PLineItem
+                                        key={index}
+                                        title={item.itemTitle}
+                                        name={item.itemName}
+                                        fields={item.items}
+                                        files={item.files}
+                                        enqDetailsId={item.enquiryId}
+                                        isOpen={open === index}
+                                        onToggle={() => setOpen((prev) => (prev === index ? null : index))}
+                                        actions={<PPillButton label="Edit" onClick={() => handleEdit(3, item.enquiryId)} />}
+                                    />
+                                ))}
                             </div>
                         )}
                     </ReviewSection>

@@ -70,6 +70,20 @@ export const PostApi = (url, data = "", isDashboard = false) => {
   );
 };
 
+/**
+ * Downloads a file (any type) with the API headers and returns it as a Blob.
+ * Throws when the server does not return the file (missing file, network error, ...).
+ */
+export const GetFileApi = async (url) => {
+  const response = await fetch(url, { method: "GET", credentials: "include", headers: { ...API_HEADERS } });
+  if (response.status === 401) {
+    handleUnauthorized(false);
+    throw new Error("Unauthorized");
+  }
+  if (!response.ok) throw new Error(response.status === 404 ? "File not found" : `HTTP error! Status: ${response.status}`);
+  return await response.blob();
+};
+
 export const GetApi = (url, customHeaders = {}, isDashboard = false) =>
   request(
     url,

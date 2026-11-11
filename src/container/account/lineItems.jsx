@@ -3,7 +3,7 @@ import PTypography from "../../component/PTypography/PTypography";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontWeight } from "../../utils/constants/fonts";
 // import PCard from "../../component/PCard/PCard";
 import { CommonColors } from "../../utils/constants/colors";
@@ -15,7 +15,7 @@ import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate } from "react-router-dom";
 import { Dashboard_API, LineItems_API } from "../../utils/api/apiUrl";
-import { GetApi, PostApi } from "../../utils/api/networking";
+import { PostApi } from "../../utils/api/networking";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
 import PreviewDialog from "../../component/PDialog/PPreviewDialog";
 import { getClientInfo, getEnquiryDetails, getLineneItems, getSummarySections } from "../../utils/constants/summary";
@@ -26,14 +26,17 @@ import PAttachment from "../../component/PAttachment/PAttachment";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
-import PTable from "../../component/PTable/PTable";
 const LineItems = () => {
-    const { getLabel } = useLanguage();
-    const { fkID, menuId, role, countryID, userID, id, userType } = useSelector((state) => state.userDetails.user);
+    const { getLabel } = useLanguage(); 
+    const { fkID, menuId, role, countryID, userID , id, userType} = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const [loading, setLoading] = useState(true);
+    // true while an item (and its files) is being saved: the ref blocks a second submit at once,
+    // the state disables the buttons
+    const savingRef = useRef(false);
+    const [saving, setSaving] = useState(false);
     const [open, setOpen] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,7 +65,7 @@ const LineItems = () => {
         competitiveBiddingExceptionFormSigned: [],
         simplex: [{ label: "Non-Simplex", value: 1 }, { label: "Simplex", value: 2 }, { label: "Not Applicable", value: 3 }],
         quoteType: [{ label: "Quote by Quantity", value: 1 }, { label: "Quote by Quantity & Size 2D", value: 2 }, { label: "Quote by Quantity & Size 3D", value: 3 }],
-        specifications: [],
+
         //editable states
         clientInfo: [],
         enquiryDetails: [],
@@ -210,6 +213,7 @@ const LineItems = () => {
     const rawLineItems = getLineneItems(formData, formDataList, getLabel, getOptionLabel, formDataList.lineItems, userType);
     const lineItems = rawLineItems.map((item, index) => ({
         subTitle: `${item.itemTitle}`,
+        itemName: item.itemName,
         enquiryId: item.enquiryId,
         items: item.items,
     }));
@@ -343,9 +347,6 @@ const LineItems = () => {
             case Labels.lineItems.category:
                 LineItemsMaster(label);
                 break;
-            case Labels.lineItems.itemCategory:
-                GetSpecification(value);
-                break;
 
             case Labels.lineItems.savingsType:
                 SavingsReasonMaster(label);
@@ -396,32 +397,19 @@ const LineItems = () => {
         }));
     };
 
-    const GetSpecification = async (data) => {
-        try {
-            setLoading(false);
-            const response = await GetApi(`${LineItems_API.GetExistingspecification}?countryId=${countryID}&productCategoryId=${data}`);
-            setFormDataList(prev => ({
-                ...prev,
-                specifications: response.data,
-            }));
+   
+    
 
-        } catch (error) {
-            toast(Labels.status.failure, Labels.message.somethingWentWrong);
-        } finally {
-            setLoading(false);
-        }
+    // Failure text from the API: Result.Fail puts it in data (a string), HTTP errors in message
+    const getFailureMessage = (response) => {
+        if (typeof response?.data === "string" && response.data) return response.data;
+        if (response?.data?.message) return response.data.message;
+        if (String(response?.message || "").includes("413")) return "The attached files are too large";
+        return response?.message || Labels.message.somethingWentWrong;
     };
-    const specification = [{ field: "enqUId", header: "Enquiry Id" }, { field: "projectNo", header: "Project Number" }, { field: "projectDesc", header: "Project Name" }, { field: "specNote", header: getLabel("lbl83") },]
-    var filteredData = formDataList.specifications;
-    if (formData.search.trim() !== "") {
-        filteredData = filteredData.filter((item) =>
-            item.enqUId.toLowerCase().includes(formData.search.toLowerCase()) ||
-            item.specNote.toLowerCase().includes(formData.search.toLowerCase()) 
-        );
-    }
-    const specifications = filteredData;
 
     const handleSubmit = async (e, flag) => {
+        if (savingRef.current) return;
         if (lineItems.length > 0 && flag && !formData.itemCategory) {
             setAllowRedirect(false);
             navigate(labelRoutes.suppliers);
@@ -431,6 +419,8 @@ const LineItems = () => {
         const isValid = LineItemsValidation();
         if (isValid) {
             try {
+                savingRef.current = true;
+                setSaving(true);
                 setLoading(true);
                 const payload = {
                     //lineItems
@@ -498,7 +488,17 @@ const LineItems = () => {
                     TotalQtySize: totalSize.toString(),
                     ModifiedBy: fkID,
                 };
-                const response = await PostApi(LineItems_API.AddUpdateLineItems, payload);
+                // Attached files go with the item in one multipart request (saved to QuoteFileList and tblAttachments)
+                const uploads = (formData.files || []).filter((f) => f?.file instanceof File);
+                let response;
+                if (uploads.length > 0) {
+                    const body = new FormData();
+                    body.append("data", JSON.stringify(payload));
+                    uploads.forEach((f) => body.append("files", f.file, f.name));
+                    response = await PostApi(LineItems_API.AddUpdateLineItemsWithFiles, body);
+                } else {
+                    response = await PostApi(LineItems_API.AddUpdateLineItems, payload);
+                }
                 if (isSuccess(response)) {
                     setAllowRedirect(true);
                     const route = flag === true ? labelRoutes.suppliers : flag === false ? labelRoutes.lineItems : labelRoutes.dashboard;
@@ -517,12 +517,14 @@ const LineItems = () => {
                         ...prev,
                         name: ""
                     }));
-                    toast(Labels.status.failure, response.data.message);
+                    toast(Labels.status.failure, getFailureMessage(response));
                 }
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
             } finally {
                 setLoading(false);
+                savingRef.current = false;
+                setSaving(false);
             }
         }
         else {
@@ -699,13 +701,7 @@ const LineItems = () => {
         }))
         setErrors({});
     }
-    const handleSpecification = (row) => {
-        setFormData((prev) => ({
-            ...prev,
-            specification : false,
-            specifications: row.specNote
-        }));
-    };
+
 
     //hybird functionality
 
@@ -1324,7 +1320,7 @@ const LineItems = () => {
                         </PGrid>
 
 
-                        {/* specifications */}
+                        {/* Spacifications */}
                         <hr className="my-4" />
                         <PGrid container className={Labels.margin.mb4}>
                             <PTypography
@@ -1520,6 +1516,7 @@ const LineItems = () => {
                                             //type={Labels.flag.file}
                                             multiple={true}
                                             maxLength={5}
+                                            disabled={saving}
                                         />
                                         <PTypography
                                             labelText={<span style={{ paddingTop: "10px", display: "block" }}>"You may attach up to 5 files of no more than 20mb each.."</span>}
@@ -1540,6 +1537,7 @@ const LineItems = () => {
                                         <PButton
                                             label={getLabel("lbl128")}
                                             variant="outlined"
+                                            disabled={saving}
                                             onClick={(e) => handleSubmit(e, false)}
                                             width={180}
                                             height={50}
@@ -1555,12 +1553,13 @@ const LineItems = () => {
                                                     key={index}
                                                     file={file}
                                                     onPreview={() => handlePreview(index)}
-                                                    onDelete={() =>
+                                                    onDelete={() => {
+                                                        if (saving) return;
                                                         setFormData((prev) => ({
                                                             ...prev,
                                                             files: prev.files.filter((_, i) => i !== index),
-                                                        }))
-                                                    }
+                                                        }));
+                                                    }}
                                                 />
                                             </PGrid>
                                         ))}
@@ -1584,6 +1583,7 @@ const LineItems = () => {
                                 <PButton
                                     label={getLabel("lbl37")}
                                     variant="outlined"
+                                    disabled={saving}
                                     onClick={(e) => handleExitDraft(e)}
                                     width={200}
                                 />
@@ -1592,6 +1592,7 @@ const LineItems = () => {
                                 <PButton
                                     label={getLabel("lbl38")}
                                     variant="outlined"
+                                    disabled={saving}
                                     onClick={(e) => handleBack(e)}
                                     width={180}
                                 />
@@ -1600,6 +1601,7 @@ const LineItems = () => {
                                     label={getLabel("lbl39")}
                                     variant="contained"
                                     color={CommonColors.dark_blue}
+                                    disabled={saving}
                                     onClick={(e) => handleSubmit(e, true)}
                                     width={180}
                                     startIcon={<img src={arrow} alt="arrow" className="icon" />}
@@ -1628,20 +1630,15 @@ const LineItems = () => {
                 }))}
                 title={getLabel("lbl83")}
                 showCloseIcon={true}
-                maxWidth="lg"
+                maxWidth="md"
             >
-                <PGrid container>
+                <PGrid container className={Labels.margin.mb4}>
                     <PGrid item xs={12} sm={6} md={12}>
-                        <PSearch width="100%" placeholder={"Search a enquiry, specifications"}
+                        <PSearch width="100%" placeholder={"Search a enquiry, item category, specifications"}
                             onChange={(e) => setFormData((prev) => ({
                                 ...prev,
                                 search: e.target.value
                             }))} />
-                    </PGrid>
-                </PGrid>
-                <PGrid container>
-                    <PGrid item xs={12} sm={6} md={12}>
-                        <PTable columns={specification} rows={specifications} showPagination={true} onClick={handleSpecification} />
                     </PGrid>
                 </PGrid>
             </PDialog>
