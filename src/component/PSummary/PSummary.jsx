@@ -208,7 +208,7 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                                                     {isItemOpen && (
                                                         <>
                                                             {/* item actions sit above the first field (Category) so they're easy to find */}
-                                                            {section.step && (
+                                                            {section.step && userType?.toLowerCase() === Labels.userType.agency && (
                                                                 <PGrid container>
                                                                     <PGrid item xs={12} className="d-flex justify-content-end gap-2 pb-2">
                                                                         <Tooltip title="Edit item" arrow>

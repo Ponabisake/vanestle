@@ -15,7 +15,7 @@ import { ClientInfo_API, Dashboard_API, EnquiryDetails_API, LineItems_API, Suppl
 import { formatDate, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast } from "../../utils/commonFunction/common";
 import { PSummary } from "../../component/PSummary/PSummary";
 import PTable from "../../component/PTable/PTable";
-import { PostApi } from "../../utils/api/networking";
+import { GetApi, PostApi } from "../../utils/api/networking";
 import PTextField from "../../component/PTextField/PTextField";
 import PDatepicker from "../../component/PDatepicker/PDatepicker";
 import PDialog from "../../component/PDialog/PDialog";
@@ -79,6 +79,7 @@ const ProjectEnquiry = () => {
         historySearchTool: "",
         search: "",
         statusFlag: false,
+        quoteFlag : false,
 
         //editable state
         clientContact: "",
@@ -99,7 +100,11 @@ const ProjectEnquiry = () => {
         //spot flag
         isSpot: 0,
         isSpotCompleted: 0,
-        isProject: 0
+        isProject: 0,
+
+        //supplier Quotes
+        isSupplierCalculate: false,
+        isQuote: true
     });
     const [formDataList, setFormDataList] = useState({
         clientInfo: [],
@@ -171,12 +176,12 @@ const ProjectEnquiry = () => {
         previewSupplierQuotes: [],
 
         //Project Quotations
-        projectQuotes: [{ field: "itemName", header: "Item Name" }, { field: "quantity", header: "Quantity" },
-        { field: "unitPrice", header: `Unit Price (${symbol})` }, { field: "unitPrice", header: `Unit Price (${symbol})` },
-        { field: "totalPrice", header: `Total Price (${symbol})` }, { field: "totalPrice", header: `Total Price (${symbol})` }],
+        projectQuotes: [{ field: "itemName", header: "Item Name" }, { field: "quoteQtyOrSize", header: "Quantity" },
+        { field: "unitPrice", header: `Unit Price (${symbol})` }, { field: "euroUnitPrice", header: `Unit Price (₣)` },
+        { field: "itemSellPriceDis", header: `Total Price (${symbol})` }, { field: "euroRatePrice", header: `Total Price (₣)` }],
         projectClientQuotes: [],
 
-        clientQuote: [{ field: "label" }, { field: "value", align: "right" }],
+        clientQuote: [{ field: "label" }, { field: "value" }, { field: "euroValue" }],
         clientQuotes: [],
 
         //Supplier Quotations
@@ -232,58 +237,110 @@ const ProjectEnquiry = () => {
             const response = await PostApi(Dashboard_API.GetDetails, {
                 Enquiryid: id,
             });
-            const enqResponse = await PostApi(LineItems_API.GetEnqLineItemsMaster, {
-                TypeOfJob: response.enqlineItems[0].printornonprint,
-            });
-            const projectResponse = await PostApi(ProjectEnquiry_API.GetProjectDetails, {
-                enquiryid: id,
-                Currency: currency,
-                Country: country
-            });
-            const supplierResponse = await PostApi(Suppliers_API.GetEnqSupplierMaster, {
-                currency: currency,
-                Country: country
-            });
 
+            if (userType?.toLowerCase() === Labels.userType.agency) {
 
-            const revisedQuotes = [...new Map(projectResponse.revisedQuotes.map(x => [x.itemNumber, x])).values()]
-                .map(x => ({
-                    isSubTitle: true,
-                    subTitle: x.itemName,
-                    items: projectResponse.revisedQuotes.filter(y => y.itemNumber === x.itemNumber)
-                }));
-
-            const requestQuotes = [...new Map(projectResponse.requestQuotes.map(x => [x.itemNumber, x])).values()]
-                .map(x => {
-                    const items = projectResponse.requestQuotes.filter(y => y.itemNumber === x.itemNumber).filter(Boolean);
-                    return {
-                        isSubTitle: true,
-                        subTitle: x.itemName,
-                        supplierLink: items.length >= 2 && response.statusId >= 4,
-                        items
-                    };
+                const enqResponse = await PostApi(LineItems_API.GetEnqLineItemsMaster, {
+                    TypeOfJob: response.enqlineItems[0].printornonprint,
+                });
+                const projectResponse = await PostApi(ProjectEnquiry_API.GetProjectDetails, {
+                    enquiryid: id,
+                    Currency: currency,
+                    Country: country
+                });
+                const supplierResponse = await PostApi(Suppliers_API.GetEnqSupplierMaster, {
+                    currency: currency,
+                    Country: country
                 });
 
-            const projectSavings = [...new Map(projectResponse.savingsResponseDto.details.map(x => [x.itemNumber, x])).values()]
-                .map(x => ({
-                    isSubTitle: true,
-                    subTitle: x.itemName,
-                    items: projectResponse.savingsResponseDto.details.filter(y => y.itemNumber === x.itemNumber)
-                }));
+                const revisedQuotes = [...new Map(projectResponse.revisedQuotes.map(x => [x.itemNumber, x])).values()]
+                    .map(x => ({
+                        isSubTitle: true,
+                        subTitle: x.itemName,
+                        items: projectResponse.revisedQuotes.filter(y => y.itemNumber === x.itemNumber)
+                    }));
 
-            const savingsSummary = [...new Map(projectResponse.savingsResponseDto.itemWiseSummary.map(x => [x.itemNumber, x])).values()]
-                .map(x => ({
-                    isSubTitle: true,
-                    subTitle: x.itemName,
-                    items: projectResponse.savingsResponseDto.itemWiseSummary.filter(y => y.itemNumber === x.itemNumber)
-                }));
+                const requestQuotes = [...new Map(projectResponse.requestQuotes.map(x => [x.itemNumber, x])).values()]
+                    .map(x => {
+                        const items = projectResponse.requestQuotes.filter(y => y.itemNumber === x.itemNumber).filter(Boolean);
+                        return {
+                            isSubTitle: true,
+                            subTitle: x.itemName,
+                            supplierLink: items.length >= 2 && response.statusId >= 4,
+                            items
+                        };
+                    });
 
-            const previewQuotes = [...new Map(projectResponse.previewQuotes.map(x => [x.itemNumber, x])).values()]
-                .map(x => ({
-                    isSubTitle: true,
-                    subTitle: x.itemName,
-                    items: projectResponse.previewQuotes.filter(y => y.itemNumber === x.itemNumber)
+                const projectSavings = [...new Map(projectResponse.savingsResponseDto.details.map(x => [x.itemNumber, x])).values()]
+                    .map(x => ({
+                        isSubTitle: true,
+                        subTitle: x.itemName,
+                        items: projectResponse.savingsResponseDto.details.filter(y => y.itemNumber === x.itemNumber)
+                    }));
+
+                const savingsSummary = [...new Map(projectResponse.savingsResponseDto.itemWiseSummary.map(x => [x.itemNumber, x])).values()]
+                    .map(x => ({
+                        isSubTitle: true,
+                        subTitle: x.itemName,
+                        items: projectResponse.savingsResponseDto.itemWiseSummary.filter(y => y.itemNumber === x.itemNumber)
+                    }));
+
+                const previewQuotes = [...new Map(projectResponse.previewQuotes.map(x => [x.itemNumber, x])).values()]
+                    .map(x => ({
+                        isSubTitle: true,
+                        subTitle: x.itemName,
+                        items: projectResponse.previewQuotes.filter(y => y.itemNumber === x.itemNumber)
+                    }));
+
+                setFormDataList(prev => ({
+                    ...prev,
+                    supplierMaster: supplierResponse,
+                    savingsType: enqResponse.savingsType,
+                    savingsReasons: projectResponse.savingReasons,
+                    historyLogs: projectResponse.historyLogs,
+                    lineItemLogs: projectResponse.lineItemLogs,
+                    //historySearches: projectResponse.historySearches,
+                    revisedQuotes: revisedQuotes,
+                    requestQuotes: requestQuotes,
+                    calculationDetails: projectResponse.calculationDetails,
+                    calculationSupplierlogs: projectResponse.calculationSupplierlogs,
+                    projectSavings: projectSavings,
+                    savingsSummary: savingsSummary,
+                    savingsResponseDto: projectResponse.savingsResponseDto,
+                    deliveryOrder: projectResponse.deliveryOrder,
+                    status: projectResponse.projectStatus,
+                    previewSupplierQuotes: previewQuotes,
+                    materialUsed: enqResponse.materialUsed,
+                    projectClientQuotes: clientQuotes.data.items,
+                    clientQuotes: clientQuotes.data.totals
                 }));
+                setFormData(prev => ({
+                    ...prev,
+                    calculateFlag: projectResponse.requestQuotes[0].initialQuote > 0,
+                    rfqFlag: projectResponse.calculationDetails?.length === 0,
+                    marginFlag: projectResponse.calculationDetails?.length > 0,
+                    psFlag: !projectResponse.savingsResponseDto.details[0]?.previousPrice > 0,
+                }));
+                await clientInfoMaster(response.enqClientinfo.divisionid);
+            }
+            else if (userType?.toLowerCase() === Labels.userType.supplier) {
+                const response = await PostApi(ProjectEnquiry_API.GetSupplierQuotes, {
+                    enqId: id,
+                    username: userName
+                });
+                setFormDataList(prev => ({
+                    ...prev,
+                    projectSupplierQuotes: response.data.items,
+                }));
+            }
+            else {
+                const clientQuotes = await GetApi(`${ProjectEnquiry_API.GetClientQuotes}?enqId=${id}`);
+                setFormDataList(prev => ({
+                    ...prev,
+                    projectClientQuotes: clientQuotes.data.items,
+                    clientQuotes: clientQuotes.data.totals
+                }));
+            }
 
             setFormDataList(prev => ({
                 ...prev,
@@ -291,39 +348,17 @@ const ProjectEnquiry = () => {
                 clientInfo: response.enqClientinfo,
                 enquiryDetails: response.enqProjectinfo,
                 suppliers: response.supplierinfo,
-                supplierMaster: supplierResponse,
-                savingsType: enqResponse.savingsType,
-                savingsReasons: projectResponse.savingReasons,
-                historyLogs: projectResponse.historyLogs,
-                lineItemLogs: projectResponse.lineItemLogs,
-                //historySearches: projectResponse.historySearches,
-                revisedQuotes: revisedQuotes,
-                requestQuotes: requestQuotes,
-                calculationDetails: projectResponse.calculationDetails,
-                calculationSupplierlogs: projectResponse.calculationSupplierlogs,
-                projectSavings: projectSavings,
-                savingsSummary: savingsSummary,
-                savingsResponseDto: projectResponse.savingsResponseDto,
-                deliveryOrder: projectResponse.deliveryOrder,
-                status: projectResponse.projectStatus,
-                previewSupplierQuotes: previewQuotes,
-                materialUsed: enqResponse.materialUsed
             }));
+
             setFormData(prev => ({
                 ...prev,
                 quote: response.enqProjectinfo?.quoteBy,
-                calculateFlag: projectResponse.requestQuotes[0].initialQuote > 0,
-                rfqFlag: projectResponse.calculationDetails?.length === 0,
-                marginFlag: projectResponse.calculationDetails?.length > 0,
-                psFlag: !projectResponse.savingsResponseDto.details[0]?.previousPrice > 0,
                 statusId: response.statusId,
                 projectStatus: response.jobstatus,
                 isSpotCompleted: response.isSpotcompleted,
                 isSpot: response.spotNeeded,
                 isProject: response.isprojectsavings
             }));
-
-            await clientInfoMaster(response.enqClientinfo.divisionid);
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
         } finally {
@@ -838,8 +873,9 @@ const ProjectEnquiry = () => {
         }));
     };
 
-    const isQuote = formData.quote == 1 && formData.rfq;
-    const isUnit = formData.quote == 2 && formData.rfq;
+    const isSupplier = userType?.toLowerCase() === Labels.userType.supplier.toLowerCase();
+    const isQuote = formData.quote == 1 && (isSupplier || formData.rfq);
+    const isUnit = formData.quote == 2 && (isSupplier || formData.rfq);
 
     const requestQuotes = [
         { field: "supplierName", header: "Supplier" },
@@ -1097,6 +1133,17 @@ const ProjectEnquiry = () => {
             emailAddress: email,
         }
 
+        const items = formDataList.projectSupplierQuotes.map(item => ({
+            enquiryDetailsId: Number(item.enquiryDetailsId),
+            unitPrice: Number(item.unitPrice),
+            totalPrice: Number(item.totalPrice)
+        }));
+
+        const supplierQuote = {
+            enqId: id,
+            username: userName,
+            items: items
+        }
         try {
             switch (flag) {
                 case "status":
@@ -1144,6 +1191,11 @@ const ProjectEnquiry = () => {
                     response = await PostApi(ProjectEnquiry_API.UpdateSurvey, updateSurvey);
                     break;
 
+                case "quote":
+                    activeTab = "Your Quote Submissions";
+                    response = await PostApi(ProjectEnquiry_API.SaveSupplierQuotes, supplierQuote);
+                    break;
+
                 default:
                     return;
             }
@@ -1176,39 +1228,53 @@ const ProjectEnquiry = () => {
     const clientQuotes = [
         {
             label: "Item Subtotal",
-            value: 0.00
+            value: formDataList.clientQuotes.itemSubtotal,
+            euroValue: formDataList.clientQuotes.euroItemSubtotal
         },
         {
             label: "Tax Amount",
-            value: 0.00
+            value: formDataList.clientQuotes.tax,
+            euroValue: formDataList.clientQuotes.euroTax
         },
         {
             label: "Total",
-            value: 0.00
-        },
+            value: formDataList.clientQuotes.total,
+            euroValue: formDataList.clientQuotes.euroTotal,
+            total : Labels.flag.total
+        }
     ];
 
     //Supplier Quotations
 
-    const handleQuoteInputChange = (data, Id, enquiryId, field) => {
-        setFormDataList(prev => ({
-            ...prev,
-            projectSupplierQuotes: prev.projectSupplierQuotes.map(item => (
-                item.id === Id ? { ...item, [field]: data }
-                    : item
-            ))
-        }));
-    }
+    const handleQuoteInputChange = (data, Id, field) => {
+        setFormDataList(prev => {
+            const currentItem = prev.projectSupplierQuotes.find(
+                item => item.id === Id
+            );
+            if (!currentItem || currentItem[field] === data) {
+                return prev;
+            }
+            return {
+                ...prev,
+                projectSupplierQuotes: prev.projectSupplierQuotes.map(item =>
+                    item.id === Id ? { ...item, [field]: data } : item
+                )
+            };
+        });
+    };
     const renderQuoteEditableField = (field) => ({
         render: (row) => {
             return (
                 <PTextField
                     name={field}
                     value={row[field]}
-                    onChange={(e) =>
-                        handleQuoteInputChange(e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1").replace(/^(\d*\.\d{0,2}).*$/, "$1"),
-                            row.id, row.enquiryId, field
-                        )}
+                    onChange={(e) => {
+                        const value = e.target.value
+                            .replace(/[^0-9.]/g, "")
+                            .replace(/(\..*)\./g, "$1")
+                            .replace(/^(\d*\.\d{0,2}).*$/, "$1");
+                        handleQuoteInputChange(value, row.id, field);
+                    }}
                     width={100}
                     sx={{
                         "& .MuiInputBase-root": {
@@ -1220,10 +1286,11 @@ const ProjectEnquiry = () => {
             )
         }
     });
+
     const supplierQuotes = [
         { field: "itemName", header: "Item Name" },
-        { field: "initialQuote", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("initialQuote"))},
-        { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")) },
+        { field: "totalPrice", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("totalPrice")), type: "rupee" },
+        { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")), type: "rupee" },
     ]
 
     return (
@@ -2310,21 +2377,77 @@ const ProjectEnquiry = () => {
                                     label={getLabel("lbl250")}
                                     variant="outlined"
                                     color={CommonColors.grey.main}
-                                    //onClick={(e) => handleQuotation(e, 6)}
+                                    onClick={async (e) => {
+                                        await handleSubmit(e, "quote")
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            isQuote: false,
+                                            isSupplierCalculate: true
+                                        }));
+                                    }}
                                     width={180}
+                                    disabled={formData.isSupplierCalculate}
                                 />
                                 <PButton
                                     label={getLabel("lbl251")}
                                     variant="contained"
                                     color={CommonColors.dark_blue}
-                                    //onClick={(e) => handleQuotation(e, 4)}
-                                    width={180}
+                                    onClick={() =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            quoteFlag : true
+                                        }))
+                                    }
+                                    width={250}
                                     startIcon={<img src={arrow} alt="arrow" className="icon" />}
+                                    disabled={formData.isQuote}
                                 />
                             </PGrid>
                         </PGrid>
                     </PCard>
                 )}
+
+
+                {/* Quote dialog */}
+                <PDialog
+                    open={formData.quoteFlag}
+                    onClose={() => setFormData((prev) => ({
+                        ...prev,
+                        quoteFlag: false,
+                    }))}
+                    title={"Success"}
+                    showCloseIcon={true}
+                    maxWidth="sm"
+                    actions={
+                        < PGrid className="d-flex align-items-center justify-content-end gap-2" >
+                            <PButton
+                                fullWidth
+                                label={"Close"}
+                                variant="outlined"
+                                onClick={() =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        quoteFlag: false,
+                                        activeTab : "Job Summary"
+                                    }))}
+                                color={CommonColors.grey.main}
+                                width={120}
+                            />
+                        </PGrid >
+                    }
+
+                >
+                    <PGrid container className={Labels.margin.mb4}>
+                        <PGrid item xs={12} sm={6} md={12}>
+                            <PTypography
+                                labelText={`${"Quote Sent Successfully"}`}
+                                flag={Labels.fontFlags.errorLbl}
+                                color={CommonColors.grey.main}
+                                weight={FontWeight.light}
+                            />
+                        </PGrid>
+                    </PGrid>
+                </PDialog>
 
                 {/* Status dialog */}
                 <PDialog

@@ -12,6 +12,7 @@ import {
   ListItemIcon
 } from "@mui/material";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Language } from "@mui/icons-material";
 import { Labels } from "../../utils/constants/labels";
@@ -46,7 +47,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
           ? {
             submenu: [
               {
-                name: getLabel("lbl262") ,
+                name: getLabel("lbl262"),
                 route: labelRoutes.dashboard,
                 menuId: menuId,
               },
@@ -77,7 +78,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
       ? [{
         name: getLabel("lbl263"),
         route: labelRoutes.dashboard,
-        menuId: 2,
+        menuId: 3,
       }]
       : []
     ),
@@ -237,7 +238,23 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, marginRight: "1.25rem" }}>
 
-          {/* NOTIFICATION */}
+          {!isDashboard && (
+            <IconButton
+              onClick={() => navigate(labelRoutes.vaDashboard)}
+              sx={{
+                color: "#16133F",
+                border: "1px solid #16133F",
+                "&:hover": {
+                  bgcolor: "#16133F",
+                  color: "#fff",
+                  border: "1px solid #16133F",
+                },
+              }}
+            >
+              <HomeOutlinedIcon fontSize="small" />
+            </IconButton>
+          )}
+
           <IconButton
             sx={{
               color: "#16133F",
@@ -258,7 +275,6 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
             </Badge>
           </IconButton>
 
-          {/* LANGUAGE */}
           <IconButton
             onMouseEnter={(e) => handleOpenMenu(e, "language")}
             sx={{
