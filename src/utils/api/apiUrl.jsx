@@ -56,7 +56,8 @@ export const LineItems_API = {
   // GET ?enqDetailsId=&fileName= : one of the item's files (listed in quoteFiles of GetDetails)
   GetLineItemFile: Base_Url + "/VA/LineItemFile",
   GetEnqLineItemsMaster: Base_Url + "/VA/EnqLineItemsDropdowns",
-  GetEnqDuplicate: Base_Url + "/VA/EB_Duplicate"
+  GetEnqDuplicate: Base_Url + "/VA/EB_Duplicate",
+  GetExistingspecification: Base_Url + "/VA/GetExistingspecification"
 }
 export const Suppliers_API = {
   GetEnqSupplierMaster: Base_Url + "/VA/GetSupplier",
@@ -77,6 +78,9 @@ export const ProjectEnquiry_API = {
   UpdatePreviewQuotes : Base_Url + "/VA/UpdatePreviewQuotes",
   GetPreviewQuotes : Base_Url + "/VA/GetPreviewQuotes",
   UpdateSurvey : Base_Url + "/VA/UpdateSurvey",
+  GetClientQuotes: Base_Url + "/VA/GetClientQuotes",
+  GetSupplierQuotes: Base_Url + "/VA/GetSupplierQuotes",
+  SaveSupplierQuotes: Base_Url + "/VA/SaveSupplierQuotes"
 }
 
 export const Spot_API = {

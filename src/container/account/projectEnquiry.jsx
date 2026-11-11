@@ -311,8 +311,6 @@ const ProjectEnquiry = () => {
                     status: projectResponse.projectStatus,
                     previewSupplierQuotes: previewQuotes,
                     materialUsed: enqResponse.materialUsed,
-                    projectClientQuotes: clientQuotes.data.items,
-                    clientQuotes: clientQuotes.data.totals
                 }));
                 setFormData(prev => ({
                     ...prev,
@@ -465,6 +463,7 @@ const ProjectEnquiry = () => {
         subTitle: `${item.itemTitle}`,
         enquiryId: item.enquiryId,
         items: item.items,
+        files: item.files, 
     }));
 
     const sections = getSummarySections({ menuId, lineItems, getLabel });
@@ -1240,7 +1239,7 @@ const ProjectEnquiry = () => {
             label: "Total",
             value: formDataList.clientQuotes.total,
             euroValue: formDataList.clientQuotes.euroTotal,
-            total : Labels.flag.total
+            type : Labels.flag.total
         }
     ];
 
