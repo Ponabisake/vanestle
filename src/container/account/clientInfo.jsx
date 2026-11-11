@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import PTypography from "../../component/PTypography/PTypography";
+import PHeadingAccent, { PmgColors } from "../../component/PHeadingAccent/PHeadingAccent";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
@@ -27,7 +28,7 @@ import { userDetails } from "../../redux/actionType/actionType";
 const ClientInfo = () => {
     const { getLabel } = useLanguage();
     const dispatch = useDispatch();
-    const { countryID, userID, fkID, role, menuId, country, id } = useSelector((state) => state.userDetails.user);
+    const { countryID, userID, fkID, role, menuId, country, id, userName } = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const [allowRedirect, setAllowRedirect] = useState(false);
@@ -182,6 +183,7 @@ const ClientInfo = () => {
             if (id !== 0) {
                 const data = await PostApi(Dashboard_API.GetDetails, {
                     Enquiryid: id,
+                    Username: userName,
                 });
                 setFormDataList(prev => ({
                     ...prev,
@@ -536,7 +538,7 @@ const ClientInfo = () => {
                 <PGrid container className={`${Labels.margin.mb3} ${ccOpenFilter || brandOpenFilter ? "pe-none opacity-50" : ""}`}>
                     <PGrid item xs={12} sm={12} md={12}>
                         {/* <PCard> */}
-                        <div style={{ background: "#ED3B25", width: "36px", height: "11px" }}></div>
+                        <PHeadingAccent color={PmgColors.red} />
                         <PGrid container className={Labels.margin.mb4}>
                             <PTypography
                                 labelText={getLabel("lbl25")}

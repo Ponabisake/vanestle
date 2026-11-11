@@ -1,0 +1,132 @@
+/* Project Enquiry → Attachment (PEnquiryAttachments) */
+.pea-picker {
+  position: relative;
+}
+.pea-picker-spinner {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  margin-top: -8px;
+}
+.pea-usage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pea-usage-bar {
+  flex: 1;
+  max-width: 220px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ecebf3;
+  overflow: hidden;
+}
+.pea-usage-bar span {
+  display: block;
+  height: 100%;
+  background: #2d2f75;
+}
+.pea-usage-text {
+  font-size: 12px;
+  color: #6b7280;
+}
+.pea-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: #2d2f75;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pea-file:hover:not(:disabled) .pea-file-name {
+  text-decoration: underline;
+}
+.pea-file:focus-visible {
+  outline: 2px solid #2d2f75;
+  outline-offset: 2px;
+}
+.pea-file.is-missing {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+.pea-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.pea-tag {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f0eef5;
+  color: #4b4d8a;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pea-note {
+  display: inline-block;
+  max-width: 260px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.pea-missing {
+  color: #b45309;
+  font-size: 13px;
+}
+.pea-actions {
+  display: inline-flex;
+  gap: 2px;
+  white-space: nowrap;
+}
+.pea-actions .MuiIconButton-root {
+  color: #2d2f75;
+}
+.pea-actions .pea-remove {
+  color: #b91c1c;
+}
+.pea-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pea-form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pea-ext {
+  flex-shrink: 0;
+  color: #6b7280;
+  font-weight: 600;
+}
+.pea-form-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .pea-form-pair {
+    grid-template-columns: 1fr;
+  }
+}
+.pea-hint {
+  margin-top: -8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.pea-error {
+  color: #d32f2f;
+  font-size: 13px;
+}
+.pea-confirm {
+  margin: 0;
+  line-height: 1.5;
+}

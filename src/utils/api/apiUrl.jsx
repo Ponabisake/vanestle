@@ -83,6 +83,20 @@ export const ProjectEnquiry_API = {
   SaveSupplierQuotes: Base_Url + "/VA/SaveSupplierQuotes"
 }
 
+// Project Enquiry → Attachment (tblAttachments; files under Upload\{EnqId}\)
+export const Attachment_API = {
+  // { enqId, userId } → { files, totalBytes, maxTotalBytes, canUpload }
+  GetAttachments: Base_Url + "/VA/GetAttachments",
+  // multipart: enqId, userId, files
+  UploadAttachments: Base_Url + "/VA/UploadAttachments",
+  // { id, enqId, userId, name (no extension), type, note }
+  UpdateAttachment: Base_Url + "/VA/UpdateAttachment",
+  // { id, enqId, userId }
+  RemoveAttachment: Base_Url + "/VA/RemoveAttachment",
+  // GET ?id=&enqId=&userId=
+  GetAttachmentFile: Base_Url + "/VA/AttachmentFile",
+}
+
 export const Spot_API = {
   GetSpotEnvironmentResult : Base_Url + "/VA/GetSpotEnvironmentResult",
   GetSpotEnvItems : Base_Url +  "/VA/SpotEnvItems",

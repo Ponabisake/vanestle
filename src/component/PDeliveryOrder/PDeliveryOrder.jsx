@@ -10,7 +10,8 @@ import PButton from "../PButton/PButton";
 import { useLanguage } from "../../utils/constants/language";
 import PTextField from "../PTextField/PTextField";
 import SearchIcon from "@mui/icons-material/Search";
-import EditIcon from "@mui/icons-material/Edit";
+import { PPillButton } from "../PLineItem/PLineItem";
+import { PSectionHeading, PmgColors } from "../PHeadingAccent/PHeadingAccent";
 import { isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { PostApi } from "../../utils/api/networking";
 import { ProjectEnquiry_API } from "../../utils/api/apiUrl";
@@ -68,7 +69,8 @@ const PDeliveryOrder = (props) => {
             , { field: "addressLineTwo", header: getLabel("lbl328") }, { field: "addressLineThree", header: getLabel("lbl329") }
             , { field: "nameorDept", header: getLabel("lbl330") }, { field: "contactNo", header: getLabel("lbl331") }, { field: "remarks", header: getLabel("lbl332") }
             , {
-            field: "id", header: "", render: (row) => (<EditIcon onClick={() => handleEdit(row)} style={{ cursor: "pointer" }} color={CommonColors.yellow.main} variant="outlined" />)
+            field: "id", header: "", render: (row) => (
+                <PPillButton iconOnly label="Edit" onClick={() => handleEdit(row)} />)
         }],
     })
 
@@ -186,11 +188,7 @@ const PDeliveryOrder = (props) => {
             <div className={Labels.margin.mb3}>
                 <PGrid container className={Labels.margin.mb3}>
                     <PGrid item xs={12} sm={6} md={6}>
-                        <PTypography
-                            labelText={`${"Delivery Order"}`}
-                            flag={Labels.fontFlags.header}
-                            weight={FontWeight.regular}
-                        />
+                        <PSectionHeading accent={PmgColors.gold} label="Delivery Order" />
                     </PGrid>
                 </PGrid>
                 <Divider sx={{ mb: 2 }} />

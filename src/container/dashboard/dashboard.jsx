@@ -787,13 +787,15 @@ const dashboard = () => {
           </>
         )}
 
+        {/* Two rows: [search + filters | chart type] then [table | chart], so the chart card
+            starts on the table's top line and (stretched) ends on its bottom line. */}
         <PGrid container spacing={2} className={Labels.margin.mb3} style={{ display: "flex", alignItems: "stretch" }}>
-          <PGrid item xs={12} lg={8} xl={9} style={{ display: "flex", flexDirection: "column" }}>
+          <PGrid item xs={12} lg={8} xl={9} className={Labels.margin.mb3}>
             <PGrid className={Labels.margin.mb3}>
               <PSearch width="100%" placeholder={getLabel("lbl298")} onChange={(e) => setFormData({ ...formData, search: e.target.value })} value={formData.search} />
             </PGrid>
 
-            <PGrid container className={Labels.margin.mb3} spacing={0}>
+            <PGrid container spacing={0}>
               {[Labels.userType.agency, Labels.userType.client].includes(userType?.toLowerCase()) && (
                 <PGrid item xs={12} sm={6} md={4}>
                   <PDropdown
@@ -850,21 +852,10 @@ const dashboard = () => {
                 </Box>
               </PGrid>
             </PGrid>
-
-            <PGrid>
-              <div style={{ flexGrow: 1 }}>
-                {loading ? (
-                  <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
-                ) : (
-                  <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} columnChooser storageKey={`dashboard.${userType?.toLowerCase() || "all"}`} emptyTitle="No enquiries found" emptyMessage="Try adjusting the search or filters, or reset them to see all enquiries." />
-                )}
-              </div>
-            </PGrid>
-
           </PGrid>
 
-          <PGrid item xs={12} lg={4} xl={3} style={{ display: "flex", flexDirection: "column" }} className="p-0">
-            <div style={{ display: "flex", paddingLeft: "20px", paddingBottom: "20px" }} >
+          <PGrid item xs={12} lg={4} xl={3}>
+            <div style={{ display: "flex" }}>
               <PToggleCircle
                 options={chartOptions}
                 value={formData.chartType}
@@ -872,11 +863,22 @@ const dashboard = () => {
                 disabled={loading}
               />
             </div>
+          </PGrid>
 
+          <PGrid item xs={12} lg={8} xl={9}>
+            {loading ? (
+              <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
+            ) : (
+              <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} columnChooser storageKey={`dashboard.${userType?.toLowerCase() || "all"}`} emptyTitle="No enquiries found" emptyMessage="Try adjusting the search or filters, or reset them to see all enquiries." />
+            )}
+          </PGrid>
+
+          <PGrid item xs={12} lg={4} xl={3} style={{ display: "flex", flexDirection: "column" }}>
             <Suspense>
-              <div>
+              {/* stretched to the table row's height, so the chart card ends level with the table */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
                 {loading ? (
-                  <Skeleton variant="rectangular" height={350} width="100%" sx={{ borderRadius: 2 }} />
+                  <Skeleton variant="rectangular" height="100%" width="100%" sx={{ borderRadius: 2, flex: 1, minHeight: 350 }} />
                 ) : (
                   SelectedChart && chartData.length > 0 && (
                     <SelectedChart data={chartData} onSliceClick={handleOnClick} />

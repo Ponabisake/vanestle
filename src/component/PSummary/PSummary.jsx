@@ -6,11 +6,9 @@ import PGrid from "../PGrid/PGrid";
 import PTypography from "../PTypography/PTypography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import EditIcon from "@mui/icons-material/Edit";
 import { useState, Fragment } from "react";
 import { PLineItem, PPillButton } from "../PLineItem/PLineItem";
 import { useNavigate, useLocation } from "react-router-dom";
-import PButton from "../PButton/PButton";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import UpdateLineItems from "../../container/account/updateLineItems";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -224,12 +222,9 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                                             {section.step < currentStep && (
                                                 <PGrid container>
                                                     <PGrid item xs={12} className="d-flex justify-content-end">
-                                                        <PButton
-                                                            label="Edit"
-                                                            variant="contained"
-                                                            color={CommonColors.grey.main}
-                                                            startIcon={<EditIcon />}
-                                                            width={80}
+                                                        <PPillButton
+                                                            label={layout === "row" ? "Edit step" : "Edit"}
+                                                            iconOnly={layout === "row"}
                                                             onClick={() => handleEdit(section.step)}
                                                         />
                                                     </PGrid>

@@ -9,17 +9,21 @@ import { FontFamily, FontSize } from "../../utils/constants/fonts";
  * Keeping no copy of its own means a list cleared or shortened by the parent (after a save,
  * after removing an attachment) is not brought back on the next selection.
  */
+const DEFAULT_EXTENSIONS = [
+    "pdf", "png", "jpg", "jpeg",
+    "doc", "docx", "ppt", "pptx",
+    "xls", "xlsx", "msg"
+];
+const DEFAULT_MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+/** allowedExtensions (no dots) and maxFileSize (bytes) default to the step 3 limits. */
 export default function PFileUpload({ label = "", value, onChange, disabled = false, name = "", helperText = "",
-    variant = "outlined", multiple = false, maxLength = 5, width = "100%", placeholder = "" }) {
+    variant = "outlined", multiple = false, maxLength = 5, width = "100%", placeholder = "",
+    allowedExtensions = DEFAULT_EXTENSIONS, maxFileSize = DEFAULT_MAX_FILE_SIZE }) {
 
     const selectedFiles = Array.isArray(value) ? value : [];
     const [fileError, setFileError] = useState("");
-
-    const allowedExtensions = [
-        "pdf", "png", "jpg", "jpeg",
-        "doc", "docx", "ppt", "pptx",
-        "xls", "xlsx", "msg"
-    ];
+    const maxSizeLabel = `${Math.round(maxFileSize / (1024 * 1024))}MB`;
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files || []);
@@ -28,14 +32,14 @@ export default function PFileUpload({ label = "", value, onChange, disabled = fa
         for (let file of files) {
             const ext = file.name.split(".").pop().toLowerCase();
             const isValidType = allowedExtensions.includes(ext);
-            const isValidSize = file.size <= 20 * 1024 * 1024;
+            const isValidSize = file.size <= maxFileSize;
             if (!isValidType) {
                 errorMsg = "Invalid file type";
                 continue;
             }
 
             if (!isValidSize) {
-                errorMsg = "File size exceeds 20MB";
+                errorMsg = `File size exceeds ${maxSizeLabel}`;
                 continue;
             }
 
@@ -96,7 +100,7 @@ export default function PFileUpload({ label = "", value, onChange, disabled = fa
                             disabled={disabled}
                             onChange={handleFileChange}
                             id={`upload-${name}`}
-                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.msg"
+                            accept={allowedExtensions.map((ext) => `.${ext}`).join(",")}
                         />
 
                         <label style={{ cursor: "pointer" }} htmlFor={`upload-${name}`}><UploadFileIcon /> </label>

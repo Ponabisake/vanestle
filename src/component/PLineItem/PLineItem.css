@@ -202,6 +202,11 @@
   border-color: #2d2f75;
   color: #fff;
 }
+.pli-btn.MuiButton-root.Mui-disabled {
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
 .pli-btn.is-icon.MuiButton-root {
   width: 32px;
   height: 32px;

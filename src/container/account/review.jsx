@@ -55,7 +55,7 @@ const initials = (name = "") =>
 
 const Review = () => {
     const { getLabel } = useLanguage();
-    const { userID, menuId, id , userType } = useSelector((state) => state.userDetails.user);
+    const { userID, menuId, id, userType, userName } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
 
     const navigate = useNavigate();
@@ -85,6 +85,7 @@ const Review = () => {
             setLoading(true);
             const response = await PostApi(Dashboard_API.GetDetails, {
                 Enquiryid: id,
+                Username: userName,
             });
             const supplierColor = ["success", "info", "primary", "warning"];
             const suppliers = response.supplierinfo.map((item, index) => ({

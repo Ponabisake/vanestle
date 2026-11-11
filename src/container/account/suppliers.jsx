@@ -1,5 +1,6 @@
 import { Box, Checkbox } from "@mui/material";
 import PTypography from "../../component/PTypography/PTypography";
+import PHeadingAccent, { PmgColors } from "../../component/PHeadingAccent/PHeadingAccent";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
@@ -23,7 +24,7 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const Suppliers = () => {
     const { getLabel } = useLanguage();
-    const { country, currency, fkID, menuId, userID, countryID, role, id } = useSelector((state) => state.userDetails.user);
+    const { country, currency, fkID, menuId, userID, countryID, role, id, userName } = useSelector((state) => state.userDetails.user);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
     const navigate = useNavigate();
     
@@ -72,6 +73,7 @@ const Suppliers = () => {
             if (id !== 0) {
                 const data = await PostApi(Dashboard_API.GetDetails, {
                     Enquiryid: id,
+                    Username: userName,
                 });
                 setFormDataList(prev => ({
                     ...prev,
@@ -159,7 +161,6 @@ const Suppliers = () => {
         const isValid = isCostAvoidance ? rows.length >= 2 : rows.length >= 1;
         setIsValidation(isValid);
         if (!isValid) {
-            toast(Labels.status.failure, isCostAvoidance ? Labels.suppliers.caRequired : Labels.suppliers.required);
             setAllowRedirect(false);
             return;
         }
@@ -205,7 +206,7 @@ const Suppliers = () => {
                 </PGrid>
                 <PGrid container className={Labels.margin.mb4} >
                     <PGrid item xs={12} sm={12} md={12}>
-                        <div style={{ background: "#512668", width: "36px", height: "11px" }}></div>
+                        <PHeadingAccent color={PmgColors.purple} />
                         <PGrid container className={Labels.margin.mb3}>
                             <PTypography
                                 labelText={getLabel("lbl23")}
@@ -271,7 +272,7 @@ const Suppliers = () => {
                             </PGrid>
                         </PGrid>
 
-                        {/* {!isValidation && (
+                        {!isValidation && (
                             <PGrid container className={Labels.margin.mb4}>
                                 <PGrid item xs={12}>
                                     <PTypography
@@ -282,7 +283,7 @@ const Suppliers = () => {
                                     />
                                 </PGrid>
                             </PGrid>
-                        )} */}
+                        )}
 
                         <PGrid container className="d-flex align-items-center justify-content-between">
                             <PGrid item xs={12} sm={6} md={8}>

@@ -2,6 +2,7 @@
 import { Box } from "@mui/material";
 import PGrid from "../../component/PGrid/PGrid";
 import PTypography from "../../component/PTypography/PTypography";
+import PHeadingAccent, { PmgColors } from "../../component/PHeadingAccent/PHeadingAccent";
 import { Labels } from "../../utils/constants/labels";
 import { CommonColors } from "../../utils/constants/colors";
 import { FontWeight } from "../../utils/constants/fonts";
@@ -78,6 +79,7 @@ const handleSubmit = async () => {
 return (
 <>
         <Box sx={{ py: 3 }}>
+                <PHeadingAccent color={PmgColors.gold} />
                 <PGrid container className={Labels.margin.mb4} >
                         <PTypography
                                 labelText={getLabel("lbl271")}

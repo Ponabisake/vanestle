@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Divider, Tooltip } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import PTable from "../PTable/PTable";
 import PGrid from "../PGrid/PGrid";
 import PTypography from "../PTypography/PTypography";
@@ -19,6 +19,8 @@ import CompareOutlinedIcon from "@mui/icons-material/CompareOutlined";
 import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import { PPillButton } from "../PLineItem/PLineItem";
+import { PSectionHeading, PmgColors } from "../PHeadingAccent/PHeadingAccent";
 import PTextField from "../PTextField/PTextField";
 import PDropdown from "../PDropdown/PDropdown";
 import { getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
@@ -62,7 +64,7 @@ const PSpotSection = ({ response }) => {
         environmentalType: [],
         impactDetails: [],
 
-        emissionFactors: [{ field: "country", header: getLabel("lbl09") }, { field: "emissionFactor", header: getLabel("lbl189") }],
+        emissionFactors: [{ field: "country", header: getLabel("lbl09") }, { field: "emissionFactor", header: getLabel("lbl189"), align: "right" }],
         emissionFactorsData: [{ country: "Australia", emissionFactor: 0.76 }, { country: "China", emissionFactor: 0.8953 },
         { country: "India", emissionFactor: 0.9405 }, { country: "Indonesia", emissionFactor: 0.811 },
         { country: "Japan", emissionFactor: 0.471 }, { country: "Malaysia", emissionFactor: 0.67 },
@@ -78,17 +80,8 @@ const PSpotSection = ({ response }) => {
         reason: ""
     });
 
-    const actionIconSx = {
-        color: "#6b7280",
-        cursor: "pointer",
-        padding: "1px",
-        borderRadius: "3px",
-        transition: "all 0.2s ease",
-        "&:hover": {
-            color: "#374151",
-            backgroundColor: "#f3f4f6"
-        }
-    };
+    // row action icons sit inside PPillButton, which owns colour/hover
+    const actionIconSx = { fontSize: 18 };
 
     
     useEffect(() => {
@@ -199,33 +192,17 @@ const PSpotSection = ({ response }) => {
     const renderActions = (row) => {
         const flag = formData.id === row.id;
         return (
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 {flag ? (
                     <>
-                        <Tooltip title="Save" arrow>
-                            <SaveOutlinedIcon sx={actionIconSx}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSave(row);
-                                }}
-                            />
-                        </Tooltip>
-
-                        <Tooltip title="Cancel" arrow>
-                            <CloseOutlinedIcon sx={actionIconSx}
-                                onClick={handleCancel}
-                            />
-                        </Tooltip>
+                        <PPillButton iconOnly label="Save" icon={<SaveOutlinedIcon sx={actionIconSx} />}
+                            onClick={() => handleSave(row)} />
+                        <PPillButton iconOnly label="Cancel" icon={<CloseOutlinedIcon sx={actionIconSx} />}
+                            onClick={handleCancel} />
                     </>
                 ) : (
-                    <Tooltip title="Edit" arrow>
-                        <EditOutlinedIcon sx={actionIconSx}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(row);
-                            }}
-                        />
-                    </Tooltip>
+                    <PPillButton iconOnly label="Edit" icon={<EditOutlinedIcon sx={actionIconSx} />}
+                        onClick={() => handleEdit(row)} />
                 )}
             </div>
         );
@@ -241,22 +218,13 @@ const PSpotSection = ({ response }) => {
         }
         data = data ?? row;
         return (
-            <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
-
-                <Tooltip title="View" arrow>
-                    <VisibilityOutlinedIcon sx={actionIconSx}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleView(row, flag);
-                        }}
-                    />
-                </Tooltip>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <PPillButton iconOnly label="View" icon={<VisibilityOutlinedIcon sx={actionIconSx} />}
+                    onClick={() => handleView(row, flag)} />
 
                 {["impact"].includes(flag) && (
-                    <Tooltip title="Compare" arrow>
-                        <CompareOutlinedIcon sx={actionIconSx}
-                            onClick={async (e) => {
-                                e.stopPropagation();
+                    <PPillButton iconOnly label="Compare" icon={<CompareOutlinedIcon sx={actionIconSx} />}
+                            onClick={async () => {
                                 const materialOptions = await BindMaterial(data?.materialused ?? row.materialused, "Compare");
                                 const typeOptions = await EnvironmentalType(data?.compareEnvironmentalPaperName ?? row.environmentalPaperName);
 
@@ -269,26 +237,20 @@ const PSpotSection = ({ response }) => {
                                     weight: data?.compareEnvironmentalPaperQuantity ?? row.environmentalPaperQuantity
                                 }));
                             }}
-                        />
-                    </Tooltip>
+                    />
                 )}
 
                 {[1].includes(Number(row.flag)) && (
-                    <Tooltip title="Non-Compare" arrow>
-                        <RuleOutlinedIcon sx={actionIconSx}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    nonCompare: true,
-                                    data: data,
-                                    reason: data?.compareEnvReason
-                                }));
-                            }}
-                        />
-                    </Tooltip>
+                    <PPillButton iconOnly label="Non-Compare" icon={<RuleOutlinedIcon sx={actionIconSx} />}
+                        onClick={() => setFormData((prev) => ({
+                            ...prev,
+                            nonCompare: true,
+                            data: data,
+                            reason: data?.compareEnvReason
+                        }))}
+                    />
                 )}
-            </div >
+            </div>
         );
     };
 
@@ -430,11 +392,17 @@ const PSpotSection = ({ response }) => {
                     name={field}
                     value={row[field]}
                     onChange={(e) => handleRowChange(row.id, field, e.target.value.replace(/[^0-9.]/g, ""))}
+                    inputProps={{ inputMode: "decimal" }}
                     width={100}
                     sx={{
                         "& .MuiInputBase-root": {
                             height: 40,
-                            minHeight: 45
+                            minHeight: 40
+                        },
+                        "& .MuiOutlinedInput-input": {
+                            height: "auto",
+                            textAlign: "right",
+                            fontVariantNumeric: "tabular-nums"
                         }
                     }}
                 />
@@ -479,7 +447,7 @@ const PSpotSection = ({ response }) => {
     const mainMaterial = [{ field: "materialused", header: getLabel("lbl201"), ...renderDropdownField("materialused", response) }
         , { field: "material", header: getLabel("lbl197"), ...renderDropdownField("material", formDataList.bindMaterial) }
         , { field: "typeofmaterial", header: getLabel("lbl311"), ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
-        , { field: "weight", header: getLabel("lbl313"), ...renderTextInputField("weight") }
+        , { field: "weight", header: getLabel("lbl313"), align: "right", ...renderTextInputField("weight") }
         , { field: "unit", header: getLabel("lbl314"), ...renderDropdownField("unit", unit) }
         , { field: "action", header: getLabel("lbl315"), render: (row) => renderActions(row) }
     ]
@@ -488,29 +456,29 @@ const PSpotSection = ({ response }) => {
         { field: "materialused", header: getLabel("lbl201"), ...renderDropdownField("materialused", response) }
         , { field: "material", header: getLabel("lbl312"), ...renderDropdownField("material", formDataList.bindMaterial) }
         , { field: "typeofmaterial", header: getLabel("lbl311"), ...renderDropdownField("typeofmaterial", formDataList.environmentalType) }
-        , { field: "weight", header: getLabel("lbl313"), ...renderTextInputField("weight") }
+        , { field: "weight", header: getLabel("lbl313"), align: "right", ...renderTextInputField("weight") }
         , { field: "unit", header: getLabel("lbl316"), ...renderDropdownField("unit", unit) }
         , { field: "action", header: getLabel("lbl315"), render: (row) => renderActions(row) }
     ]
 
-    const impactMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+    const impactMaterial = [{ field: "itemnumber", header: getLabel("lbl317"), align: "right" }
         , { field: "environmentalPaperGrade", header: getLabel("lbl318"), render: (row) => row.type === Labels.flag.total ? row.environmentalPaperName : row.environmentalPaperGrade }
-        , { field: "environmentalGhg", header: getLabel("lbl319") }, { field: "environmentalWater", header: getLabel("lbl320") }
-        , { field: "environmentalEnergy", header: getLabel("lbl321") }, { field: "environmentalWood", header: getLabel("lbl322") }
+        , { field: "environmentalGhg", header: getLabel("lbl319"), align: "right" }, { field: "environmentalWater", header: getLabel("lbl320"), align: "right" }
+        , { field: "environmentalEnergy", header: getLabel("lbl321"), align: "right" }, { field: "environmentalWood", header: getLabel("lbl322"), align: "right" }
         , { field: "explanation", header: getLabel("lbl323"), render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "impact") : "" }
     ]
 
-    const comparativeImpactMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+    const comparativeImpactMaterial = [{ field: "itemnumber", header: getLabel("lbl317"), align: "right" }
         , { field: "compareEnvironmentalPaperGrade", header: getLabel("lbl318"), render: (row) => row.type === Labels.flag.total ? row.compareEnvironmentalPaperName : row.compareEnvironmentalPaperGrade }
-        , { field: "compareEnvironmentalGhg", header: getLabel("lbl319") }, { field: "compareEnvironmentalWater", header: getLabel("lbl320") }
-        , { field: "compareEnvironmentalEnergy", header: getLabel("lbl321") }, { field: "compareEnvironmentalWood", header: getLabel("lbl322") }
+        , { field: "compareEnvironmentalGhg", header: getLabel("lbl319"), align: "right" }, { field: "compareEnvironmentalWater", header: getLabel("lbl320"), align: "right" }
+        , { field: "compareEnvironmentalEnergy", header: getLabel("lbl321"), align: "right" }, { field: "compareEnvironmentalWood", header: getLabel("lbl322"), align: "right" }
         , { field: "explanation", header: getLabel("lbl323"), render: (row) => row.type !== Labels.flag.total ? renderViewActions(row, "compare") : "" }
     ]
 
-    const totalMaterial = [{ field: "itemnumber", header: getLabel("lbl317") }
+    const totalMaterial = [{ field: "itemnumber", header: getLabel("lbl317"), align: "right" }
         , { field: "itemName", header: getLabel("lbl66") }
         , {
-        field: "embodiedCarbon", header: getLabel("lbl319"),
+        field: "embodiedCarbon", header: getLabel("lbl319"), align: "right",
         render: (row) => (
             <span style={{ color: getCompareColor(row.embodiedCarbon) }}>
                 {formatCompareValue(row.embodiedCarbon)}
@@ -518,20 +486,20 @@ const PSpotSection = ({ response }) => {
         )
     }
         , {
-        field: "water", header: getLabel("lbl320"),
+        field: "water", header: getLabel("lbl320"), align: "right",
         render: (row) => (
             <span style={{ color: getCompareColor(row.water) }}>
                 {formatCompareValue(row.water)}
             </span>)
     }
         , {
-        field: "energy", header: getLabel("lbl321"), render: (row) => (
+        field: "energy", header: getLabel("lbl321"), align: "right", render: (row) => (
             <span style={{ color: getCompareColor(row.energy) }}>
                 {formatCompareValue(row.energy)}
             </span>)
     }
         , {
-        field: "wood", header: getLabel("lbl322"), render: (row) => (
+        field: "wood", header: getLabel("lbl322"), align: "right", render: (row) => (
             <span style={{ color: getCompareColor(row.wood) }}>
                 {formatCompareValue(row.wood)}
             </span>)
@@ -539,14 +507,14 @@ const PSpotSection = ({ response }) => {
         , { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "total") }
     ]
 
-    const enviromantalImpactMaterial = [{ field: "environmentalPaperGrade", header: getLabel("lbl318") }, { field: "environmentalGhg", header: getLabel("lbl319") }
-        , { field: "environmentalWater", header: getLabel("lbl320") }, { field: "environmentalEnergy", header: getLabel("lbl321") }
-        , { field: "environmentalWood", header: getLabel("lbl322") }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "impact") }
+    const enviromantalImpactMaterial = [{ field: "environmentalPaperGrade", header: getLabel("lbl318") }, { field: "environmentalGhg", header: getLabel("lbl319"), align: "right" }
+        , { field: "environmentalWater", header: getLabel("lbl320"), align: "right" }, { field: "environmentalEnergy", header: getLabel("lbl321"), align: "right" }
+        , { field: "environmentalWood", header: getLabel("lbl322"), align: "right" }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "impact") }
     ]
 
-    const packageComparativeImpact = [{ field: "compareEnvironmentalPaperName", header: getLabel("lbl318") }, { field: "compareEnvironmentalGhg", header: getLabel("lbl319") }
-        , { field: "compareEnvironmentalWater", header: getLabel("lbl320") }, { field: "compareEnvironmentalEnergy", header: getLabel("lbl321") }
-        , { field: "compareEnvironmentalWood", header: getLabel("lbl322") }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "compare") }
+    const packageComparativeImpact = [{ field: "compareEnvironmentalPaperName", header: getLabel("lbl318") }, { field: "compareEnvironmentalGhg", header: getLabel("lbl319"), align: "right" }
+        , { field: "compareEnvironmentalWater", header: getLabel("lbl320"), align: "right" }, { field: "compareEnvironmentalEnergy", header: getLabel("lbl321"), align: "right" }
+        , { field: "compareEnvironmentalWood", header: getLabel("lbl322"), align: "right" }, { field: "explanation", header: getLabel("lbl323"), render: (row) => renderViewActions(row, "compare") }
     ]
 
     const getCompareColor = (value) => {
@@ -569,11 +537,7 @@ const PSpotSection = ({ response }) => {
 
             <PGrid container className={Labels.margin.mb3}>
                 <PGrid item xs={12} sm={6} md={6}>
-                    <PTypography
-                        labelText={`${getLabel("lbl191")} ( ${getLabel("lbl190")} )`}
-                        flag={Labels.fontFlags.header}
-                        weight={FontWeight.regular}
-                    />
+                    <PSectionHeading accent={PmgColors.navy} label={`${getLabel("lbl191")} ( ${getLabel("lbl190")} )`} />
                 </PGrid>
             </PGrid>
             <Divider sx={{ mb: 2 }} />

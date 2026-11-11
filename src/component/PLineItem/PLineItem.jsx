@@ -40,7 +40,7 @@ export function PFieldGrid({ fields = [], loading = false, placeholders = 8 }) {
  * Pill action button. With `iconOnly` it becomes a round icon button and the label
  * moves into a tooltip (for narrow panels).
  */
-export function PPillButton({ label, icon = <EditOutlinedIcon sx={{ fontSize: 18 }} />, onClick, iconOnly = false }) {
+export function PPillButton({ label, icon = <EditOutlinedIcon sx={{ fontSize: 18 }} />, onClick, iconOnly = false, disabled = false }) {
   const btn = (
     <Button
       className={`pli-btn ${iconOnly ? "is-icon" : ""}`}
@@ -50,12 +50,14 @@ export function PPillButton({ label, icon = <EditOutlinedIcon sx={{ fontSize: 18
         onClick?.(e);
       }}
       aria-label={label}
+      disabled={disabled}
       disableRipple
     >
       {iconOnly ? null : label}
     </Button>
   );
-  return iconOnly ? <Tooltip title={label} arrow>{btn}</Tooltip> : btn;
+  // a disabled button fires no events, so the tooltip needs a wrapper to listen on
+  return iconOnly ? <Tooltip title={label} arrow><span>{btn}</span></Tooltip> : btn;
 }
 
 /**

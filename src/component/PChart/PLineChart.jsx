@@ -27,13 +27,14 @@ const PLineChart = ({ data }) => {
     <div
       style={{
         width: "100%",
-        height: 400,
+        flex: 1,
+        minHeight: 400,
+        position: "relative",
         background: "#ffffff",
-        padding: "20px 0",
-        // borderRadius: "16px",
-        // boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
       }}
     >
+      {/* grows with its parent; absolute layer gives ResponsiveContainer a definite size */}
+      <div style={{ position: "absolute", inset: "20px 0" }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           {/* Gradient Definitions */}
@@ -60,6 +61,7 @@ const PLineChart = ({ data }) => {
           <Line type="monotone" dataKey="value" stroke="#ED3B25" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} animationDuration={800} />
         </LineChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 };

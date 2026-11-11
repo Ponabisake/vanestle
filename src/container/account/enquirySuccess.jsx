@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from "react";
-import {Box, Divider} from "@mui/material";
+import {
+    Box,
+    Typography,
+    Card,
+    Grid,
+    Button,
+    Divider,
+    Avatar
+} from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DescriptionIcon from "@mui/icons-material/Description";
 import FolderIcon from "@mui/icons-material/Folder";
 import PersonIcon from "@mui/icons-material/Person";
 import PublicIcon from "@mui/icons-material/Public";
 import EventIcon from "@mui/icons-material/Event";
 import PGrid from "../../component/PGrid/PGrid";
+import PCard from "../../component/PCard/PCard";
 import PTypography from "../../component/PTypography/PTypography";
+import PHeadingAccent, { PmgColors } from "../../component/PHeadingAccent/PHeadingAccent";
 import { Labels } from "../../utils/constants/labels";
 import { CommonColors } from "../../utils/constants/colors";
 import { FontWeight } from "../../utils/constants/fonts";
 import PButton from "../../component/PButton/PButton";
 import { labelRoutes } from "../../navigations/labelRoutes";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "../../utils/constants/language";
 import { Dashboard_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
@@ -20,24 +31,26 @@ import { toast } from "../../utils/commonFunction/common";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const EnquirySuccess = () => {
+    
     const { getLabel } = useLanguage();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const { id } = useSelector((state) => state.userDetails.user);
+    const { id, userName } = useSelector((state) => state.userDetails.user);
     const [formDataList, setFormDataList] = useState({
         clientInfo: [],
         enquiryDetails: []
     });
 
+    
     useEffect(() => {
         fetchData();
     }, []);
-
     const fetchData = async () => {
         try {
             setLoading(true);
             const response = await PostApi(Dashboard_API.GetDetails, {
                 Enquiryid: id,
+                Username: userName,
             });
             setFormDataList(prev => ({
                 ...prev,
@@ -50,7 +63,6 @@ const EnquirySuccess = () => {
             setLoading(false);
         }
     };
-
     const data = [
         { label: getLabel("lbl162"), value: formDataList.clientInfo?.enqUId || "-", icon: <DescriptionIcon /> },
         { label: getLabel("lbl42"), value: formDataList.enquiryDetails?.projectNo || "-", icon: <FolderIcon /> },
@@ -69,9 +81,12 @@ const EnquirySuccess = () => {
     const columnWidths = [2, 3, 2, 2, 3];
 
     return (
+
+
         <Box sx={{ py: 3 }}>
             <PGrid container style={{paddingBottom:"60px"}}>
                 <div style={{paddingBottom:"12px"}}>
+                    <PHeadingAccent color={PmgColors.gold} />
                     <PTypography
                         labelText={`${getLabel("lbl184")} ${Labels.symbols.important}`}
                         flag={Labels.fontFlags.header}
@@ -86,7 +101,7 @@ const EnquirySuccess = () => {
                     weight={FontWeight.regular}
                 />
             </PGrid>
-            <div style={{background:"#2D2F75", width:"36px", height:"11px"}}></div>
+            <PHeadingAccent color={PmgColors.indigo} />
 
             {/* Job Summary */}
             <PGrid container className={Labels.margin.mb3}>
@@ -129,10 +144,12 @@ const EnquirySuccess = () => {
 
             </PGrid>
 
+
+
             {/* Info Box */}
             <Box
                 sx={{
-                    //background: "#fff",
+                    background: "#fff",
                     borderRadius: 2,
                     p: 0,
                     mb: 5,

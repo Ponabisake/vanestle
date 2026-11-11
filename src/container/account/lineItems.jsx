@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import PTypography from "../../component/PTypography/PTypography";
+import PHeadingAccent, { PmgColors } from "../../component/PHeadingAccent/PHeadingAccent";
 import PGrid from "../../component/PGrid/PGrid";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { Labels } from "../../utils/constants/labels";
@@ -26,10 +27,9 @@ import PAttachment from "../../component/PAttachment/PAttachment";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
-import PTable from "../../component/PTable/PTable";
 const LineItems = () => {
     const { getLabel } = useLanguage();
-    const { fkID, menuId, role, countryID, userID, id, userType } = useSelector((state) => state.userDetails.user);
+    const { fkID, menuId, role, countryID, userID, id, userType, userName } = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
@@ -235,6 +235,7 @@ const LineItems = () => {
             if (id !== 0) {
                 const data = await PostApi(Dashboard_API.GetDetails, {
                     Enquiryid: id,
+                    Username: userName,
                 });
                 setFormDataList(prev => ({
                     ...prev,
@@ -763,7 +764,7 @@ const LineItems = () => {
                 <PGrid container className={Labels.margin.mb4} >
                     <PGrid item xs={12} sm={12} md={9}>
                         {/* Line Items */}
-                        <div style={{ background: "#00916B", width: "36px", height: "11px" }}></div>
+                        <PHeadingAccent color={PmgColors.green} />
                         <PGrid container className={Labels.margin.mb4}>
                             <PTypography
                                 labelText={getLabel("lbl22")}

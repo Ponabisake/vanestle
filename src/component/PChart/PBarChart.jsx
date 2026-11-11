@@ -27,12 +27,15 @@ const PBarChart = ({ data }) => {
     <div
       style={{
         width: "100%",
-        height: 400,
+        flex: 1,
+        minHeight: 400,
+        position: "relative",
         background: "#ffffff",
-        padding: "10px 0",
       }}
     >
-      <ResponsiveContainer width="100%" height={400}>
+      {/* grows with its parent; absolute layer gives ResponsiveContainer a definite size */}
+      <div style={{ position: "absolute", inset: "10px 0" }}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} barCategoryGap="25%">
           <defs>
             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -50,6 +53,7 @@ const PBarChart = ({ data }) => {
           <Bar dataKey="value" fill="url(#barGradient)" radius={[8, 8, 0, 0]} animationDuration={800} />
         </BarChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 };

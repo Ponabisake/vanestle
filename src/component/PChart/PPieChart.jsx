@@ -3,7 +3,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, Label } from
 
 // ring centre as a fraction of the plot area – shared by <Pie> and the centre "Total" label
 const PIE_CX = 0.5;
-const PIE_CY = 0.6;
+const PIE_CY = 0.5;
 
 const PPieChart = ({ data = [], onSliceClick }) => {
   const consolidatedData = useMemo(() => {
@@ -62,14 +62,18 @@ const PPieChart = ({ data = [], onSliceClick }) => {
     return null;
   };
   return (
+    // grows to fill its parent (min 480px); the chart is drawn in an absolutely-positioned layer
+    // so ResponsiveContainer always gets a definite size to measure
     <div
       style={{
         width: "100%",
-        height: 600,
+        flex: 1,
+        minHeight: 480,
+        position: "relative",
         background: "#ffffff",
-        padding: "5px",
       }}
     >
+      <div style={{ position: "absolute", inset: 5 }}>
       <ResponsiveContainer width="100%" height="100%" >
         <PieChart>
           <Pie
@@ -119,15 +123,20 @@ const PPieChart = ({ data = [], onSliceClick }) => {
 
           <Tooltip content={<CustomTooltip />} />
 
+          {/* divider line + gap between the ring and the legend */}
           <Legend verticalAlign="bottom" align="left" iconType="circle" iconSize={8}
             wrapperStyle={{
-              paddingTop: "5px",
+              marginTop: 0,
+              paddingTop: "16px",
+              borderTop: "1px solid #e5e7eb",
               fontSize: "14px",
               paddingLeft: "10px",
+              boxSizing: "border-box",
             }}
           />
         </PieChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 };

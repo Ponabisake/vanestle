@@ -395,7 +395,7 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
               <TableHead>
                 <TableRow sx={{ background: "#CF7729" }}>
                   {visibleColumns.map((col, i) => (
-                    <TableCell key={i} sx={{ fontWeight: 700, fontSize: Labels.fontSize.sm, color: CommonColors.white, py: 2, textWrap: Labels.rap.nowrap }}>
+                    <TableCell key={i} align={col.align || "left"} sx={{ fontWeight: 700, fontSize: Labels.fontSize.sm, color: CommonColors.white, py: 2, textWrap: Labels.rap.nowrap }}>
                       {col.header}
                     </TableCell>
                   ))}
