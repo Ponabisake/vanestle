@@ -26,6 +26,7 @@ import PAttachment from "../../component/PAttachment/PAttachment";
 import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
+import PTable from "../../component/PTable/PTable";
 const LineItems = () => {
     const { getLabel } = useLanguage();
     const { fkID, menuId, role, countryID, userID, id, userType } = useSelector((state) => state.userDetails.user);

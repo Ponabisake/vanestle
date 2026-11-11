@@ -79,7 +79,7 @@ const ProjectEnquiry = () => {
         historySearchTool: "",
         search: "",
         statusFlag: false,
-        quoteFlag : false,
+        quoteFlag: false,
 
         //editable state
         clientContact: "",
@@ -223,6 +223,11 @@ const ProjectEnquiry = () => {
     //Master function
     useEffect(() => {
         fetchData();
+        setFormData(prev => ({
+            ...prev,
+            activeTab: isSpot && formData.isSpotCompleted === 0 ? "SPOT" : showProjectSaving ? "Project Savings" : Number(formData.statusId) >= 7
+                ? "Job Summary" : "RFQ",
+        }));
     }, []);
 
     const fetchData = async () => {
@@ -463,7 +468,7 @@ const ProjectEnquiry = () => {
         subTitle: `${item.itemTitle}`,
         enquiryId: item.enquiryId,
         items: item.items,
-        files: item.files, 
+        files: item.files,
     }));
 
     const sections = getSummarySections({ menuId, lineItems, getLabel });
@@ -1239,7 +1244,7 @@ const ProjectEnquiry = () => {
             label: "Total",
             value: formDataList.clientQuotes.total,
             euroValue: formDataList.clientQuotes.euroTotal,
-            type : Labels.flag.total
+            type: Labels.flag.total
         }
     ];
 
@@ -1369,6 +1374,8 @@ const ProjectEnquiry = () => {
                                     width={27}
                                     helperText={""}
                                     flag={Labels.flag.auto}
+                                    labelMode={"inside"}
+                                    label={"Please update the status"}
                                 />
                                 <PButton
                                     label={getLabel("lbl40")}
@@ -1418,7 +1425,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl299")}</Alert>
+                                <Alert severity="error">{getLabel("lbl300")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1428,7 +1435,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl300")}</Alert>
+                                <Alert severity="error">{getLabel("lbl301")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1438,7 +1445,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl301")}</Alert>
+                                <Alert severity="error">{getLabel("lbl302")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1559,17 +1566,6 @@ const ProjectEnquiry = () => {
                                                                 </PGrid>
                                                                 {[6].includes(formData.statusId) && (
                                                                     <PGrid item xs={12} md={6} xl={3} className={Labels.margin.mt4}>
-                                                                        {/* <Tooltip title={createOrderFlag ? "Create Order" : ""} arrow >
-                                                                            <IconButton
-                                                                                sx={iconStyle}
-                                                                                onClick={(e) => createOrderFlag ? handleSubmit(e, "order")
-                                                                                    : setFormData(prev => ({ ...prev, activeTab: "Delivery Order" }))
-                                                                                }
-                                                                                disabled={createOrderFlag && !formData.poNo}
-                                                                            >
-                                                                                <PostAddIcon />
-                                                                            </IconButton>
-                                                                        </Tooltip> */}
                                                                         <Tooltip title={getLabel("lbl303")} arrow >
                                                                             <IconButton sx={iconStyle}
                                                                                 onClick={(e) => handleSubmit(e, "order")}
@@ -1594,7 +1590,7 @@ const ProjectEnquiry = () => {
                                                                 value={formData.raisedDate}
                                                                 onChange={handleChange}
                                                                 width={100}
-                                                                allowFuture
+                                                                allowFuture={false}
                                                             />
                                                         </>
                                                     ) : formData.statusId > 6 && formData.job && item.label === "Invoice Number" ? (
@@ -2394,7 +2390,7 @@ const ProjectEnquiry = () => {
                                     onClick={() =>
                                         setFormData(prev => ({
                                             ...prev,
-                                            quoteFlag : true
+                                            quoteFlag: true
                                         }))
                                     }
                                     width={250}
@@ -2427,7 +2423,7 @@ const ProjectEnquiry = () => {
                                     setFormData((prev) => ({
                                         ...prev,
                                         quoteFlag: false,
-                                        activeTab : "Job Summary"
+                                        activeTab: "Job Summary"
                                     }))}
                                 color={CommonColors.grey.main}
                                 width={120}

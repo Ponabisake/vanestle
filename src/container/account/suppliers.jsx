@@ -159,6 +159,7 @@ const Suppliers = () => {
         const isValid = isCostAvoidance ? rows.length >= 2 : rows.length >= 1;
         setIsValidation(isValid);
         if (!isValid) {
+            toast(Labels.status.failure, isCostAvoidance ? Labels.suppliers.caRequired : Labels.suppliers.required);
             setAllowRedirect(false);
             return;
         }
@@ -270,7 +271,7 @@ const Suppliers = () => {
                             </PGrid>
                         </PGrid>
 
-                        {!isValidation && (
+                        {/* {!isValidation && (
                             <PGrid container className={Labels.margin.mb4}>
                                 <PGrid item xs={12}>
                                     <PTypography
@@ -281,7 +282,7 @@ const Suppliers = () => {
                                     />
                                 </PGrid>
                             </PGrid>
-                        )}
+                        )} */}
 
                         <PGrid container className="d-flex align-items-center justify-content-between">
                             <PGrid item xs={12} sm={6} md={8}>
