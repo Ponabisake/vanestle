@@ -189,7 +189,7 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
                                                         enqDetailsId={item.enquiryId}
                                                         isOpen={activeItemIndex[3] === i}
                                                         onToggle={() => setActiveItemIndex((prev) => ({ ...prev, 3: prev[3] === i ? null : i }))}
-                                                        actions={section.step ? (
+                                                        actions={section.step && userType?.toLowerCase() === Labels.userType.agency ? (
                                                             <>
                                                                 <PPillButton
                                                                     label={compact ? "Edit item" : "Edit"}

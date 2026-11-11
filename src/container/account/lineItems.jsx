@@ -15,7 +15,7 @@ import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate } from "react-router-dom";
 import { Dashboard_API, LineItems_API } from "../../utils/api/apiUrl";
-import { PostApi } from "../../utils/api/networking";
+import { GetApi, PostApi } from "../../utils/api/networking";
 import { PDraftDialog } from "../../component/PDialog/PDraftDialog";
 import PreviewDialog from "../../component/PDialog/PPreviewDialog";
 import { getClientInfo, getEnquiryDetails, getLineneItems, getSummarySections } from "../../utils/constants/summary";
@@ -27,8 +27,8 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 import PSearch from "../../component/PSearch/PSearch";
 const LineItems = () => {
-    const { getLabel } = useLanguage(); 
-    const { fkID, menuId, role, countryID, userID , id, userType} = useSelector((state) => state.userDetails.user);
+    const { getLabel } = useLanguage();
+    const { fkID, menuId, role, countryID, userID, id, userType } = useSelector((state) => state.userDetails.user);
     const navigate = useNavigate();
     const [allowRedirect, setAllowRedirect] = useState(false);
     const enquirySteps = getEnquirySteps(getLabel, menuId);
@@ -348,6 +348,10 @@ const LineItems = () => {
                 LineItemsMaster(label);
                 break;
 
+            case Labels.lineItems.itemCategory:
+                GetSpecification(value);
+                break;
+
             case Labels.lineItems.savingsType:
                 SavingsReasonMaster(label);
                 break;
@@ -397,8 +401,31 @@ const LineItems = () => {
         }));
     };
 
-   
-    
+    const GetSpecification = async (data) => {
+        try {
+            setLoading(false);
+            const response = await GetApi(`${LineItems_API.GetExistingspecification}?countryId=${countryID}&productCategoryId=${data}`);
+            setFormDataList(prev => ({
+                ...prev,
+                specifications: response.data,
+            }));
+        } catch (error) {
+            toast(Labels.status.failure, Labels.message.somethingWentWrong);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const specification = [{ field: "enqUId", header: "Enquiry Id" }, { field: "projectNo", header: "Project Number" }, { field: "projectDesc", header: "Project Name" }, { field: "specNote", header: getLabel("lbl83") },]
+    var filteredData = formDataList.specifications;
+    if (formData.search.trim() !== "") {
+        filteredData = filteredData.filter((item) =>
+            item.enqUId.toLowerCase().includes(formData.search.toLowerCase()) ||
+            item.specNote.toLowerCase().includes(formData.search.toLowerCase())
+        );
+    }
+    const specifications = filteredData;
+
 
     // Failure text from the API: Result.Fail puts it in data (a string), HTTP errors in message
     const getFailureMessage = (response) => {
@@ -532,6 +559,13 @@ const LineItems = () => {
         }
     };
 
+    const handleSpecification = (row) => {
+        setFormData((prev) => ({
+            ...prev,
+            specification: false,
+            specifications: row.specNote
+        }));
+    };
     const handleBack = () => {
         if (window.history.length > 1) {
             navigate(labelRoutes.enquiryDetails);
@@ -1630,15 +1664,22 @@ const LineItems = () => {
                 }))}
                 title={getLabel("lbl83")}
                 showCloseIcon={true}
-                maxWidth="md"
+                maxWidth="lg"
             >
-                <PGrid container className={Labels.margin.mb4}>
-                    <PGrid item xs={12} sm={6} md={12}>
-                        <PSearch width="100%" placeholder={"Search a enquiry, item category, specifications"}
-                            onChange={(e) => setFormData((prev) => ({
-                                ...prev,
-                                search: e.target.value
-                            }))} />
+                <PGrid container>
+                    <PGrid container className={Labels.margin.mb4}>
+                        <PGrid item xs={12} sm={6} md={12}>
+                            <PSearch width="100%" placeholder={"Search a enquiry, item category, specifications"}
+                                onChange={(e) => setFormData((prev) => ({
+                                    ...prev,
+                                    search: e.target.value
+                                }))} />
+                        </PGrid>
+                    </PGrid>
+                    <PGrid container>
+                        <PGrid item xs={12} sm={6} md={12}>
+                            <PTable columns={specification} rows={specifications} showPagination={true} onClick={handleSpecification} />
+                        </PGrid>
                     </PGrid>
                 </PGrid>
             </PDialog>
