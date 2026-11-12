@@ -149,6 +149,7 @@ const EnquirySuccess = () => {
             {/* Info Box */}
             <Box
                 sx={{
+                    //background: "#fff",
                     borderRadius: 2,
                     p: 0,
                     mb: 5,

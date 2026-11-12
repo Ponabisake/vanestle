@@ -17,7 +17,7 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import PSearch from "../../component/PSearch/PSearch";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import ImportExportOutlinedIcon from '@mui/icons-material/ImportExportOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import AddTaskRoundedIcon from '@mui/icons-material/AddTaskRounded';
 import { FontWeight } from '../../utils/constants/fonts'
@@ -680,7 +680,7 @@ const dashboard = () => {
 
   const icons = [
     { icon: <AddTaskRoundedIcon color="green" />, tooltip: eProcurement, action: handleRedirect },
-    { icon: <FileDownloadOutlinedIcon fontSize="large" />, tooltip: "Export", action: handleExport },
+    { icon: <ImportExportOutlinedIcon fontSize="large" />, tooltip: "Export", action: handleExport },
     { icon: <CalendarTodayOutlinedIcon fontSize="medium" />, tooltip: "Date Range Filter", action: handleOpenChoose },
     { icon: <span className="resetlabel">Reset filter</span>, tooltip: "", action: handleReset, noHover: true },
 

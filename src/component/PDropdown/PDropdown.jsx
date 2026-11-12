@@ -37,7 +37,9 @@ const matchFieldWidth = {
 const popperModifiers = [matchFieldWidth];
 
 const PDropdown = ({ name = "", label, value = "", onChange, options = [], required = false, helperText = "",
-  width = "", mt = 0, flag = "", disabled = false, readOnly = false, sx = {}, labelMode = "" }) => {
+  width = "", mt = 0, flag = "", disabled = false, readOnly = false, sx = {}, labelMode = "",
+  // optional (option) => ReactNode – shown as a hover card beside that option in the list
+  optionTooltip = null }) => {
   const defaultValueRef = useRef(false);
   const selectRef = useRef(null);
   const [menuWidth, setMenuWidth] = useState(null);
@@ -191,11 +193,28 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
           //disableClearable={!selectedOption}
           getOptionLabel={(option) => option?.label || ""}
           isOptionEqualToValue={(option, value) => option.value === value?.value}
-          renderOption={(props, option) => (
-            <li {...props} key={option.value}>
-              {option.label}
-            </li>
-          )}
+          renderOption={(props, option) => {
+            const item = (
+              <li {...props} key={option.value}>
+                {option.label}
+              </li>
+            );
+            const tip = optionTooltip?.(option);
+            if (!tip) return item;
+            return (
+              <Tooltip
+                key={option.value}
+                title={tip}
+                placement="right-start"
+                enterDelay={250}
+                enterNextDelay={150}
+                disableInteractive
+                slotProps={{ popper: { className: "pdropdown-option-tip" } }}
+              >
+                {item}
+              </Tooltip>
+            );
+          }}
           onChange={(e, newValue) =>
             onChange({
               target: {

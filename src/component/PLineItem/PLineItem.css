@@ -38,6 +38,45 @@
   font-weight: 400;
 }
 
+/* Long text values: clamp to 3 lines, "Show more" expands the tile across the whole row */
+.pli-field-value.is-text { white-space: pre-line; }
+.pli-field-value.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.pli-field-value.has-more {
+  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+  mask-image: linear-gradient(180deg, #000 60%, transparent);
+}
+.pli-field.is-expanded {
+  grid-column: 1 / -1;
+  background: #fff;
+  border-color: #ece8f3;
+  box-shadow: 0 6px 18px rgba(22, 19, 63, 0.06);
+}
+.pli-field.is-expanded .pli-field-value { line-height: 1.6; }
+.pli-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cf7729;
+  cursor: pointer;
+}
+.pli-more:hover { color: #b4601a; text-decoration: underline; }
+.pli-more:focus-visible { outline: 2px solid #fab01b; outline-offset: 2px; border-radius: 4px; }
+.pli-more-icon { transition: transform 0.2s ease; }
+.pli-more[aria-expanded="true"] .pli-more-icon { transform: rotate(180deg); }
+
 /* Collapsible line-item rows */
 .pli-list {
   display: flex;

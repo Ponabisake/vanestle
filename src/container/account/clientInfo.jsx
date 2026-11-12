@@ -111,6 +111,34 @@ const ClientInfo = () => {
 
 
     const flag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
+
+    // Hover card for a Client Contact option (details come from the API's option.contact)
+    const renderContactCard = (option) => {
+        const c = option?.contact;
+        if (!c) return null;
+        const notify = c.receiveNotification;
+        const rows = [
+            [getLabel("lbl130"), c.firstName],
+            [getLabel("lbl131"), c.lastName],
+            [getLabel("lbl133"), c.email],
+        ];
+        return (
+            <div className="contact-card">
+                {rows.map(([label, val]) => (
+                    <div className="contact-card__row" key={label}>
+                        <span className="contact-card__label">{label}</span>
+                        <span className="contact-card__value">{val || "—"}</span>
+                    </div>
+                ))}
+                <div className="contact-card__row">
+                    <span className="contact-card__label">{getLabel("lbl136")}</span>
+                    <span className={`contact-card__pill ${notify ? "is-yes" : "is-no"}`}>
+                        {notify ? "Yes" : "No"}
+                    </span>
+                </div>
+            </div>
+        );
+    };
     
 
     const clientInfo = getClientInfo(fields, formData, formDataList, getLabel, getOptionLabel, id ? formDataList.clientInfo : null);
@@ -772,6 +800,7 @@ const ClientInfo = () => {
                                     width={100}
                                     helperText={errors?.clientContact}
                                     flag={Labels.flag.auto}
+                                    optionTooltip={renderContactCard}
                                 />
                                 {/* <div style={{ marginTop: "15px" }}>
                                         <Tooltip title="Add New Brand" arrow>

@@ -97,6 +97,26 @@ body .MuiPaper-root.MuiPopover-paper {
   zoom: var(--app-zoom, 1);
 }
 
+/* Hover card beside a dropdown option (PDropdown `optionTooltip`), e.g. Client Contact */
+.pdropdown-option-tip .MuiTooltip-tooltip {
+  zoom: var(--app-zoom, 1);
+  background: #fff;
+  color: #16133F;
+  border: 1px solid #e6e3ee;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(22, 19, 63, 0.16);
+  padding: 12px 14px;
+  max-width: 340px;
+  margin-left: 8px !important;
+}
+.contact-card { display: flex; flex-direction: column; gap: 8px; min-width: 240px; }
+.contact-card__row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.contact-card__label { font-size: 12px; color: #6b6880; white-space: nowrap; }
+.contact-card__value { font-size: 13px; font-weight: 600; color: #16133F; text-align: right; word-break: break-all; }
+.contact-card__pill { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+.contact-card__pill.is-yes { background: #e3f4ee; color: #00916B; }
+.contact-card__pill.is-no { background: #f1f0f4; color: #6b6880; }
+
 /* ---------------------------------------------------------------------
    6. Date picker (flatpickr) – PMG gold hover / selected / today
    --------------------------------------------------------------------- */

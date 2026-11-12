@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import { Button, Skeleton, Tooltip } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
@@ -6,6 +7,48 @@ import { PItemFiles } from "./PItemFiles";
 import "./PLineItem.css";
 
 const isEmptyValue = (v) => v === null || v === undefined || String(v).trim() === "" || String(v).trim() === "-";
+
+/**
+ * One label / value tile. Long text (e.g. Specifications, Notes) is clamped to a few lines
+ * with "Show more"; expanding widens the tile to the full row so the text reads as a paragraph.
+ */
+function FieldTile({ label, value }) {
+  const empty = isEmptyValue(value);
+  const isText = !empty && typeof value === "string";
+  const textRef = useRef(null);
+  const [overflows, setOverflows] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  // measure the rendered text (not a character count) so only values that really overflow get the toggle
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!isText || !el || expanded) return undefined;
+    const check = () => setOverflows(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(check) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, [isText, value, expanded]);
+
+  const canToggle = isText && (overflows || expanded);
+  return (
+    <div className={`pli-field ${expanded ? "is-expanded" : ""}`}>
+      <span className="pli-field-label">{label}</span>
+      <span
+        ref={textRef}
+        className={`pli-field-value ${empty ? "is-empty" : ""} ${isText ? "is-text" : ""} ${isText && !expanded ? "is-clamped" : ""} ${overflows && !expanded ? "has-more" : ""}`}
+      >
+        {empty ? "—" : value}
+      </span>
+      {canToggle && (
+        <button type="button" className="pli-more" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
+          {expanded ? "Show less" : "Show more"}
+          <ExpandMoreRoundedIcon sx={{ fontSize: 18 }} className="pli-more-icon" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 /** Label / value tiles. `loading` shows placeholder tiles. */
 export function PFieldGrid({ fields = [], loading = false, placeholders = 8 }) {
@@ -23,15 +66,9 @@ export function PFieldGrid({ fields = [], loading = false, placeholders = 8 }) {
   }
   return (
     <div className="pli-fields">
-      {fields.map((field, i) => {
-        const empty = isEmptyValue(field.value);
-        return (
-          <div className="pli-field" key={i}>
-            <span className="pli-field-label">{field.label}</span>
-            <span className={`pli-field-value ${empty ? "is-empty" : ""}`}>{empty ? "—" : field.value}</span>
-          </div>
-        );
-      })}
+      {fields.map((field, i) => (
+        <FieldTile key={i} label={field.label} value={field.value} />
+      ))}
     </div>
   );
 }
