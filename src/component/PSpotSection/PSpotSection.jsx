@@ -32,7 +32,8 @@ import { GetApi, PostApi } from "../../utils/api/networking";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useSelector } from "react-redux";
 
-const PSpotSection = ({ response }) => {
+// onSaved: optional; called after any SPOT save so the parent can re-check completion
+const PSpotSection = ({ response, onSaved }) => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const { id } = useSelector((state) => state.userDetails.user);
@@ -183,6 +184,7 @@ const PSpotSection = ({ response }) => {
             if (isSuccess(response)) {
                 toast(Labels.status.success, response.data);
                 await handleCancel();
+                await onSaved?.();
             }
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -345,6 +347,7 @@ const PSpotSection = ({ response }) => {
                 [flag]: false,
             }))
             await fetchData();
+            await onSaved?.();
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
         }

@@ -95,6 +95,7 @@ const ProjectEnquiry = () => {
     //State & list states
     const [formData, setFormData] = useState({
         activeTab: "Job Summary",
+        stageTab: "",
         status: "",
         quote: "",
         statusId: 0,
@@ -120,7 +121,7 @@ const ProjectEnquiry = () => {
         historySearchTool: "",
         search: "",
         statusFlag: false,
-        quoteFlag : false,
+        quoteFlag: false,
 
         //editable state
         clientContact: "",
@@ -257,12 +258,34 @@ const ProjectEnquiry = () => {
         width: 48,
         height: 48,
     };
+    // Workflow stage -> the tab where the next pending action lives (mirrors the legacy
+    // ProjectEnquiry stage logic). fetchData opens this tab on first load, and switches to it
+    // automatically whenever a save moves the job into a new stage; otherwise the user stays
+    // on whatever tab they picked.
+    //   SPOT pending -> SPOT
+    //   1 RFQ sent / 2 quotes received (not yet calculated) / 4 revise quote -> RFQ
+    //   2 calculated / 3 quoted to client / 5 -> Project Savings (submit / approve / revise)
+    //   6 awarded -> Delivery Order (address) -> Job Summary (PO + create order)
+    //   7+ delivery & invoicing, 25 cancelled -> Job Summary
+    const getStageTab = ({ statusId, spotNeeded, isSpotCompleted, isProject, rfqCalculated, hasDeliveryOrder }) => {
+        if (!flag) return "Job Summary";
+        const status = Number(statusId);
+        const rfqOrSavings = isProject > 0 ? "Project Savings" : "RFQ";
+
+        if (status < 6 && spotNeeded > 0 && Number(isSpotCompleted) === 0) return "SPOT";
+        if (status === 1 || status === 4) return "RFQ";
+        if (status === 2) return rfqCalculated ? rfqOrSavings : "RFQ";
+        if (status === 3 || status === 5) return rfqOrSavings;
+        if (status === 6) return hasDeliveryOrder ? "Job Summary" : "Delivery Order";
+        return "Job Summary";
+    };
+
     //Master function
     useEffect(() => {
-        fetchData();
+        fetchData(true);
     }, []);
 
-    const fetchData = async () => {
+    const fetchData = async (isInitialLoad = false) => {
         try {
             setLoading(true);
 
@@ -275,6 +298,10 @@ const ProjectEnquiry = () => {
                 Enquiryid: id,
                 Username: userName,
             });
+
+            // workflow facts used to pick the stage tab (agency only)
+            let rfqCalculated = false;
+            let hasDeliveryOrder = false;
 
             if (userType?.toLowerCase() === Labels.userType.agency) {
 
@@ -329,6 +356,9 @@ const ProjectEnquiry = () => {
                         subTitle: x.itemName,
                         items: projectResponse.previewQuotes.filter(y => y.itemNumber === x.itemNumber)
                     }));
+
+                rfqCalculated = projectResponse.calculationDetails?.length > 0;
+                hasDeliveryOrder = projectResponse.deliveryOrder?.length > 0;
 
                 setFormDataList(prev => ({
                     ...prev,
@@ -386,8 +416,20 @@ const ProjectEnquiry = () => {
                 suppliers: response.supplierinfo,
             }));
 
+            const stageTab = getStageTab({
+                statusId: response.statusId,
+                spotNeeded: response.spotNeeded,
+                isSpotCompleted: response.isSpotcompleted,
+                isProject: response.isprojectsavings,
+                rfqCalculated,
+                hasDeliveryOrder
+            });
+
             setFormData(prev => ({
                 ...prev,
+                // first load, or the job moved to a new stage -> jump to that stage's tab
+                stageTab,
+                activeTab: isInitialLoad || prev.stageTab !== stageTab ? stageTab : prev.activeTab,
                 quote: response.enqProjectinfo?.quoteBy,
                 statusId: response.statusId,
                 projectStatus: response.jobstatus,
@@ -494,7 +536,7 @@ const ProjectEnquiry = () => {
         subTitle: `${item.itemTitle}`,
         enquiryId: item.enquiryId,
         items: item.items,
-        files: item.files, 
+        files: item.files,
     }));
 
     const sections = getSummarySections({ menuId, lineItems, getLabel });
@@ -557,15 +599,12 @@ const ProjectEnquiry = () => {
                 setLoading(true);
                 const response = await PostApi(ProjectEnquiry_API.CalculateSavings, payload);
                 if (isSuccess(response)) {
+                    // RFQ calculated -> fetchData moves to Project Savings (or stays on RFQ when the job has no savings)
                     await fetchData();
                     setFormDataList(prev => ({
                         ...prev,
                         selectedSupplierRows: [],
                     }));
-                    setFormData(prev => ({
-                        ...prev,
-                        activeTab: "Project Savings",
-                    }))
                 }
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -831,19 +870,9 @@ const ProjectEnquiry = () => {
                 });
                 if (isSuccess(response)) {
                     toast(Labels.status.success, response.data);
+                    // status change -> fetchData moves to the next stage's tab
+                    // (3 stays on Project Savings, 4 revise -> RFQ, 6 approved -> Delivery Order)
                     await fetchData();
-                    if (flag == 4) {
-                        setFormData(prev => ({
-                            ...prev,
-                            activeTab: "RFQ",
-                        }))
-                    }
-                    else if (flag == 6) {
-                        setFormData(prev => ({
-                            ...prev,
-                            activeTab: "Job Summary",
-                        }))
-                    }
                 }
             }
             else {
@@ -993,6 +1022,11 @@ const ProjectEnquiry = () => {
     { field: "savingsType", header: getLabel("lbl117"), ...(formData.project ? renderSavingsType("savingsType") : {}) },
     { field: "savingsReason", header: getLabel("lbl118"), ...(formData.project ? renderSavingsReason("savingsReason") : {}) }];
 
+    // Project Savings input: every row needs a Savings Reference Price (> 0) before it can be saved
+    const allRefPricesFilled = (formDataList.projectSavings ?? [])
+        .flatMap(group => group.items ?? [])
+        .every(item => Number(item.previousPrice) > 0);
+
     //Action button function
     const renderActionButtons = (flag) => (
         formData[flag] ? (
@@ -1016,7 +1050,7 @@ const ProjectEnquiry = () => {
                     color={CommonColors.dark_blue}
                     onClick={(e) => handleSubmit(e, flag)}
                     width={180}
-                    disabled={formData.validateFlag}
+                    disabled={formData.validateFlag || (flag === "inputPS" && !allRefPricesFilled)}
                     startIcon={<img src={arrow} alt="arrow" className="icon" />}
                 />
             </div>
@@ -1382,6 +1416,8 @@ const ProjectEnquiry = () => {
                                     width={27}
                                     helperText={""}
                                     flag={Labels.flag.auto}
+                                    labelMode={"inside"}
+                                    label={"Please update the status"}
                                 />
                                 <PButton
                                     label={getLabel("lbl40")}
@@ -1431,7 +1467,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl299")}</Alert>
+                                <Alert severity="error">{getLabel("lbl300")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1441,7 +1477,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl300")}</Alert>
+                                <Alert severity="error">{getLabel("lbl301")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1451,7 +1487,7 @@ const ProjectEnquiry = () => {
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                <Alert severity="error">${getLabel("lbl301")}</Alert>
+                                <Alert severity="error">{getLabel("lbl302")}</Alert>
                             </Box>
                         </PGrid>
                     </PGrid>
@@ -1567,17 +1603,6 @@ const ProjectEnquiry = () => {
                                                                 </PGrid>
                                                                 {[6].includes(formData.statusId) && (
                                                                     <PGrid item xs={12} md={6} xl={3} className={Labels.margin.mt4}>
-                                                                        {/* <Tooltip title={createOrderFlag ? "Create Order" : ""} arrow >
-                                                                            <IconButton
-                                                                                sx={iconStyle}
-                                                                                onClick={(e) => createOrderFlag ? handleSubmit(e, "order")
-                                                                                    : setFormData(prev => ({ ...prev, activeTab: "Delivery Order" }))
-                                                                                }
-                                                                                disabled={createOrderFlag && !formData.poNo}
-                                                                            >
-                                                                                <PostAddIcon />
-                                                                            </IconButton>
-                                                                        </Tooltip> */}
                                                                         <Tooltip title={getLabel("lbl303")} arrow >
                                                                             <IconButton sx={iconStyle}
                                                                                 onClick={(e) => handleSubmit(e, "order")}
@@ -1602,7 +1627,7 @@ const ProjectEnquiry = () => {
                                                                 value={formData.raisedDate}
                                                                 onChange={handleChange}
                                                                 width={100}
-                                                                allowFuture
+                                                                allowFuture={false}
                                                             />
                                                         </>
                                                     ) : formData.statusId > 6 && formData.job && item.label === "Invoice Number" ? (
@@ -1775,7 +1800,8 @@ const ProjectEnquiry = () => {
 
                 {formData.activeTab === "SPOT" && (
                     <div>
-                        <PSpotSection response={formDataList.materialUsed} />
+                        {/* refetch after each SPOT save so a completed SPOT moves the job on to RFQ */}
+                        <PSpotSection response={formDataList.materialUsed} onSaved={() => fetchData()} />
                         <PGrid container className={Labels.margin.mt4}>
                             <PGrid item xs={12} sm={6} md={6}>
                                 <SectionHeading accent={PmgColors.navy} label={getLabel("lbl168")} />
@@ -1976,7 +2002,64 @@ const ProjectEnquiry = () => {
                             <PGrid container className={Labels.margin.mb3}>
                                 <PGrid item xs={12} sm={6} md={6} ></PGrid>
                                 <PGrid item xs={12} sm={6} md={6} >
-                                    <PTable columns={formDataList.savingsCalculation} rows={savingsCalculation} showHeader={false} showPagination={false} loading={tableLoading.projectSavings} />
+                                    {tableLoading.projectSavings ? (
+                                        <Skeleton variant="rounded" height={220} />
+                                    ) : (() => {
+                                        // Savings summary card - PMG logo colours only
+                                        const percent = Number(savings.totalSavingPercent) || 0;
+                                        const positive = percent >= 0;
+                                        const breakdown = savingsCalculation.slice(0, -1);
+                                        const total = savingsCalculation[savingsCalculation.length - 1];
+                                        return (
+                                            <Box sx={{
+                                                borderRadius: "12px", overflow: "hidden",
+                                                bgcolor: "background.paper",
+                                                border: `1px solid ${PmgColors.navy}1A`,
+                                                boxShadow: `0 4px 16px ${PmgColors.navy}0F`,
+                                                fontVariantNumeric: "tabular-nums"
+                                            }}>
+                                                {breakdown.map((row, index) => (
+                                                    <Box key={row.label} sx={{
+                                                        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2,
+                                                        px: 3, py: 1.5,
+                                                        bgcolor: index % 2 ? `${PmgColors.indigo}08` : "transparent",
+                                                        borderBottom: `1px dashed ${PmgColors.navy}1F`
+                                                    }}>
+                                                        <span style={{ fontSize: 14, fontWeight: 500, color: PmgColors.indigo }}>{row.label}</span>
+                                                        <span style={{ fontSize: 15, fontWeight: 700, color: PmgColors.navy }}>{row.value}</span>
+                                                    </Box>
+                                                ))}
+
+                                                {/* highlighted Savings % row */}
+                                                <Box sx={{
+                                                    px: 3, py: 2,
+                                                    background: `linear-gradient(90deg, ${PmgColors.navy} 0%, ${PmgColors.indigo} 100%)`,
+                                                    borderLeft: `5px solid ${positive ? PmgColors.gold : PmgColors.red}`
+                                                }}>
+                                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2 }}>
+                                                        <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "white" }}>
+                                                            {total.label}
+                                                        </span>
+                                                        <span style={{ fontSize: 26, fontWeight: 700, lineHeight: 1, whiteSpace: "nowrap", color: positive ? PmgColors.gold : PmgColors.red }}>
+                                                            {total.value}
+                                                        </span>
+                                                    </Box>
+                                                    {/* savings meter */}
+                                                    <Box sx={{ mt: 1.5, height: 6, borderRadius: 3, bgcolor: `${PmgColors.gold}33`, overflow: "hidden" }}
+                                                        role="meter" aria-label={total.label}
+                                                        aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}
+                                                    >
+                                                        <Box sx={{
+                                                            height: "100%", borderRadius: 3,
+                                                            width: `${Math.min(Math.abs(percent), 100)}%`,
+                                                            bgcolor: positive ? PmgColors.gold : PmgColors.red,
+                                                            transition: "width 0.4s ease"
+                                                        }} />
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        );
+                                    })()}
                                 </PGrid>
                             </PGrid>
                         </div>
@@ -2126,27 +2209,27 @@ const ProjectEnquiry = () => {
 
                                         <Divider sx={{ mb: 2 }} />
                                         {formData.sapVisible && (
-                                        <PGrid container className={Labels.margin.mb3}>
-                                            <PGrid item xs={12} sm={6} md={2} className={Labels.margin.mt3}>
-                                                <PTypography
-                                                    labelText={`${getLabel("lbl241")} ${Labels.symbols.optional}`}
-                                                    flag={Labels.fontFlags.normalText}
-                                                    color={CommonColors.black.main}
-                                                    weight={FontWeight.bold}
-                                                />
+                                            <PGrid container className={Labels.margin.mb3}>
+                                                <PGrid item xs={12} sm={6} md={2} className={Labels.margin.mt3}>
+                                                    <PTypography
+                                                        labelText={`${getLabel("lbl241")} ${Labels.symbols.optional}`}
+                                                        flag={Labels.fontFlags.normalText}
+                                                        color={CommonColors.black.main}
+                                                        weight={FontWeight.bold}
+                                                    />
+                                                </PGrid>
+                                                <PGrid item xs={12} sm={6} md={2}>
+                                                    <PDropdown
+                                                        value={formData.sap}
+                                                        onChange={(e) => setFormData((prev) => ({
+                                                            ...prev,
+                                                            sap: e.target.value
+                                                        }))}
+                                                        options={formDataList.yesOrNo}
+                                                        width={Labels.fontSize.xxxxl}
+                                                    />
+                                                </PGrid>
                                             </PGrid>
-                                            <PGrid item xs={12} sm={6} md={2}>
-                                                <PDropdown
-                                                    value={formData.sap}
-                                                    onChange={(e) => setFormData((prev) => ({
-                                                        ...prev,
-                                                        sap: e.target.value
-                                                    }))}
-                                                    options={formDataList.yesOrNo}
-                                                    width={Labels.fontSize.xxxxl}
-                                                />
-                                            </PGrid>
-                                        </PGrid>
                                         )}
                                         <PGrid item xs={12} sm={12} md={12} className="d-flex justify-content-end gap-2">
                                             <PButton
@@ -2328,7 +2411,7 @@ const ProjectEnquiry = () => {
                                     onClick={() =>
                                         setFormData(prev => ({
                                             ...prev,
-                                            quoteFlag : true
+                                            quoteFlag: true
                                         }))
                                     }
                                     width={250}
@@ -2361,7 +2444,7 @@ const ProjectEnquiry = () => {
                                     setFormData((prev) => ({
                                         ...prev,
                                         quoteFlag: false,
-                                        activeTab : "Job Summary"
+                                        activeTab: "Job Summary"
                                     }))}
                                 color={CommonColors.grey.main}
                                 width={120}

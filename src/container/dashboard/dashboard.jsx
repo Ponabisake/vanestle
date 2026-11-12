@@ -47,6 +47,10 @@ import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import { userDetails } from "../../redux/actionType/actionType";
 import { useDispatch, useSelector } from "react-redux";
 import { CommonColors } from "../../utils/constants/colors";
+
+// ViewDashboard SurveyStatusName for a client's completed job that still needs the survey
+const SURVEY_TAKE = "Take Survey";
+
 const dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -192,9 +196,11 @@ const dashboard = () => {
         {
           field: "surveyStatus",
           header: userType?.toLowerCase() === Labels.userType.client ? "Survey" : "Survey Status",
+          // Client: the API sends "Take Survey" (show the button), "Survey Taken", "Survey Expired" or blank,
+          // as the legacy client dashboard. Agency: "Survey email sent to Client" / "Survey Taken" / blank.
           render: (row) =>
-            userType?.toLowerCase() === Labels.userType.client
-              ? [24].includes(row.statusId) && (
+            userType?.toLowerCase() === Labels.userType.client && row.surveyStatus === SURVEY_TAKE
+              ? (
                 <PButton
                   variant="contained"
                   label="Take Survey"

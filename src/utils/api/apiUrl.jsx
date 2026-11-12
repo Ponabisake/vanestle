@@ -78,6 +78,8 @@ export const ProjectEnquiry_API = {
   UpdatePreviewQuotes : Base_Url + "/VA/UpdatePreviewQuotes",
   GetPreviewQuotes : Base_Url + "/VA/GetPreviewQuotes",
   UpdateSurvey : Base_Url + "/VA/UpdateSurvey",
+  // Client Performance Survey submit: { enqId, username, responsive, accuracy, quality, overallExp, comments }
+  SaveSurvey : Base_Url + "/VA/SaveSurvey",
   GetClientQuotes: Base_Url + "/VA/GetClientQuotes",
   GetSupplierQuotes: Base_Url + "/VA/GetSupplierQuotes",
   SaveSupplierQuotes: Base_Url + "/VA/SaveSupplierQuotes"

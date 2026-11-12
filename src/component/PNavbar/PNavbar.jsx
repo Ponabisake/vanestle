@@ -24,6 +24,17 @@ import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDown
 import { userDetails } from "../../redux/actionType/actionType";
 import { useDispatch, useSelector } from "react-redux";
 import { Account_API } from "../../utils/api/apiUrl";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import { PmgColors } from "../PHeadingAccent/PHeadingAccent";
+
+// Language switcher entries: code badge, name in its own script, English name
+const LANGUAGES = [
+  { key: Labels.language.en, code: "EN", native: "English", english: "English" },
+  { key: Labels.language.id, code: "ID", native: "Bahasa Indonesia", english: "Indonesian" },
+  { key: Labels.language.kr, code: "KR", native: "한국어", english: "Korean" },
+  { key: Labels.language.jp, code: "JP", native: "日本語", english: "Japanese" },
+  { key: Labels.language.ch, code: "繁", native: "繁體中文", english: "Chinese (Traditional)" },
+];
 
 const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0, toggleSidebar, }) => {
   const navigate = useNavigate();
@@ -140,15 +151,6 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
     navigate(item.route);
   };
 
-  const selectedStyle = {
-    "&.Mui-selected": {
-      backgroundColor: "#16133F !important",
-      color: "#fff"
-    },
-    "&.Mui-selected:hover": {
-      backgroundColor: "#16133F"
-    },
-  };
   return (
     <AppBar position="sticky" elevation={0} sx={{ backgroundColor: "white", padding: "1rem 0" }} >
       <Toolbar sx={{
@@ -371,22 +373,71 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
         onClose={handleCloseMenu}
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "left"
+          horizontal: "right"
         }}
         transformOrigin={{
           vertical: "top",
-          horizontal: "left"
+          horizontal: "right"
         }}
+        MenuListProps={{ sx: { py: 0 }, "aria-label": "Choose language" }}
         PaperProps={{
           onMouseLeave: handleCloseMenu,
-          sx: { width: 160, mt: 1.5 }
+          sx: {
+            width: 190, mt: 1, borderRadius: "10px", overflow: "hidden",
+            border: `1px solid ${PmgColors.navy}14`,
+            boxShadow: `0 10px 24px ${PmgColors.navy}1F`
+          }
         }}
       >
-        <MenuItem selected={language === Labels.language.en} sx={selectedStyle} onClick={() => { changeLanguage(Labels.language.en) }}>EN</MenuItem>
-        <MenuItem selected={language === Labels.language.id} sx={selectedStyle} onClick={() => { changeLanguage(Labels.language.id) }}>ID</MenuItem>
-        <MenuItem selected={language === Labels.language.kr} sx={selectedStyle} onClick={() => { changeLanguage(Labels.language.kr) }}>KR</MenuItem>
-        <MenuItem selected={language === Labels.language.jp} sx={selectedStyle} onClick={() => { changeLanguage(Labels.language.jp) }}>JP</MenuItem>
-        <MenuItem selected={language === Labels.language.cn} sx={selectedStyle} onClick={() => { changeLanguage(Labels.language.ch) }}>CH (Traditional)</MenuItem>
+        {/* header */}
+        <Box sx={{
+          display: "flex", alignItems: "center", gap: 0.75, px: 1.5, py: 0.75,
+          background: `linear-gradient(135deg, ${PmgColors.navy} 0%, ${PmgColors.indigo} 100%)`,
+          borderBottom: `2px solid ${PmgColors.gold}`,
+          color: PmgColors.gold, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase"
+        }}>
+          <Language sx={{ fontSize: 13 }} /> Language
+        </Box>
+
+        {/* options */}
+        <Box sx={{ py: 0.5 }}>
+          {LANGUAGES.map(lang => {
+            const active = language === lang.key;
+            return (
+              <MenuItem
+                key={lang.key}
+                selected={active}
+                onClick={() => { changeLanguage(lang.key); handleCloseMenu(); }}
+                sx={{
+                  mx: 0.5, my: 0.25, px: 1, py: 0.5, minHeight: 0, gap: 1, borderRadius: "8px",
+                  borderLeft: `3px solid ${active ? PmgColors.orange : "transparent"}`,
+                  transition: "background-color 0.2s, border-color 0.2s",
+                  "&:hover": { bgcolor: `${PmgColors.indigo}0D` },
+                  "&:hover .lang-badge": { bgcolor: PmgColors.navy, color: "white" },
+                  "&.Mui-selected, &.Mui-selected:hover": { bgcolor: `${PmgColors.orange}14` },
+                  "&.Mui-focusVisible": { bgcolor: `${PmgColors.indigo}14` }
+                }}
+              >
+                <Box className="lang-badge" sx={{
+                  width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 700, transition: "0.2s",
+                  bgcolor: active ? PmgColors.orange : `${PmgColors.navy}0D`,
+                  color: active ? "white" : PmgColors.navy
+                }}>
+                  {lang.code}
+                </Box>
+                <Box title={lang.english} sx={{
+                  flex: 1, minWidth: 0, fontSize: 13, fontWeight: active ? 700 : 500, color: PmgColors.navy,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+                }}>
+                  {lang.native}
+                </Box>
+                {active && <CheckRoundedIcon sx={{ fontSize: 16, color: PmgColors.orange }} />}
+              </MenuItem>
+            );
+          })}
+        </Box>
       </Menu>
     </AppBar>
   );
