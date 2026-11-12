@@ -812,7 +812,7 @@ const PSpotSection = ({ response, onSaved }) => {
                 </PGrid>
                 <PGrid container className={Labels.margin.mb3}>
                     <PDropdown
-                        label={`${getLabel("lbl318")} ${Labels.suppliers.required}`}
+                        label={`${getLabel("lbl318")} ${Labels.symbols.required}`}
                         name={"type"}
                         value={formData.type}
                         options={formDataList.environmentalType}
@@ -826,7 +826,7 @@ const PSpotSection = ({ response, onSaved }) => {
                 <PGrid container className={Labels.margin.mb3}>
                     <PGrid item xs={12} sm={12} md={12}>
                         <PTextField
-                            label= {`${getLabel("lbl313")} ${Labels.suppliers.required}`}
+                            label= {`${getLabel("lbl313")} ${Labels.symbols.required}`}
                             name={"weight"}
                             value={formData.weight}
                             onChange={handleChange}
