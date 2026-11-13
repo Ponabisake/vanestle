@@ -69,7 +69,7 @@ const FileIcon = ({ name }) => {
  * enquiry, all files together within 100 MB); the list shows what the user may see, with Edit (name / type / note)
  * and Remove. userId is tblUsers.Id of the signed-in user.
  */
-export default function PEnquiryAttachments({ enqId, userId }) {
+export default function PEnquiryAttachments({ enqId, userId, userType }) {
   const [list, setList] = useState({ files: [], totalBytes: 0, maxTotalBytes: MAX_TOTAL_BYTES, canUpload: false });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -262,13 +262,16 @@ export default function PEnquiryAttachments({ enqId, userId }) {
         </button>
       ),
     },
-    { field: "type", header: "Type" },
-    { field: "userName", header: "User ID" },
+    ...(userType?.toLowerCase() === Labels.userType.agency 
+      ? [
+        { field: "type", header: "Type" },
+        { field: "userName", header: "User ID" }
+      ] : []),
     { field: "size", header: "Size", render: (file) => file.size || formatSize(file.fileSize) },
     { field: "uploadDate", header: "Uploaded", render: (file) => (file.uploadDate ? formatDate(file.uploadDate) : "") },
     { field: "note", header: "Notes", render: (file) => <span className="pea-note">{file.note}</span> },
     { field: "status", header: "Status", render: (file) => (file.exists ? file.status : <span className="pea-missing">Not on server</span>) },
-    {
+    ...(userType?.toLowerCase() !== Labels.userType.client ? [{
       field: "actions",
       header: "",
       align: "right",
@@ -298,7 +301,7 @@ export default function PEnquiryAttachments({ enqId, userId }) {
           )}
         </span>
       ),
-    },
+    }] : []),
   ];
 
   const usedPercent = Math.min(100, Math.round((list.totalBytes / list.maxTotalBytes) * 100));
@@ -347,7 +350,7 @@ export default function PEnquiryAttachments({ enqId, userId }) {
         </PGrid>
       </PGrid>
 
-      <PreviewDialog open={!!preview} onClose={() => setPreview(null)} files={preview ? [preview] : []} currentIndex={0} setCurrentIndex={() => {}} />
+      <PreviewDialog open={!!preview} onClose={() => setPreview(null)} files={preview ? [preview] : []} currentIndex={0} setCurrentIndex={() => { }} />
 
       <PDialog
         open={!!edit}

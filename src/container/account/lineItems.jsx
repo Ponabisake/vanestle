@@ -114,7 +114,7 @@ const LineItems = () => {
         competitiveBiddingWinningSupplierCost: "",
         printingMethod: "",
         typeOfItem: "",
-        noOfMaterials: "",
+        noOfMaterials: 1,
         harmonizedOrder: "",
         digitalInnovation: "",
         innovation: "",
@@ -440,9 +440,9 @@ const LineItems = () => {
 
     const handleSubmit = async (e, flag) => {
         if (savingRef.current) return;
-        if (lineItems.length > 0 && flag && !formData.itemCategory) {
+        if (lineItems.length > 0 && !formData.itemCategory) {
             setAllowRedirect(false);
-            navigate(labelRoutes.suppliers);
+            navigate(flag ? labelRoutes.suppliers : labelRoutes.dashboard);
             return;
         }
 
@@ -1370,12 +1370,17 @@ const LineItems = () => {
                                 labelText={
                                     <>
                                         {getLabel("lbl84").split("populate from an existing item")[0]}
-                                        <span style={{ color: CommonColors.blue.main }} onClick={() => {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                specification: formData.itemCategory
-                                            }))
-                                        }}>
+                                        <span style={{
+                                            color: CommonColors.blue.main,
+                                            cursor: formData.itemCategory ? "pointer" : "default"
+                                        }}
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    specification: formData.itemCategory
+                                                }))
+                                            }}
+                                        >
                                             populate from an existing item
                                         </span>
                                         {getLabel("lbl84").split("populate from an existing item")[1]}

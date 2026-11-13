@@ -73,12 +73,14 @@ const dashboard = () => {
     search: "",
     chartType: "pie",
     status: "",
+    jobStatus: ""
   });
 
   const [formDataList, setFormDataList] = useState({
     country: [],
     clientName: [],
     user: [],
+    jobStatus: []
   });
   const [errors, setErrors] = useState({
     startDate: "",
@@ -97,7 +99,11 @@ const dashboard = () => {
       setFormDataList({
         country: response.country,
         user: response.user,
-        clientName: response.client
+        clientName: response.client,
+        jobStatus: [
+          { value: "", label: "All", selected: true },
+          ...response.status
+        ]
       });
       setFormData({
         ...formData,
@@ -156,6 +162,7 @@ const dashboard = () => {
         payload: {
           id: 0,
           enquiryId: "", // no enquiry open – avoids showing a previous enquiry ID in the stepper
+          attachment : 0
         },
       });
     } catch (error) {
@@ -170,12 +177,12 @@ const dashboard = () => {
   }, [menuId]);
 
   const columns = [
-    { field: "enquiryId", header: getLabel("lbl162")},
+    { field: "enquiryId", header: getLabel("lbl162") },
     { field: "projectNumber", header: getLabel("lbl163") },
     ...(userType?.toLowerCase() === Labels.userType.client
       ? [{ field: "ponumber", header: "Do No" }]
       : [{ field: "requestedDate", header: "Requested Date" }]),
-    { field: "projectName", header:  getLabel("lbl155") },
+    { field: "projectName", header: getLabel("lbl155") },
     {
       field: "status", header: "Status",
       render: (row) => (
@@ -508,12 +515,12 @@ const dashboard = () => {
       result = result.filter((item) => status === 6 ? item.jobStatusID >= 6 && item.jobStatusID !== 24 : item.jobStatusID === status);
     }
 
-    // country filter
-    // if (isNotEmpty(formData.country)) {
-    //   result = result.filter(
-    //     (item) => item.countryID === Number(formData.country)
-    //   );
-    // }
+    // status filter
+    if (isNotEmpty(formData.jobStatus)) {
+      result = result.filter(
+        (item) => item.jobStatusID === Number(formData.jobStatus)
+      );
+    }
 
     if (isNotEmpty(formData.clientName)) {
       result = result.filter(
@@ -700,7 +707,8 @@ const dashboard = () => {
       type: userDetails,
       payload: {
         enquiryId: row.enquiryId,
-        id: row.id
+        id: row.id,
+        attachment : row.attachments
       },
     });
     navigate(route);
@@ -796,14 +804,14 @@ const dashboard = () => {
         {/* Two rows: [search + filters | chart type] then [table | chart], so the chart card
             starts on the table's top line and (stretched) ends on its bottom line. */}
         <PGrid container spacing={2} className={Labels.margin.mb3} style={{ display: "flex", alignItems: "stretch" }}>
-          <PGrid item xs={12} lg={8} xl={9} className={Labels.margin.mb3}>
+          <PGrid item xs={12} lg={12} xl={12} className={Labels.margin.mb3}>
             <PGrid className={Labels.margin.mb3}>
               <PSearch width="100%" placeholder={getLabel("lbl298")} onChange={(e) => setFormData({ ...formData, search: e.target.value })} value={formData.search} />
             </PGrid>
 
             <PGrid container spacing={0}>
               {[Labels.userType.agency, Labels.userType.client].includes(userType?.toLowerCase()) && (
-                <PGrid item xs={12} sm={6} md={4}>
+                <PGrid item xs={12} sm={6} md={3}>
                   <PDropdown
                     label={getLabel("lbl28")}
                     value={formData.clientName}
@@ -818,7 +826,7 @@ const dashboard = () => {
               )}
 
               {[Labels.userType.agency].includes(userType?.toLowerCase()) && (
-                <PGrid item xs={12} sm={6} md={4}>
+                <PGrid item xs={12} sm={6} md={3}>
                   <PDropdown
                     label={getLabel("lbl10")}
                     value={formData.user}
@@ -829,8 +837,21 @@ const dashboard = () => {
                   />
                 </PGrid>
               )}
+              {[Labels.userType.agency].includes(userType?.toLowerCase()) && (
+                <PGrid item xs={12} sm={6} md={3}>
+                  <PDropdown
+                    //label={getLabel("lbl10")}
+                    value={formData.jobStatus}
+                    onChange={(e) => setFormData({ ...formData, jobStatus: e.target.value })}
+                    options={formDataList.jobStatus}
+                    width={Labels.fontSize.xxxxl}
+                    labelMode="inside"
+                    flag={Labels.flag.auto}
+                  />
+                </PGrid>
+              )}
 
-              <PGrid item xs={12} sm={6} md={4} style={{ display: "flex" }}>
+              <PGrid item xs={12} sm={6} md={3} style={{ display: "flex" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {icons.slice(1).map((item, index) => (
                     <Tooltip title={item.tooltip} arrow key={index}>
@@ -860,7 +881,7 @@ const dashboard = () => {
             </PGrid>
           </PGrid>
 
-          <PGrid item xs={12} lg={4} xl={3}>
+          {/* <PGrid item xs={12} lg={4} xl={3}>
             <div style={{ display: "flex" }}>
               <PToggleCircle
                 options={chartOptions}
@@ -869,9 +890,9 @@ const dashboard = () => {
                 disabled={loading}
               />
             </div>
-          </PGrid>
+          </PGrid> */}
 
-          <PGrid item xs={12} lg={8} xl={9}>
+          <PGrid item xs={12} lg={12} xl={12}>
             {loading ? (
               <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
             ) : (
@@ -879,9 +900,9 @@ const dashboard = () => {
             )}
           </PGrid>
 
-          <PGrid item xs={12} lg={4} xl={3} style={{ display: "flex", flexDirection: "column" }}>
+          {/* <PGrid item xs={12} lg={4} xl={3} style={{ display: "flex", flexDirection: "column" }}>
             <Suspense>
-              {/* stretched to the table row's height, so the chart card ends level with the table */}
+             
               <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
                 {loading ? (
                   <Skeleton variant="rectangular" height="100%" width="100%" sx={{ borderRadius: 2, flex: 1, minHeight: 350 }} />
@@ -893,7 +914,7 @@ const dashboard = () => {
               </div>
             </Suspense>
 
-          </PGrid>
+          </PGrid> */}
         </PGrid>
       </Box >
 

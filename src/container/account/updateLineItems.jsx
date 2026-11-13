@@ -16,7 +16,7 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useSelector } from "react-redux";
 const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => {
     const { getLabel } = useLanguage();
-    
+    const location = useLocation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [allowRedirect, setAllowRedirect] = useState(false);
@@ -196,7 +196,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
         return Object.keys(newErrors).length === 0;
     };
 
-    const route = step === 4 ? labelRoutes.suppliers : step === 5 ? labelRoutes.review : labelRoutes.lineItems;
+    const route = location.pathname;
     
     // ✅ Submit
     const handleSubmit = async () => {

@@ -87,7 +87,7 @@ const ProjectEnquiry = () => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [dynamicData, setDynamicData] = useState({});
-    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id } = useSelector((state) => state.userDetails.user);
+    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id, attachment } = useSelector((state) => state.userDetails.user);
 
     const actionFlag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
     const today = formatDate(new Date());
@@ -246,7 +246,9 @@ const ProjectEnquiry = () => {
         ...(flag ? [{ label: "SLA", icon: <HandshakeIcon /> }] : []),
         ...(flag ? [{ label: "Revised Quotes", icon: <PriceChangeIcon /> }] : []),
         ...(flag ? [{ label: "Logs", icon: <HistoryIcon /> }] : []),
-        ...(flag || userType?.toLowerCase() === Labels.userType.supplier ? [{ label: "Attachment", icon: <AttachmentIcon /> }] : [])
+        ...(flag || userType?.toLowerCase() === Labels.userType.supplier || attachment
+            ? [{ label: "Attachment", icon: <AttachmentIcon /> }]
+            : []),
     ]
 
 
@@ -1120,7 +1122,7 @@ const ProjectEnquiry = () => {
             actualdeliverydate: formData.actualDeliveryDate,
             raisedDate: formData.raisedDate,
             invoiceDate: "",
-            statusId: flag === "order" ? 7 : formData.statusId
+            ...(flag === "order" && { statusId: 7 })
         }
 
         //management fee 
@@ -2356,7 +2358,7 @@ const ProjectEnquiry = () => {
                             <SectionHeading accent={PmgColors.gold} label={getLabel("lbl182")} />
                         </PGrid>
                         <Divider sx={{ mb: 2 }} />
-                        <PEnquiryAttachments enqId={id} userId={userID} />
+                        <PEnquiryAttachments enqId={id} userId={userID} userType={userType} />
                     </div>
                 )}
 

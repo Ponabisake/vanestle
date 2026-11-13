@@ -139,7 +139,7 @@ const ClientInfo = () => {
             </div>
         );
     };
-    
+
 
     const clientInfo = getClientInfo(fields, formData, formDataList, getLabel, getOptionLabel, id ? formDataList.clientInfo : null);
     const sections = getSummarySections({ menuId, clientInfo, getLabel });
@@ -744,7 +744,7 @@ const ClientInfo = () => {
                         <PGrid container className={Labels.margin.mb4}>
                             <PGrid item xs={12} sm={6} md={6} style={{ display: "flex", alignItems: "flex-start", flexDirection: "column", position: "relative" }} >
                                 {[Labels.role.admin].includes(role) && (
-                                    <Typography style={{ fontSize: "14px", color: disable ? "#C6C7C8" : "#0371D0", position: "absolute", right: "10px", top: "0" }}>
+                                    <Typography style={{ fontSize: "14px", color: disable ? "#C6C7C8" : "#0371D0", position: "absolute", right: "10px", top: "0", cursor: disable ? "default" : "pointer" }}>
                                         <span onClick={disable ? undefined : ((e) => handleOpenChoose(e, "Brand"))}>+ New Brand</span>
                                     </Typography>
                                 )}
@@ -788,8 +788,8 @@ const ClientInfo = () => {
                         {/* Row 4 */}
                         <PGrid container className={Labels.margin.mb5}>
                             <PGrid item xs={12} sm={6} md={6} style={{ display: "flex", alignItems: "flex-start", flexDirection: "column", position: "relative" }} >
-                                <Typography style={{ fontSize: "14px", color: disable ? "#C6C7C8" : "#0371D0", position: "absolute", right: "10px", top: "0" }}>
-                                    <span onClick={disable ? undefined : (e) => handleOpenChoose(e, "Contant")} >+ New Contact</span>
+                                <Typography style={{ fontSize: "14px", color: disable ? "#C6C7C8" : "#0371D0", position: "absolute", right: "10px", top: "0", cursor: disable ? "default" : "pointer" }}>
+                                    <span onClick={disable ? undefined : (e) => handleOpenChoose(e, "Contant")} > + New Contact</span>
                                 </Typography>
                                 <PDropdown
                                     name={Labels.clientInfo.clientContact}

@@ -1,9 +1,9 @@
 import {
   FaHome,
-  FaBuilding,FaFileInvoice 
+  FaBuilding, FaFileInvoice
 } from "react-icons/fa";
-import React, { useState,useEffect } from "react";
-import { Container} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Container } from "@mui/material";
 import { useNavigate, Outlet } from "react-router-dom";
 import "../../App.css";
 import Logo from '../../utils/assets/Navbar/Logo.svg'
@@ -24,9 +24,9 @@ function PageLayout() {
   const { userName } = useSelector((state) => state.userDetails.user);
   let bg = "";
   let border = {};
-  if(location.pathname == labelRoutes.vaDashboard){
-    bg="bg"
-  }else{
+  if (location.pathname == labelRoutes.vaDashboard) {
+    bg = "bg"
+  } else {
     border = {
       borderBottom: "1px solid #e1e1e1",
     }
@@ -34,13 +34,13 @@ function PageLayout() {
   const user = {
     name: userName,
     avatar: "",
-    email: "", 
+    email: "",
   };
 
   return (
     <div className={`app-container ${bg}`}>
       <div style={border}>
-        <Container maxWidth={false} sx={{px: { xs: 4, md: 12, lg: 10 },}}>
+        <Container maxWidth={false} sx={{ px: { xs: 4, md: 12, lg: 10 }, }}>
           <PNavbar
             name={user.name}
             email={user.email}
@@ -53,23 +53,24 @@ function PageLayout() {
 
         <div className="main-content">
           <div className="page-content">
-            <Container maxWidth={false} sx={{px: { xs: 2, md: 6, lg: 10 },}} className="dashboard_wrapper">
+            <Container maxWidth={false} sx={{ px: { xs: 2, md: 6, lg: 10 }, }} className="dashboard_wrapper">
               <Outlet />
             </Container>
           </div>
 
-          <div className="footer d-flex flex-row gap-3 align-items-end py-3">
+          <div className="footer d-flex flex-column align-items-center justify-content-center gap-2 py-3">
+            <img
+              src={FooterLogo}
+              alt={Labels.footerLogo}
+              className="footer-logo"
+            />
+
             <PTypography
-                labelText={`© ${new Date().getFullYear()} ${getLabel("lbl07")}`}
-                flag={Labels.fontFlags.errorLbl}
-                color={CommonColors.primary}
-                font={FontWeight.regular}
-              />
-              <img
-                src={FooterLogo}
-                alt={Labels.footerLogo}
-                className="footer-logo"
-              />
+              labelText={`© ${new Date().getFullYear()} ${getLabel("lbl07")}`}
+              flag={Labels.fontFlags.errorLbl}
+              color={CommonColors.primary}
+              font={FontWeight.regular}
+            />
           </div>
         </div>
 
