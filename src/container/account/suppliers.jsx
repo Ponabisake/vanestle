@@ -310,7 +310,6 @@ const Suppliers = () => {
                 open={open}
                 onClose={() => setOpen(false)}
                 onSave={handleSubmit}
-                onDelete={handleSubmit}
             />
         </>
     );

@@ -1370,17 +1370,13 @@ const LineItems = () => {
                                 labelText={
                                     <>
                                         {getLabel("lbl84").split("populate from an existing item")[0]}
-                                        <span style={{
-                                            color: CommonColors.blue.main,
-                                            cursor: formData.itemCategory ? "pointer" : "default"
-                                        }}
+                                        <span style={{ color: CommonColors.blue.main, cursor: formData.itemCategory ? "pointer" : "default" }}
                                             onClick={() => {
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     specification: formData.itemCategory
                                                 }))
-                                            }}
-                                        >
+                                            }}>
                                             populate from an existing item
                                         </span>
                                         {getLabel("lbl84").split("populate from an existing item")[1]}
@@ -1660,7 +1656,6 @@ const LineItems = () => {
                 open={open}
                 onClose={() => setOpen(false)}
                 onSave={handleSubmit}
-                onDelete={handleSubmit}
             />
 
             <PDialog

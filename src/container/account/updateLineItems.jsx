@@ -20,7 +20,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [allowRedirect, setAllowRedirect] = useState(false);
-    const { fkID , id} = useSelector((state) => state.userDetails.user);
+    const { fkID, id } = useSelector((state) => state.userDetails.user);
     const [formData, setFormData] = useState({
         enquiryId: "",
         itemName: "",
@@ -197,7 +197,6 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
     };
 
     const route = location.pathname;
-    
     // ✅ Submit
     const handleSubmit = async () => {
         const isValid = LineItemsValidation();

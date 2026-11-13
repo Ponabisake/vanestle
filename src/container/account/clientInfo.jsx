@@ -25,6 +25,24 @@ import arrow from "../../utils/assets/images/arrow_white.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { userDetails } from "../../redux/actionType/actionType";
 
+// name@host.tld: no spaces, lists or display names; host labels separated by single dots (the API's check is final)
+const EMAIL_FORMAT = /^[^\s@,;<>]+@([^\s@,;<>.]+\.)+[^\s@,;<>.]+$/;
+
+// "" when the new client contact's email is valid, otherwise the message. allowedDomains = the active
+// tblEmailDomain rows in lower case; null while not loaded (the API still rejects other domains).
+const getEmailError = (value, allowedDomains) => {
+    const email = (value || "").trim();
+    if (!email) return "";
+    if (!EMAIL_FORMAT.test(email)) return Labels.message.invalidEmail;
+    const domain = email.slice(email.lastIndexOf("@") + 1).toLowerCase();
+    if (allowedDomains && !allowedDomains.includes(domain)) return Labels.message.emailDomainNotAllowed(domain);
+    return "";
+};
+
+const isEmailMessage = (message) =>
+    typeof message === "string" &&
+    (message === Labels.message.invalidEmail || message.startsWith("Email domain"));
+
 const ClientInfo = () => {
     const { getLabel } = useLanguage();
     const dispatch = useDispatch();
@@ -38,6 +56,7 @@ const ClientInfo = () => {
     const [open, setOpen] = useState(false);
     const [disable, setDisable] = useState(true);
     const [type, setType] = useState("");
+    const [emailDomains, setEmailDomains] = useState(null);
     const [formData, setFormData] = useState({
         division: "",
         brand: "",
@@ -278,8 +297,34 @@ const ClientInfo = () => {
             setDisable(false);
         }
 
+        // once an email error is shown, re-check while typing so it clears as soon as the address is fixed
+        if (name === Labels.clientInfo.email && errors.email) {
+            setErrors((prev) => ({
+                ...prev,
+                email: getEmailError(value, emailDomains)
+            }));
+        }
+
         if (name === Labels.clientInfo.logonID) {
             await GetCheckUserName(value);
+        }
+    };
+
+    const handleEmailBlur = () => {
+        setErrors((prev) => ({
+            ...prev,
+            email: getEmailError(formData.email, emailDomains)
+        }));
+    };
+
+    const loadEmailDomains = async () => {
+        try {
+            const response = await PostApi(ClientInfo_API.EmailDomains);
+            if (isSuccess(response) && Array.isArray(response.data)) {
+                setEmailDomains(response.data.map((d) => String(d).trim().toLowerCase()));
+            }
+        } catch {
+            // not blocking: AddnewClient checks the domain as well
         }
     };
 
@@ -421,6 +466,10 @@ const ClientInfo = () => {
                 newErrors[field] = Labels.commonLabel.required;
             }
         });
+        if (!newErrors.email) {
+            const emailError = getEmailError(formData.email, emailDomains);
+            if (emailError) newErrors.email = emailError;
+        }
         setErrors(newErrors);
         notifyValidation(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -491,10 +540,13 @@ const ClientInfo = () => {
                         toast(Labels.status.success, response.data);
                         ClientInfoMaster(formData.globalBUMapping);
                     } else {
-                        setErrors((prev) => ({
-                            ...prev,
-                            name: ""
-                        }));
+                        // the API's email checks (format, domain) highlight the Email field
+                        if (isEmailMessage(response?.data)) {
+                            setErrors((prev) => ({
+                                ...prev,
+                                email: response.data
+                            }));
+                        }
                         setCcOpenFilter(true);
                         toast(Labels.status.failure, response.data);
                     }
@@ -539,6 +591,7 @@ const ClientInfo = () => {
         setType(name);
         if (name === "Contant") {
             setCcOpenFilter(true);
+            loadEmailDomains();
         } else {
             setBrandOpenFilter(true);
         }
@@ -789,7 +842,7 @@ const ClientInfo = () => {
                         <PGrid container className={Labels.margin.mb5}>
                             <PGrid item xs={12} sm={6} md={6} style={{ display: "flex", alignItems: "flex-start", flexDirection: "column", position: "relative" }} >
                                 <Typography style={{ fontSize: "14px", color: disable ? "#C6C7C8" : "#0371D0", position: "absolute", right: "10px", top: "0", cursor: disable ? "default" : "pointer" }}>
-                                    <span onClick={disable ? undefined : (e) => handleOpenChoose(e, "Contant")} > + New Contact</span>
+                                    <span onClick={disable ? undefined : (e) => handleOpenChoose(e, "Contant")} >+ New Contact</span>
                                 </Typography>
                                 <PDropdown
                                     name={Labels.clientInfo.clientContact}
@@ -947,6 +1000,7 @@ const ClientInfo = () => {
                             label={`${getLabel("lbl133")}${Labels.symbols.required}`}
                             value={formData.email}
                             onChange={handleChange}
+                            onBlur={handleEmailBlur}
                             helperText={errors?.email}
                         />
 
@@ -1046,7 +1100,6 @@ const ClientInfo = () => {
                 open={open}
                 onClose={() => setOpen(false)}
                 onSave={handleSubmit}
-                onDelete={handleSubmit}
             />
         </>
     );

@@ -185,7 +185,10 @@ export const Labels = {
     success: "Success",
     failed: "Failed",
     somethingWentWrong: "Something went wrong",
-    updatedSuccessfully: "Updated successfully"
+    updatedSuccessfully: "Updated successfully",
+    // same texts as the API (VAapiNestle ClientEmailDomains)
+    invalidEmail: "Invalid Email format",
+    emailDomainNotAllowed: (domain) => `Email domain '@${domain}' is not allowed`
   },
 
   language: {

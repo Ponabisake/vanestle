@@ -262,7 +262,7 @@ export default function PEnquiryAttachments({ enqId, userId, userType }) {
         </button>
       ),
     },
-    ...(userType?.toLowerCase() === Labels.userType.agency 
+    ...(userType?.toLowerCase() === Labels.userType.agency
       ? [
         { field: "type", header: "Type" },
         { field: "userName", header: "User ID" }

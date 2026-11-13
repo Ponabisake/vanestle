@@ -1,6 +1,7 @@
 import React from "react";
-import { Box, InputBase } from "@mui/material";
+import { Box, IconButton, InputBase } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
 
 // ✅ Styled components
@@ -43,10 +44,16 @@ const StyledInput = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-const PSearch = ({ value, onChange ,width , placeholder}) => {
+// onClear (optional): shows a × while there is text
+const PSearch = ({ value, onChange ,width , placeholder, onClear}) => {
     return (
         <SearchContainer sx={{width:width || 250, height: 50}}>
             <StyledInput placeholder={placeholder || "Search…"} value={value} onChange={onChange} fullWidth />
+            {onClear && value && (
+                <IconButton size="small" aria-label="Clear search" title="Clear" onClick={onClear} sx={{ mr: 0.5, color: "#16133F" }}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            )}
             <IconWrapper>
                 <SearchIcon />
             </IconWrapper>

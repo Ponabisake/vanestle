@@ -42,6 +42,7 @@ import { PSectionHeading as SectionHeading, PmgColors } from "../../component/PH
 import { useSelector } from "react-redux";
 import PCard from "../../component/PCard/PCard";
 import CircularProgress from "@mui/material/CircularProgress";
+import PSapStatus from "../../component/PSapStatus/PSapStatus";
 
 // Inline input used inside the Project Savings table cells: soft rounded field,
 // PMG-orange hover/focus ring, numeric values right-aligned.
@@ -87,7 +88,7 @@ const ProjectEnquiry = () => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [dynamicData, setDynamicData] = useState({});
-    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id, attachment } = useSelector((state) => state.userDetails.user);
+    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id , attachment} = useSelector((state) => state.userDetails.user);
 
     const actionFlag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
     const today = formatDate(new Date());
@@ -440,7 +441,9 @@ const ProjectEnquiry = () => {
                 isProject: response.isprojectsavings,
                 // SAP: shown only when the enquiry's country needs SAP; pre-filled from the saved value, else "No"
                 sapVisible: response.countrySapNeeded === "Yes",
-                sap: response.sapNeeded === "Yes" ? 1 : 2
+                sap: response.sapNeeded === "Yes" ? 1 : 2,
+                // what was saved with "Submit quotation to client" (the dropdown above can still be changed)
+                sapSaved: response.sapNeeded === "Yes"
             }));
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -454,9 +457,18 @@ const ProjectEnquiry = () => {
         }
     };
 
+    // SAP: after "Submit quotation to client" with Send to SAP = Yes the job may only move on (approval) once SAP has
+    // created the project (VA/SapStatus; the API enforces the same in UpdateJobStatus)
+    const [sapStatus, setSapStatus] = useState(null);
+    const handleSapChange = useCallback((status) => setSapStatus(status), []);
+    const sapActive = Boolean(formData.sapVisible && formData.sapSaved && [3, 5].includes(formData.statusId));
+    const sapPending = sapActive && (!sapStatus || ["Waiting", "InProgress"].includes(sapStatus.state));
+    const sapBlocksApproval = sapActive && !sapStatus?.canProceed;
+
     const statusInfo = [
         { label: getLabel("lbl162"), value: enquiryId },
-        { label: getLabel("lbl163"), value: formData.projectNo }
+        { label: getLabel("lbl163"), value: formData.projectNo },
+        ...(sapActive && sapStatus?.sapProjectNo ? [{ label: "SAP Project No", value: sapStatus.sapProjectNo }] : [])
     ]
     //Change Function
     const handleChange = async (e) => {
@@ -875,6 +887,9 @@ const ProjectEnquiry = () => {
                     // status change -> fetchData moves to the next stage's tab
                     // (3 stays on Project Savings, 4 revise -> RFQ, 6 approved -> Delivery Order)
                     await fetchData();
+                } else {
+                    // e.g. approval refused while SAP has not created the project
+                    toast(Labels.status.failure, response?.data || Labels.message.somethingWentWrong);
                 }
             }
             else {
@@ -1344,6 +1359,7 @@ const ProjectEnquiry = () => {
     return (
         <>
             <Box sx={{ py: 3 }}>
+                <PSapStatus enqId={id} active={sapActive} onChange={handleSapChange} />
                 <PGrid container className="peBoxWrapper mx-auto d-flex justify-content-center row-y-10">
                     <PGrid item xs={12} md={7} sm={12}>
                         <Box style={{ background: "#512668", minHeight: "282px" }} sx={{ borderRadius: "6px", display: "flex", alignItems: "start", padding: "30px 20px 30px 20px", flexDirection: "column", justifyContent: "space-between", flexWrap: "wrap" }}>
@@ -2270,20 +2286,30 @@ const ProjectEnquiry = () => {
                                         </PGrid>
                                         <Divider sx={{ mb: 2 }} />
                                         <PGrid item xs={12} sm={12} md={12} className="d-flex justify-content-end gap-2">
-                                            <PButton
-                                                label={getLabel("lbl245")}
-                                                variant="outlined"
-                                                onClick={(e) => handleQuotation(e, 6)}
-                                                width={250}
-                                            />
-                                            <PButton
-                                                label={getLabel("lbl246")}
-                                                variant="contained"
-                                                color={CommonColors.dark_blue}
-                                                onClick={(e) => handleQuotation(e, 4)}
-                                                width={300}
-                                                startIcon={<img src={arrow} alt="arrow" className="icon" />}
-                                            />
+                                            <Tooltip arrow title={sapBlocksApproval ? (sapStatus?.state === "Failed" ? "SAP returned an error — see the message at the top" : "Waiting for the SAP project number") : ""}>
+                                                <span>
+                                                    <PButton
+                                                        label={getLabel("lbl245")}
+                                                        variant="outlined"
+                                                        onClick={(e) => handleQuotation(e, 6)}
+                                                        width={250}
+                                                        disabled={sapBlocksApproval}
+                                                    />
+                                                </span>
+                                            </Tooltip>
+                                            <Tooltip arrow title={sapPending ? "Please wait until SAP has answered" : ""}>
+                                                <span>
+                                                    <PButton
+                                                        label={getLabel("lbl246")}
+                                                        variant="contained"
+                                                        color={CommonColors.dark_blue}
+                                                        onClick={(e) => handleQuotation(e, 4)}
+                                                        width={300}
+                                                        startIcon={<img src={arrow} alt="arrow" className="icon" />}
+                                                        disabled={sapPending}
+                                                    />
+                                                </span>
+                                            </Tooltip>
                                         </PGrid>
                                     </div>
                                 )}
@@ -2358,7 +2384,7 @@ const ProjectEnquiry = () => {
                             <SectionHeading accent={PmgColors.gold} label={getLabel("lbl182")} />
                         </PGrid>
                         <Divider sx={{ mb: 2 }} />
-                        <PEnquiryAttachments enqId={id} userId={userID} userType={userType} />
+                        <PEnquiryAttachments enqId={id} userId={userID} userType={userType}/>
                     </div>
                 )}
 

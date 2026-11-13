@@ -39,7 +39,9 @@ const popperModifiers = [matchFieldWidth];
 const PDropdown = ({ name = "", label, value = "", onChange, options = [], required = false, helperText = "",
   width = "", mt = 0, flag = "", disabled = false, readOnly = false, sx = {}, labelMode = "",
   // optional (option) => ReactNode – shown as a hover card beside that option in the list
-  optionTooltip = null }) => {
+  optionTooltip = null,
+  // Autocomplete (flag auto) only: an always-visible × that clears the value (onChange gets value "")
+  clearable = false }) => {
   const defaultValueRef = useRef(false);
   const selectRef = useRef(null);
   const [menuWidth, setMenuWidth] = useState(null);
@@ -182,7 +184,8 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
         <Autocomplete
           options={options}
           value={selectedOption}
-          disableClearable
+          disableClearable={!clearable || !selectedOption}
+          clearText="Clear"
           disabled={readOnly}
           slots={{
             popupIndicator: KeyboardArrowDownOutlinedIcon,
@@ -219,12 +222,17 @@ const PDropdown = ({ name = "", label, value = "", onChange, options = [], requi
             onChange({
               target: {
                 name,
-                value: newValue?.value,
-                label: newValue?.label
+                // null = cleared with the ×
+                value: newValue ? newValue.value : "",
+                label: newValue?.label ?? ""
               }
             })
           }
-          sx={baseSx}
+          sx={clearable ? {
+            ...baseSx,
+            // MUI shows the × only on hover/focus; a filter shows it whenever it has a value
+            "& .MuiAutocomplete-clearIndicator": { visibility: "visible", color: "#16133F" },
+          } : baseSx}
           renderInput={renderTextField}
         />
       </>

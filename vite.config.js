@@ -5,18 +5,22 @@ export default defineConfig(({ mode }) => {
 
   const env = loadEnv(mode, process.cwd(), '');
   const isProduction = mode === 'production';
+  // VITE_API_PROXY_TARGET=http://localhost:5116 → /api goes to a locally running VANestleApi (its routes are /api/VA/...)
+  const localApi = env.VITE_API_PROXY_TARGET;
   return {
       base: "./",
       plugins: [react()],
       server: {
         proxy: {
-          "/api": {
-            target: "https://ebiz.pmgasia.com", 
-            changeOrigin: true,
-            secure: false,
-            rewrite: (path) =>
-              path.replace(/^\/api/, "/iWeb/virtualagency/vagit/api"),
-          },
+          "/api": localApi
+            ? { target: localApi, changeOrigin: true }
+            : {
+              target: "https://ebiz.pmgasia.com",
+              changeOrigin: true,
+              secure: false,
+              rewrite: (path) =>
+                path.replace(/^\/api/, "/iWeb/virtualagency/vagit/api"),
+            },
         },
       },
   }

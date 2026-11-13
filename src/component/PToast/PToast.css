@@ -1,0 +1,144 @@
+/* App messages (PToast): top-right corner, above dialogs (MUI dialogs use z-index 1300) */
+.ptoast-stack {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2100;
+  width: min(460px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  font-family: 'Montserrat', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.ptoast {
+  --tone: #2D2F75;
+  --tone-soft: #EEF0FA;
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 10px 13px 13px;
+  background: #fff;
+  border: 1px solid rgba(22, 19, 63, 0.10);
+  border-left: 5px solid var(--tone);
+  border-radius: 10px;
+  box-shadow: 0 14px 38px rgba(22, 19, 63, 0.22), 0 2px 6px rgba(22, 19, 63, 0.10);
+  color: #16133F;
+  overflow: hidden;
+  outline: none;
+  animation: ptoast-in 260ms cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.ptoast:focus-visible { box-shadow: 0 0 0 3px rgba(45, 47, 117, 0.35), 0 14px 38px rgba(22, 19, 63, 0.22); }
+
+.ptoast--success { --tone: #00916B; --tone-soft: #E4F6F0; }
+.ptoast--info    { --tone: #2D6FD6; --tone-soft: #E7F0FC; }
+.ptoast--warning { --tone: #CF7729; --tone-soft: #FCEFE2; }
+.ptoast--error   { --tone: #D7263D; --tone-soft: #FDE8EB; animation: ptoast-in 260ms cubic-bezier(.2, .9, .3, 1.2) both, ptoast-shake 420ms 260ms ease-in-out; }
+
+.ptoast__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--tone-soft);
+  color: var(--tone);
+}
+.ptoast__icon svg { font-size: 22px; }
+
+.ptoast__body { flex: 1 1 auto; min-width: 0; padding-top: 1px; }
+.ptoast__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--tone);
+}
+.ptoast__count {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--tone);
+  color: #fff;
+}
+.ptoast__message {
+  margin-top: 2px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  color: #16133F;
+  white-space: pre-line;   /* lists of messages arrive joined with line breaks */
+  overflow-wrap: anywhere;
+}
+
+.ptoast__close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -3px -2px 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #6B6A8A;
+  cursor: pointer;
+}
+.ptoast__close:hover, .ptoast__close:focus-visible { background: var(--tone-soft); color: var(--tone); outline: none; }
+
+/* time left; hovering or focusing the message pauses it */
+.ptoast__bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--tone);
+  opacity: 0.55;
+  transform-origin: left center;
+  animation-name: ptoast-countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.ptoast:hover .ptoast__bar,
+.ptoast:focus-within .ptoast__bar { animation-play-state: paused; }
+
+.ptoast.is-leaving { animation: ptoast-out 220ms ease-in forwards; }
+.ptoast.is-leaving .ptoast__bar { animation-play-state: paused; }
+
+@keyframes ptoast-in {
+  from { opacity: 0; transform: translateX(40px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ptoast-out {
+  to { opacity: 0; transform: translateX(40px) scale(0.98); }
+}
+@keyframes ptoast-countdown {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+@keyframes ptoast-shake {
+  0%, 100% { translate: 0; }
+  20% { translate: -7px; }
+  40% { translate: 6px; }
+  60% { translate: -4px; }
+  80% { translate: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptoast, .ptoast--error, .ptoast.is-leaving { animation: none; }
+  .ptoast.is-leaving { opacity: 0; }
+}
+
+@media (max-width: 600px) {
+  .ptoast-stack { top: 8px; right: 8px; width: calc(100vw - 16px); }
+  .ptoast { padding: 10px 8px 12px 11px; gap: 10px; }
+  .ptoast__title { font-size: 14.5px; }
+  .ptoast__message { font-size: 14px; }
+}

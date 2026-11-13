@@ -119,7 +119,22 @@ export const notifyValidation = (errors = {}) => {
       : `${requiredCount} required fields are missing. Please fill in the fields highlighted in red.`
     : "Please check the fields highlighted in red.";
   toast(Labels.status.failure, message);
+  revealFirstError();
   return false;
+};
+
+/** After the errors render: scroll the first red field into view and put the cursor in it. */
+const revealFirstError = () => {
+  if (typeof window === "undefined") return;
+  // two frames: the page sets its error state in the same tick as this call
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const field = document.querySelector("#root .Mui-error");
+    if (!field) return;
+    field.scrollIntoView({ behavior: "smooth", block: "center" });
+    const input = field.closest(".MuiFormControl-root, .MuiAutocomplete-root")?.querySelector("input, textarea")
+      ?? field.querySelector?.("input, textarea");
+    input?.focus({ preventScroll: true });
+  }));
 };
 
 /**

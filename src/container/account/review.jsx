@@ -282,7 +282,6 @@ const Review = () => {
                 open={openDraft}
                 onClose={() => setOpenDraft(false)}
                 onSave={(e) => handleSubmit(e, false)}
-                onDelete={(e) => handleSubmit(e, false)}
             />
         </>
     );

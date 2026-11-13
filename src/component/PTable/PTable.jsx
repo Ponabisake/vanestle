@@ -361,7 +361,9 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
     </React.Fragment>
   );
 
-  const paginatedRows = filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  // a filter can shrink the rows below the current page: show the last page that still has rows
+  const currentPage = Math.min(page, Math.max(0, Math.ceil(filteredRows.length / rowsPerPage) - 1));
+  const paginatedRows = filteredRows.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
   const supplierB = formData.supplierB;
   const supplierC = formData.supplierC;
   return (
@@ -502,7 +504,7 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
             <TablePagination
               component="div"
               count={filteredRows.length}
-              page={page}
+              page={currentPage}
               rowsPerPage={rowsPerPage}
               onPageChange={(e, p) => setPage(p)}
               slots={{
