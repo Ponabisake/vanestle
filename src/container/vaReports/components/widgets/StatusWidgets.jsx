@@ -63,7 +63,7 @@ export function StatusDonutWidget({ facts, filters, toggle, statusOf, reset }) {
   return (
     <ReportWidget
       title="Status distribution"
-      subtitle="Current status, grouped by workflow stage"
+      subtitle="Current status, grouped by workflow stage (E-Bidding statuses mapped to the same stages)"
       state={state}
       isEmpty={!total}
       onReset={reset}
@@ -73,6 +73,7 @@ export function StatusDonutWidget({ facts, filters, toggle, statusOf, reset }) {
         columns: [
           { field: "statusName", header: "Status" },
           { field: "stage", header: "Stage", render: (r) => STAGE_BY_KEY[r.stage]?.label, exportValue: (r) => STAGE_BY_KEY[r.stage]?.label },
+          { field: "modules", header: "Module(s)" },
           { field: "value", header: "Enquiries", align: "right" },
           { field: "pct", header: "%", align: "right", render: (r) => fmtPct((r.value / total) * 100), exportValue: (r) => ((r.value / total) * 100).toFixed(1) },
         ],

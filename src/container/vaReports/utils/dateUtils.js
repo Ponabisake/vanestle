@@ -55,6 +55,10 @@ export const bucketOf = (date, granularity) => {
     const monday = addDays(d, -((d.getDay() + 6) % 7));
     return { key: toIsoDay(monday), label: `${pad(monday.getDate())}/${pad(monday.getMonth() + 1)}`, start: monday };
   }
+  if (granularity === "year") {
+    const jan = new Date(d.getFullYear(), 0, 1);
+    return { key: toIsoDay(jan), label: String(d.getFullYear()), start: jan };
+  }
   const first = new Date(d.getFullYear(), d.getMonth(), 1);
   return {
     key: toIsoDay(first),
@@ -71,7 +75,11 @@ export const bucketRange = (from, to, granularity) => {
   let guard = 0;
   while (cursor <= end && guard < 800) {
     out.push(bucketOf(cursor, granularity));
-    cursor = granularity === "day" ? addDays(cursor, 1) : granularity === "week" ? addDays(cursor, 7) : addMonths(cursor, 1);
+    cursor =
+      granularity === "day" ? addDays(cursor, 1)
+        : granularity === "week" ? addDays(cursor, 7)
+          : granularity === "year" ? addMonths(cursor, 12)
+            : addMonths(cursor, 1);
     guard += 1;
   }
   return out;

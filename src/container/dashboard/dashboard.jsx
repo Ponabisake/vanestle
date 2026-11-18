@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Box, Chip, IconButton, Tooltip, Skeleton } from "@mui/material";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import PDatepicker from "../../component/PDatepicker/PDatepicker";
@@ -8,6 +8,12 @@ import { Labels } from "../../utils/constants/labels";
 import PButton from "../../component/PButton/PButton";
 import PTypography from "../../component/PTypography/PTypography";
 import PGrid from "../../component/PGrid/PGrid";
+import PToggleCircle from "../../component/PToggle/PToggleCircle";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import PieChartIcon from "@mui/icons-material/PieChart";
+import InsertChartOutlinedIcon from "@mui/icons-material/InsertChartOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -61,6 +67,28 @@ const STATUS_ALL_OPTION = { value: ALL_STATUSES, label: "All" };
 // A filter dropdown is off when it is empty (cleared with its ×) or set to All
 const isActiveFilter = (value) => isNotEmpty(value) && value !== ALL_STATUSES;
 
+// Status chart (enquiries per job status): shown beside the table by default; the Hide chart button gives the table
+// the full width.
+// The viewer's choice is remembered in this browser only.
+const SHOW_CHART_KEY = "dashboard.showChart";
+const CHART_COMPONENTS = {
+  line: lazy(() => import("../../component/PChart/PLineChart")),
+  bar: lazy(() => import("../../component/PChart/PBarChart")),
+  pie: lazy(() => import("../../component/PChart/PPieChart")),
+};
+const CHART_OPTIONS = [
+  { value: "line", icon: <ShowChartIcon fontSize="small" /> },
+  { value: "bar", icon: <BarChartIcon fontSize="small" /> },
+  { value: "pie", icon: <PieChartIcon fontSize="small" /> },
+];
+const readShowChart = () => {
+  try {
+    return localStorage.getItem(SHOW_CHART_KEY) !== "0"; // shown unless the viewer chose Hide chart
+  } catch {
+    return true;
+  }
+};
+
 const dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -72,6 +100,19 @@ const dashboard = () => {
   const [loading, setLoading] = useState(true);
   const { countryID, role, userName, userType, menuId, userID } = useSelector((state) => state.userDetails.user);
   const fileInputRef = useRef(null);
+  const [showChart, setShowChart] = useState(readShowChart);
+  const [chartType, setChartType] = useState("pie");
+  const [chartData, setChartData] = useState([]);
+  const toggleChart = () =>
+    setShowChart((v) => {
+      try {
+        localStorage.setItem(SHOW_CHART_KEY, v ? "0" : "1");
+      } catch {
+        /* storage unavailable – the toggle still works for this visit */
+      }
+      return !v;
+    });
+  const SelectedChart = CHART_COMPONENTS[chartType];
   const [formData, setFormData] = useState({
     clientName: "",
     country: "",
@@ -136,6 +177,11 @@ const dashboard = () => {
         const data = res?.data;
 
         setSummary(data.summary || {});
+        setChartData((data.summary?.jobStatus || []).map(({ statusName, enquiryCount, statusId }) => ({
+          name: statusName,
+          value: enquiryCount,
+          id: statusId,
+        })));
         const formattedRows = (data.detailed || []).map(item => ({
           enquiryId: item.enquiryId,
           projectNumber: item.projectNo,
@@ -521,6 +567,14 @@ const dashboard = () => {
     }));
   };
 
+  // Chart slice / bar click: filters the table by that job status (click again to clear)
+  const handleChartClick = (payload) => {
+    setFormData((prev) => ({
+      ...prev,
+      status: String(prev.status) === String(payload.id) ? "" : payload.id,
+    }));
+  };
+
   const activeTile = cardData.find((card) => card.key === formData.tile);
 
   const data = useMemo(() => {
@@ -839,7 +893,8 @@ const dashboard = () => {
           </>
         )}
 
-        {/* Search + filters, then the table across the full width (charts are on the VA Reports page) */}
+        {/* Search + filters, then the table across the full width; the status chart beside it only when shown
+            (the full reports are on the VA Statistics page) */}
         {/* PGrid is a Bootstrap row/col: g-3 gives the 1rem gap between the search, the filters and the actions */}
         <PGrid container className={`dashboard-filters g-3 align-items-center ${Labels.margin.mb3}`}>
           <PGrid item xs={12}>
@@ -944,11 +999,49 @@ const dashboard = () => {
           )}
         </PGrid>
 
-        {loading ? (
-          <Skeleton variant="rectangular" height={420} sx={{ borderRadius: 2 }} />
-        ) : (
-          <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} columnChooser storageKey={`dashboard.${userType?.toLowerCase() || "all"}`} emptyTitle="No enquiries found" emptyMessage="Try adjusting the search or filters, or reset them to see all enquiries." />
-        )}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
+          {showChart && (
+            // PToggleCircle caps itself at 100px but its three 50px circles need ~190px: reserve that, so the row
+            // wraps instead of overflowing next to the button
+            <div style={{ minWidth: 190 }}>
+              <PToggleCircle options={CHART_OPTIONS} value={chartType} onChange={(value) => value && setChartType(value)} disabled={loading} />
+            </div>
+          )}
+          <PButton
+            label={showChart ? "Hide chart" : "Show chart"}
+            variant="outlined"
+            startIcon={showChart ? <VisibilityOffOutlinedIcon fontSize="small" /> : <InsertChartOutlinedIcon fontSize="small" />}
+            onClick={toggleChart}
+            height={40}
+          />
+        </Box>
+
+        <PGrid container className="g-3">
+          <PGrid item xs={12} lg={showChart ? 8 : 12} xl={showChart ? 9 : 12}>
+            {loading ? (
+              <Skeleton variant="rectangular" height={420} sx={{ borderRadius: 2 }} />
+            ) : (
+              <PTable columns={columns} rows={data} onClick={(row) => { handleRoute(row) }} columnChooser storageKey={`dashboard.${userType?.toLowerCase() || "all"}`} emptyTitle="No enquiries found" emptyMessage="Try adjusting the search or filters, or reset them to see all enquiries." />
+            )}
+          </PGrid>
+
+          {showChart && (
+            <PGrid item xs={12} lg={4} xl={3} style={{ display: "flex", flexDirection: "column" }}>
+              {/* stretched to the table's height, so the chart card ends level with the table */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                {loading ? (
+                  <Skeleton variant="rectangular" height="100%" width="100%" sx={{ borderRadius: 2, flex: 1, minHeight: 350 }} />
+                ) : (
+                  chartData.length > 0 && (
+                    <Suspense fallback={<Skeleton variant="rectangular" height={350} sx={{ borderRadius: 2 }} />}>
+                      <SelectedChart data={chartData} onSliceClick={handleChartClick} />
+                    </Suspense>
+                  )
+                )}
+              </div>
+            </PGrid>
+          )}
+        </PGrid>
       </Box >
 
 

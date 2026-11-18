@@ -1,25 +1,24 @@
 // VA Reports data service – the ONLY place the page gets data from.
 //
-// USE_MOCK = true  -> deterministic mock data, returned in the exact JSON shape of the real API models.
-// USE_MOCK = false -> real endpoints (see REPORT_API below; they still need building on the backend).
-// The UI only depends on the shapes returned here, so flipping the flag needs no UI change.
-//
-// Testing helpers (mock only, via the page URL):
-//   ?mockFail=quotes,history   -> that dataset rejects, so widgets show their error state
-//   ?mockEmpty=1               -> every dataset returns no rows, so widgets show their empty state
+// Real endpoints (VANestleApi VAController, region "VA Reports"); the request is EnquiryFilterRequest.
+// Add ?mock=1 to the page URL to use the deterministic mock database instead (same JSON shapes), e.g. to work on the
+// UI without a backend. Mock-only testing helpers:
+//   ?mock=1&mockFail=quotes,history   -> that dataset rejects, so widgets show their error state
+//   ?mock=1&mockEmpty=1               -> every dataset returns no rows, so widgets show their empty state
 
 import { PostApi } from "../../../utils/api/networking";
 import { Base_Url, Dashboard_API } from "../../../utils/api/apiUrl";
 import { isSuccess } from "../../../utils/commonFunction/common";
-import { JOB_STATUSES } from "../constants";
+import { EB_STATUSES, JOB_STATUSES } from "../constants";
 import { getMockDatabase } from "./mock/mockData";
-import { parseDmy, parseAny, startOfDay } from "../utils/dateUtils";
+import { parseDmy, startOfDay, toDmy } from "../utils/dateUtils";
 
-export const USE_MOCK = true;
+const urlParams = () => new URLSearchParams(window.location.search);
+export const USE_MOCK = urlParams().get("mock") === "1";
 
-// Proposed endpoints (backend work, not built yet). Request = EnquiryFilterRequest unless noted.
 export const REPORT_API = {
-  Master: Dashboard_API.Master, // existing: VA/MasterDropdowns
+  Master: Dashboard_API.Master, // existing: VA/MasterDropdowns (country list)
+  Meta: `${Base_Url}/VA/ReportMeta`,
   Dataset: `${Base_Url}/VA/ReportDataset`,
   Items: `${Base_Url}/VA/ReportEnquiryItems`,
   Quotes: `${Base_Url}/VA/ReportSupplierQuotes`,
@@ -28,7 +27,7 @@ export const REPORT_API = {
 };
 
 const urlFlags = () => {
-  const p = new URLSearchParams(window.location.search);
+  const p = urlParams();
   return {
     fail: (p.get("mockFail") || "").split(",").filter(Boolean),
     empty: p.get("mockEmpty") === "1",
@@ -56,31 +55,25 @@ const inRange = (date, req) => {
 const enquiryIdsInRange = (db, req) =>
   new Set(db.enquiries.filter((e) => inRange(parseDmy(e.serverTime), req)).map((e) => e.id));
 
-/** Same rules as VAController.ViewDashboard (agency branch) so the mock summary matches the real one. */
-const summarise = (rows) => {
-  const byStatus = new Map();
-  rows.forEach((r) => {
-    const key = r.status;
-    byStatus.set(key, { statusId: key, statusName: r.statusName, enquiryCount: (byStatus.get(key)?.enquiryCount || 0) + 1 });
-  });
-  return {
-    proof: 0, artwork: 0, production: 0, forapproval: 0, newrfq: 0, quoteproposed: 0, invites: 0,
-    active: rows.filter((r) => r.status === 1).length,
-    approval: rows.filter((r) => r.status === 3).length,
-    awarded: rows.filter((r) => r.status >= 6 && r.status !== 24).length,
-    completed: rows.filter((r) => r.status === 24).length,
-    jobStatus: [...byStatus.values()].sort((a, b) => b.enquiryCount - a.enquiryCount),
-  };
+/** Result { status, data } -> the result, or throw with the API's message (failures carry it in data). */
+const unwrap = (res, label) => {
+  if (!isSuccess(res)) {
+    const msg = typeof res?.data === "string" && res.data ? res.data : res?.message;
+    throw new Error(msg || `Could not load ${label}`);
+  }
+  return res;
 };
 
-const unwrap = (res, label) => {
-  if (!isSuccess(res)) throw new Error(res?.message || `Could not load ${label}`);
-  return res;
+/** Distinct categories of the mock line items, most used first (what VA/ReportMeta returns). */
+const mockCategories = () => {
+  const counts = new Map();
+  getMockDatabase().enquiryItems.forEach((i) => counts.set(i.category, (counts.get(i.category) || 0) + 1));
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([name, items]) => ({ name, items }));
 };
 
 // ---------------------------------------------------------------- public API
 
-/** -> MasterDropdowns { country, client, user, status } (DropdownItem lists) */
+/** -> MasterDropdowns { country, client, ... } (DropdownItem lists) */
 export const getMasterDropdowns = async (req) => {
   if (!USE_MOCK) return PostApi(REPORT_API.Master, req);
   return mockCall("master", () => {
@@ -88,24 +81,36 @@ export const getMasterDropdowns = async (req) => {
     return {
       country: db.countries.map((c) => ({ value: c.id, label: c.name, selected: false })),
       client: db.clients.map((c) => ({ value: c.id, label: c.name, selected: false })),
-      // NOTE: the real MasterDropdowns returns only the logged-in user; reports need every agency user.
-      user: db.users.map((u) => ({ value: u.id, label: `${u.firstName} ${u.lastName}`, selected: false })),
       status: JOB_STATUSES.map((s) => ({ value: s.statusId, label: s.statusName, selected: false })),
     };
   });
 };
 
-/** -> Result { status, data: { summary: GetJobCount, detailed: ProjectInformation[] } } */
+/** -> ReportMeta { categories[{name, items}] (distinct Printornonprint, most used first), enquiryStatuses, eBiddingStatuses, isAdmin, countryId, from, to } */
+export const getReportMeta = async (req) => {
+  if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.Meta, req), "report settings").data;
+  return mockCall("meta", () => ({
+    categories: mockCategories(),
+    enquiryStatuses: JOB_STATUSES,
+    eBiddingStatuses: EB_STATUSES,
+    isAdmin: true,
+    countryId: 0,
+    from: req.startDate,
+    to: req.endDate || toDmy(new Date()),
+  }));
+};
+
+/** -> Result { status, data: { detailed: ReportEnquiryRow[] } } */
 export const getReportDataset = async (req) => {
   if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.Dataset, req), "enquiries");
   return mockCall("dataset", (empty) => {
     const db = getMockDatabase();
     const detailed = empty ? [] : db.enquiries.filter((e) => inRange(parseDmy(e.serverTime), req));
-    return { status: true, data: { summary: summarise(detailed), detailed: [...detailed].reverse() } };
+    return { status: true, data: { detailed: [...detailed].reverse() } };
   });
 };
 
-/** -> Result { status, data: EnquiryItem[] } (TblEnquiryDetail subset) */
+/** -> Result { status, data: ReportItemRow[] } (tblEnquiryDetails subset + category name) */
 export const getEnquiryItems = async (req) => {
   if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.Items, req), "line items");
   return mockCall("items", (empty) => {
@@ -115,7 +120,7 @@ export const getEnquiryItems = async (req) => {
   });
 };
 
-/** -> Result { status, data: SupplierQuote[] } (TblSupplierQuote; e-bidding rounds = several rows) */
+/** -> Result { status, data: ReportQuoteRow[] } (one invitation = line item × supplier; responded, revisions) */
 export const getSupplierQuotes = async (req) => {
   if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.Quotes, req), "supplier quotes");
   return mockCall("quotes", (empty) => {
@@ -125,17 +130,17 @@ export const getSupplierQuotes = async (req) => {
   });
 };
 
-/** -> Result { status, data: JobHistory[] } (TblJobHistory, Field = "Status") */
+/** -> Result { status, data: ReportHistoryRow[] } (tblJobHistory, Field = "Status") */
 export const getStatusHistory = async (req) => {
   if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.History, req), "status history");
   return mockCall("history", (empty) => {
     const db = getMockDatabase();
     const ids = enquiryIdsInRange(db, req);
-    return { status: true, data: empty ? [] : db.jobHistory.filter((h) => ids.has(h.enqId) && parseAny(h.modifiedDate)) };
+    return { status: true, data: empty ? [] : db.jobHistory.filter((h) => ids.has(h.enqId)) };
   });
 };
 
-/** -> Result { status, data: Supplier[] } (TblSuppliersList subset) */
+/** -> Result { status, data: ReportSupplierRow[] } (suppliers invited to / awarded an enquiry in scope) */
 export const getSuppliers = async (req) => {
   if (!USE_MOCK) return unwrap(await PostApi(REPORT_API.Suppliers, req), "suppliers");
   return mockCall("suppliers", () => ({ status: true, data: getMockDatabase().suppliers }));

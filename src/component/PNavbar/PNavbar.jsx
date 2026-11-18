@@ -79,7 +79,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
       route: labelRoutes.report,
       menuId: menuId,
     }, {
-      name: "VA Reports",
+      name: "VA Statistics",
       route: labelRoutes.vaReports,
       menuId: menuId,
     }]

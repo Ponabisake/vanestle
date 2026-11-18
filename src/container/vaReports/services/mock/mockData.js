@@ -8,7 +8,24 @@
 //   countries/clients/users/statuses -> DropdownItem lists of VA/MasterDropdowns
 // Same seed => same data on every load, so screenshots and reviews stay comparable.
 
-import { STATUS_NAME } from "../../constants";
+import { EB_STATUSES, JOB_STATUSES, NOT_SPECIFIED } from "../../constants";
+
+// Shapes match the real endpoints (VaReportService rows): ReportEnquiryRow, ReportItemRow, ReportQuoteRow (one row per
+// line item × supplier), ReportHistoryRow, ReportSupplierRow.
+const STATUS_NAME = Object.fromEntries(JOB_STATUSES.map((s) => [s.statusId, s.statusName]));
+const EB_STATUS_NAME = Object.fromEntries(EB_STATUSES.map((s) => [s.statusId, s.statusName]));
+// E-Bidding numbers its bidding phase differently: before quotes are in it is Draft (-2) / Scheduled (-1) / Live (0)
+const toEbStatus = (status, live) => (status === 0 ? -2 : status === 1 ? (live ? 0 : -1) : status);
+// Printornonprint values as stored ("" = not filled in), with how often the mock uses them
+const MOCK_CATEGORIES = [["Print", 0.44], ["POSM", 0.24], ["Promo", 0.22], ["", 0.07], ["Sustainability", 0.03]];
+const categoryName = (value) => value || NOT_SPECIFIED;
+
+// Organisation (tblDivision) and client contacts (tblClient), per country / client
+const BUSINESS_UNITS = [
+  ["COFFEE", "POWDER & LIQUID BEVERAGE"], ["MILO & MILKS", "POWDER & LIQUID BEVERAGE"], ["CONFECTIONERY", "CONFECTIONERY"],
+  ["CULINARY", "FOOD"], ["PETCARE", "PETCARE"], ["CORPORATE EVENTS", "COMMON BU"],
+];
+const CONTACT_NAMES = ["Alicia Tan", "Rahul Menon", "Siti Aminah", "Kenji Mori", "Grace Lim", "Arjun Das"];
 import { addDays, startOfDay, toDmy } from "../../utils/dateUtils";
 
 const mulberry32 = (seed) => () => {
@@ -77,7 +94,6 @@ const SUPPLIERS = [
 const BRANDS = ["Milo", "Nescafé", "KitKat", "Maggi", "Purina", "Nespresso", "Coffee-mate", "Nestum"];
 const PIECES = ["Shelf wobblers", "Festive gift box", "Sampling booth", "Recipe leaflet", "Display stand", "Promo banner",
   "Gondola end kit", "Tasting cups", "Pack sleeve", "Counter display", "Trade show kit", "Loyalty mailer"];
-const BUSINESS_UNITS = ["Beverages", "Confectionery", "Culinary", "Petcare", "Coffee"];
 
 // Main workflow path; optional loops are inserted per enquiry.
 const PATH_GAP_DAYS = { 1: [0, 2], 2: [1, 6], 3: [1, 3], 4: [1, 2], 5: [2, 6], 6: [1, 8] };
@@ -155,6 +171,7 @@ export const getMockDatabase = () => {
     const stallAt = rand() < 0.16 ? int(1, 10) : Infinity; // stuck jobs create ageing
     const cancelAt = rand() < 0.07 ? int(1, 14) : Infinity;
 
+    const ebMap = (s) => (d.jobType === "E-Bidding" ? toEbStatus(s, false) : s);
     let status = 0;
     let date = new Date(d.created);
     const reached = [{ status: 0, date: new Date(d.created) }];
@@ -177,8 +194,8 @@ export const getMockDatabase = () => {
         if (nextDate > today) break;
         reached.push({ status: next, date: nextDate });
         jobHistory.push({
-          id: historyId++, enqId: id, field: "Status", oldValue: String(status), newValue: String(next),
-          modifiedDate: nextDate.toISOString(), modifiedBy: d.user.id,
+          id: historyId++, enqId: id, oldValue: String(ebMap(status)), newValue: String(ebMap(next)),
+          modifiedDate: nextDate.toISOString(), userId: d.user.id,
         });
         status = next;
         date = nextDate;
@@ -186,13 +203,13 @@ export const getMockDatabase = () => {
       if (cancelled) {
         const last = reached[reached.length - 1];
         jobHistory.push({
-          id: historyId++, enqId: id, field: "Status", oldValue: String(reached[reached.length - 2].status), newValue: "25",
-          modifiedDate: last.date.toISOString(), modifiedBy: d.user.id,
+          id: historyId++, enqId: id, oldValue: String(ebMap(reached[reached.length - 2].status)), newValue: "25",
+          modifiedDate: last.date.toISOString(), userId: d.user.id,
         });
       } else if (status === 24 && rand() < 0.05) {
         const closed = addDays(date, between(5, 30));
         if (closed <= today) {
-          jobHistory.push({ id: historyId++, enqId: id, field: "Status", oldValue: "24", newValue: "26", modifiedDate: closed.toISOString(), modifiedBy: d.user.id });
+          jobHistory.push({ id: historyId++, enqId: id, oldValue: "24", newValue: "26", modifiedDate: closed.toISOString(), userId: d.user.id });
           status = 26;
         }
       }
@@ -215,14 +232,26 @@ export const getMockDatabase = () => {
     const biddingStart = isEb && rfqDate ? new Date(rfqDate.getTime() + 3600000 * int(2, 30)) : null;
     const duration = isEb ? pick([60, 90, 120, 180]) : null;
 
+    const pickCategory = () => {
+      let r = rand();
+      const i = MOCK_CATEGORIES.findIndex(([, w]) => (r -= w) <= 0);
+      return MOCK_CATEGORIES[i < 0 ? 0 : i][0];
+    };
+    const mainCategory = pickCategory();
+    const itemCategories = [];
+    const itemStatus = isEb ? toEbStatus(status, false) : status;
+
     for (let n = 1; n <= itemCount; n += 1) {
       const benchmark = Math.round(between(900, 26000));
+      const cat = n === 1 || rand() < 0.85 ? mainCategory : pickCategory();
+      itemCategories.push(categoryName(cat));
       const item = {
-        id: itemId++, enquiryId: id, itemNumber: n, itemName: pick(PIECES), status,
+        id: itemId++, enquiryId: id, itemNumber: n, itemName: pick(PIECES), status: itemStatus,
+        category: categoryName(cat), printOrNonPrint: cat,
         selectedSuppliers: invited.map((s) => s.id).join(","), supplierId: null,
         benchmarkPrice: benchmark, quotePrice: null, totalQuoteAmount: null, euroTotalQuoteAmount: null, negQuoteAmount: null,
         quoteStartDate: rfqDate ? toDmy(rfqDate) : "", quoteEndDate: rfqDate ? toDmy(addDays(rfqDate, 7)) : "",
-        printingMethod: pick(["Offset", "Digital", "Screen", "Flexo"]),
+        eauction: isEb || rand() < 0.05,
       };
       let best = null;
       if (rfqDate) {
@@ -233,16 +262,16 @@ export const getMockDatabase = () => {
           const first = Math.round(benchmark * between(0.82, 1.14));
           const rounds = isEb && responded ? int(2, 6) : 1;
           let amount = first;
-          for (let rd = 1; rd <= rounds; rd += 1) {
-            if (rd > 1) amount = Math.round(amount * between(0.955, 0.99));
-            const at = isEb && biddingStart ? new Date(biddingStart.getTime() + (duration * 60000 * rd) / (rounds + 1)) : responseDate;
-            supplierQuotes.push({
-              id: quoteId++, enquiryId: id, enquiryDetailsId: item.id, supplierId: s.id, supplierUserId: s.id * 10,
-              itemNumber: n, amount: responded ? amount : null, quoteStatus: responded ? 2 : 1, serverTime: rfqDate.toISOString(),
-              supplierNotes: "", supplierResponse: responded, responseDate: responded ? at.toISOString() : null,
-              initAmount: responded ? first : null, saveAmount: responded ? first - amount : null,
-            });
-          }
+          for (let rd = 2; rd <= rounds; rd += 1) amount = Math.round(amount * between(0.955, 0.99));
+          const at = isEb && biddingStart ? new Date(biddingStart.getTime() + (duration * 60000 * rounds) / (rounds + 1)) : responseDate;
+          // one row per invitation; e-bidding rounds are counted in `revisions` (tblSupplierQuoteHistory)
+          supplierQuotes.push({
+            id: quoteId++, enquiryId: id, enquiryDetailsId: item.id, supplierId: s.id, itemNumber: n,
+            amount: responded ? amount : null, initAmount: responded ? first : null, saveAmount: responded ? first - amount : null,
+            quoteStatus: responded ? (isEb ? 0 : 2) : isEb ? -1 : 1,
+            serverTime: (responded ? at : rfqDate).toISOString(),
+            responded, revisions: responded ? rounds : 0, firstAmount: responded ? first : null,
+          });
           if (responded && (!best || amount < best.amount)) best = { supplierId: s.id, amount };
         });
       }
@@ -257,37 +286,48 @@ export const getMockDatabase = () => {
     }
 
     const completedDate = reached.find((x) => x.status === 24)?.date;
+    const counts = itemCategories.reduce((m, c) => m.set(c, (m.get(c) || 0) + 1), new Map());
+    const category = [...counts.entries()].sort((a, b) => b[1] - a[1] || itemCategories.indexOf(a[0]) - itemCategories.indexOf(b[0]))[0][0];
+    // brief a few days before creation (sometimes missing), delivery expected 3–10 weeks after the brief
+    const brief = rand() < 0.88 ? addDays(d.created, -int(0, 10)) : null;
+    const expected = rand() < 0.94 ? addDays(brief || d.created, int(21, 70)) : null;
+    const ebLive = isEb && status === 1 && rand() < 0.3;
+    const rowStatus = isEb ? toEbStatus(status, ebLive) : status;
     enquiries.push({
       id,
       enquiryId,
+      jobType: d.jobType,
       projectNo: d.project.projectNo,
       projectDesc: d.project.projectDesc,
       serverTime: toDmy(d.created),
-      status,
-      statusName: STATUS_NAME[status],
-      country: country.name,
+      status: rowStatus,
+      statusName: (isEb ? EB_STATUS_NAME : STATUS_NAME)[rowStatus],
+      clientId: d.client.id,
+      clientName: d.client.name,
+      clientContactId: d.client.id * 100 + (idx % 3) + 1,
+      clientContact: CONTACT_NAMES[(d.client.id + idx) % 3 + (d.client.id % 2) * 3],
+      clientContactUser: `client${d.client.id}.${(idx % 3) + 1}`,
+      clientContactEmail: `contact${(idx % 3) + 1}@${d.client.name.toLowerCase().replace(/[^a-z]+/g, "")}.test`,
+      divisionId: country.id * 10 + (idx % 4),
+      entity: `Nestlé ${country.name} Ltd`,
+      businessUnit: BUSINESS_UNITS[(country.id + idx) % 4 + (country.id % 3)][0],
+      globalBu: BUSINESS_UNITS[(country.id + idx) % 4 + (country.id % 3)][1],
+      divisionCountry: country.name,
       pmgEntity: country.id,
+      country: country.name,
+      createdById: d.user.id,
+      createdBy: `${d.user.firstName} ${d.user.lastName}`,
       biddingStartDate: biddingStart ? biddingStart.toISOString() : null,
       biddingEndDate: biddingStart ? new Date(biddingStart.getTime() + duration * 60000).toISOString() : null,
-      timeOffset: country.timeOffset,
       duration,
-      stepId: status === 0 ? int(0, 4) : 4,
-      clientId: d.client.id,
-      orderid: "",
-      quoteEndDate: rfqDate ? toDmy(addDays(rfqDate, 7)) : "",
-      quoteStatus: null,
-      serchjobs: status === 1 ? 30 : status === 3 ? 31 : status >= 6 ? 32 : status,
-      attachments: status >= 18 ? int(0, 3) : 0,
-      createdBy: `${d.user.firstName} ${d.user.lastName}`,
-      surveystatus: completedDate && rand() < 0.6 ? 1 : 0,
-      submitedby: "Default",
-      surveycount: completedDate && rand() < 0.4 ? 1 : 0,
-      oldsurveyENQ: completedDate ? "NO" : "YES",
-      ponumber: maxReached >= 7 ? `PO${String(70000 + idx * 3)}` : "",
-      surveyStatusName: "",
-      businessUnit: pick(BUSINESS_UNITS),
-      clientContactId: d.client.id * 100 + int(1, 5),
-      jobType: d.jobType, // proposed addition – see API endpoint list
+      briefDate: brief ? toDmy(brief) : null,
+      expectedDeliveryDate: expected ? toDmy(expected) : null,
+      actualDeliveryDate: completedDate ? toDmy(addDays(completedDate, -int(0, 3))) : null,
+      completedDate: completedDate ? completedDate.toISOString() : null,
+      category,
+      categories: [...counts.keys()],
+      itemCount,
+      eauction: isEb,
     });
   });
 

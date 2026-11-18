@@ -10,6 +10,7 @@ import { Labels } from "../../../utils/constants/labels";
 import { toast } from "../../../utils/commonFunction/common";
 import { AGE_BUCKETS, MODULES, STAGES, STAGE_BY_KEY } from "../constants";
 import { parseDmy, toDmy } from "../utils/dateUtils";
+import { applyFilters } from "../utils/aggregations";
 
 const all = (label) => ({ value: "", label });
 
@@ -24,7 +25,7 @@ const readOpen = () => {
 };
 
 /** Sticky global filter bar + removable chips for every active filter (including chart cross-filters). */
-export default function FilterBar({ filters, update, reset, master, facts, suppliers, activeCount }) {
+export default function FilterBar({ filters, update, reset, master, categories, facts, suppliers, activeCount }) {
   const [open, setOpen] = useState(readOpen);
   const toggleOpen = () =>
     setOpen((o) => {
@@ -37,28 +38,48 @@ export default function FilterBar({ filters, update, reset, master, facts, suppl
     });
 
   const options = useMemo(() => {
-    const countryOpts = (master?.country || []).map((c) => ({ value: String(c.value), label: c.label }));
+    const sorted = (m) => [...m.entries()].sort((a, b) => String(a[1]).localeCompare(String(b[1]))).map(([value, label]) => ({ value, label }));
+    // countries: the ones with enquiries, plus the master list's names when available
+    const countries = new Map((master?.country || []).filter((c) => facts.some((f) => String(f.countryId) === String(c.value))).map((c) => [String(c.value), c.label]));
+    facts.forEach((f) => !countries.has(String(f.countryId)) && countries.set(String(f.countryId), f.countryName));
     // cascade: clients / projects narrow to the chosen country / client
     const inCountry = filters.country ? facts.filter((f) => String(f.countryId) === filters.country) : facts;
-    const clientIds = new Set(inCountry.map((f) => String(f.clientId)));
-    const clientOpts = (master?.client || [])
-      .filter((c) => !filters.country || clientIds.has(String(c.value)))
-      .map((c) => ({ value: String(c.value), label: c.label }));
+    const clients = new Map();
+    inCountry.forEach((f) => f.clientId != null && clients.set(String(f.clientId), f.clientName));
     const inClient = filters.client ? inCountry.filter((f) => String(f.clientId) === filters.client) : inCountry;
+    const contacts = new Map();
+    inClient.forEach((f) => f.clientContactId && contacts.set(String(f.clientContactId), f.clientContactName));
+    // organisation: entities of the chosen country, business units of the chosen entity, every global BU
+    const entities = new Map();
+    inCountry.forEach((f) => entities.set(f.entity, f.entity));
+    const inEntity = filters.entity ? inCountry.filter((f) => f.entity === filters.entity) : inCountry;
+    const units = new Map();
+    inEntity.forEach((f) => units.set(f.buKey, f.buLabel));
+    const globalBus = new Map();
+    facts.forEach((f) => globalBus.set(f.globalBu, f.globalBu));
+    // categories: the distinct Printornonprint values of the enquiries the other filters leave, in chart order
+    const present = new Set(applyFilters(facts, filters, { ignore: ["category"] }).map((f) => f.category));
+    if (filters.category) present.add(filters.category);
+    const categoryOpts = (categories || []).filter((c) => present.has(c.key)).map((c) => ({ value: c.key, label: c.label }));
     const projects = new Map();
-    inClient.forEach((f) => projects.set(f.projectNo, `${f.projectDesc} (${f.projectNo})`));
-    const projectOpts = [...projects.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }));
-    const userOpts = (master?.user || []).map((u) => ({ value: u.label, label: u.label }));
+    inClient.forEach((f) => f.projectNo && projects.set(f.projectNo, `${f.projectDesc} (${f.projectNo})`));
+    const users = new Map();
+    facts.forEach((f) => users.set(f.createdBy, f.createdBy));
     return {
       module: [all("All modules"), ...MODULES],
-      client: [all("All clients"), ...clientOpts],
-      country: [all("All countries"), ...countryOpts],
-      project: [all("All projects"), ...projectOpts],
+      client: [all("All clients"), ...sorted(clients)],
+      country: [all("All countries"), ...sorted(countries)],
+      project: [all("All projects"), ...sorted(projects)],
+      clientContact: [all("All client contacts"), ...sorted(contacts)],
+      category: [all("All categories"), ...categoryOpts],
+      entity: [all("All entities"), ...sorted(entities)],
+      bu: [all("All business units"), ...sorted(units)],
+      gbu: [all("All global BUs"), ...sorted(globalBus)],
       stage: [all("All statuses"), ...STAGES.map((s) => ({ value: s.key, label: s.label }))],
-      createdBy: [all("All users"), ...userOpts],
+      createdBy: [all("All users"), ...sorted(users)],
       ebid: [all("All"), { value: "yes", label: "Yes – e-bidding only" }, { value: "no", label: "No – exclude e-bidding" }],
     };
-  }, [master, facts, filters.country, filters.client]);
+  }, [master, categories, facts, filters]);
 
   const labelOf = (key, value) => options[key]?.find((o) => String(o.value) === String(value))?.label ?? value;
 
@@ -72,6 +93,11 @@ export default function FilterBar({ filters, update, reset, master, facts, suppl
     filters.country && { key: "country", label: `Country: ${labelOf("country", filters.country)}`, clear: { country: "", client: "", project: "" } },
     filters.client && { key: "client", label: `Client: ${labelOf("client", filters.client)}`, clear: { client: "", project: "" } },
     filters.project && { key: "project", label: `Project: ${labelOf("project", filters.project)}` },
+    filters.category && { key: "category", label: `Category: ${filters.category}` },
+    filters.clientContact && { key: "clientContact", label: `Client contact: ${labelOf("clientContact", filters.clientContact)}` },
+    filters.entity && { key: "entity", label: `Entity: ${filters.entity}`, clear: { entity: "", bu: "" } },
+    filters.bu && { key: "bu", label: `Business unit: ${labelOf("bu", filters.bu)}` },
+    filters.gbu && { key: "gbu", label: `Global BU: ${filters.gbu}` },
     filters.stage && { key: "stage", label: `Status: ${STAGE_BY_KEY[filters.stage]?.label ?? filters.stage}` },
     filters.createdBy && { key: "createdBy", label: `Created by: ${filters.createdBy}` },
     filters.ebid && { key: "ebid", label: `E-bidding: ${filters.ebid === "yes" ? "Yes" : "No"}` },
@@ -136,9 +162,14 @@ export default function FilterBar({ filters, update, reset, master, facts, suppl
           <PDatepicker name="to" label="Created to" value={toDmy(filters.to)} onChange={onDate("to")} minDate={toDmy(filters.from)} />
         </div>
         {dropdown("module", "Module")}
-        {dropdown("client", "Client", { project: "" })}
-        {dropdown("country", "Country", { client: "", project: "" })}
+        {dropdown("client", "Client", { project: "", clientContact: "" })}
+        {dropdown("clientContact", "Client contact")}
+        {dropdown("country", "Country", { client: "", project: "", clientContact: "", entity: "", bu: "" })}
         {dropdown("project", "Project")}
+        {dropdown("category", "Category")}
+        {dropdown("entity", "Entity", { bu: "" })}
+        {dropdown("bu", "Business unit")}
+        {dropdown("gbu", "Global BU")}
         {dropdown("stage", "Status")}
         {dropdown("createdBy", "Created by")}
         {dropdown("ebid", "E-bidding")}

@@ -4,20 +4,23 @@ import {
   getEnquiryItems,
   getMasterDropdowns,
   getReportDataset,
+  getReportMeta,
   getStatusHistory,
   getSupplierQuotes,
   getSuppliers,
 } from "../services/vaReportService";
 import { buildFacts, previousRange } from "../utils/aggregations";
+import { categoryList } from "../constants";
 import { toDmy } from "../utils/dateUtils";
 
 const LOADERS = {
   master: { fn: getMasterDropdowns, pick: (r) => r, ranged: false },
-  suppliers: { fn: getSuppliers, pick: (r) => r.data, ranged: false },
+  meta: { fn: getReportMeta, pick: (r) => r, ranged: false },
   dataset: { fn: getReportDataset, pick: (r) => r, ranged: true },
   items: { fn: getEnquiryItems, pick: (r) => r.data, ranged: true },
   quotes: { fn: getSupplierQuotes, pick: (r) => r.data, ranged: true },
   history: { fn: getStatusHistory, pick: (r) => r.data, ranged: true },
+  suppliers: { fn: getSuppliers, pick: (r) => r.data, ranged: true },
 };
 const NAMES = Object.keys(LOADERS);
 const STATIC_KEY = "static";
@@ -42,7 +45,7 @@ export default function useReportData(from, to) {
     const t = new Date(toTime);
     const prev = previousRange(f, t);
     return {
-      // EnquiryFilterRequest
+      // EnquiryFilterRequest (the API derives role and country from the user)
       userCountryId: user.countryID,
       role: user.role,
       userId: user.userID,
@@ -98,30 +101,38 @@ export default function useReportData(from, to) {
     [fetchOne, keyOf]
   );
 
-  // Only build facts from data that belongs to the current request.
+  // Only build facts from data that belongs to the current request. Meta is optional: without it the
+  // categories come from the loaded enquiries, so a failed meta call never blocks the page.
   const currentData = (n) => (state[n].status === "ready" ? state[n].data : null);
   const master = currentData("master");
+  const meta = currentData("meta");
+  const metaSettled = state.meta.status !== "loading" && state.master.status !== "loading";
   const dataset = currentData("dataset");
   const items = currentData("items");
   const quotes = currentData("quotes");
   const history = currentData("history");
   const suppliers = currentData("suppliers");
+  // distinct Printornonprint categories, most used first (meta; or the loaded enquiries when meta failed)
+  const categories = useMemo(
+    () => (metaSettled ? categoryList(meta, dataset?.data?.detailed || []) : []),
+    [metaSettled, meta, dataset]
+  );
   const facts = useMemo(
-    () => buildFacts({ master, dataset, items, quotes, history, suppliers }),
-    [master, dataset, items, quotes, history, suppliers]
+    () => (metaSettled ? buildFacts({ master, categories, dataset, items, quotes, history }) : []),
+    [metaSettled, master, categories, dataset, items, quotes, history]
   );
 
   /** Status of a widget that needs several datasets: error wins, then loading, else ready. */
   const statusOf = useCallback(
     (needs) => {
-      const all = ["master", "dataset", ...needs];
+      const all = ["dataset", ...needs]; // master (MasterDropdowns) and meta are optional extras
       const failed = all.find((n) => state[n].status === "error");
       if (failed) return { status: "error", error: state[failed].error, retry: () => retry(failed) };
-      if (all.some((n) => state[n].status === "loading")) return { status: "loading" };
+      if ([...all, "meta", "master"].some((n) => state[n].status === "loading")) return { status: "loading" };
       return { status: "ready" };
     },
     [state, retry]
   );
 
-  return { state, facts, statusOf, master, suppliers };
+  return { state, facts, statusOf, master, meta, categories, suppliers };
 }

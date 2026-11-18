@@ -15,4 +15,7 @@ export const DIM = 0.28; // opacity of non-selected marks while a cross-filter i
 /** Recharts passes either the datum or a wrapper with .payload depending on the element. */
 export const datumOf = (d) => d?.payload?.payload ?? d?.payload ?? d;
 
+/** Chart height for n horizontal bars. */
+export const barHeight = (n, min = 220, per = 30) => Math.max(min, n * per + 36);
+
 export const truncate = (s, n = 22) => (s && s.length > n ? `${s.slice(0, n - 1)}…` : s);

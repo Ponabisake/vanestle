@@ -20,12 +20,23 @@ const COLUMNS = [
   { field: "projectNo", header: "Project no." },
   { field: "projectDesc", header: "Project name", default: true },
   { field: "clientName", header: "Client", default: true },
+  { field: "clientContactName", header: "Client contact" },
+  { field: "entity", header: "Entity" },
+  { field: "buLabel", header: "Business unit" },
+  { field: "globalBu", header: "Global BU" },
   { field: "countryName", header: "Country", default: true },
+  { field: "categoryName", header: "Category", default: true, sortValue: (f) => f.categoryOrder },
   { field: "statusName", header: "Status", default: true, wrap: true },
   { field: "stage", header: "Stage", render: (f) => STAGE_BY_KEY[f.stage]?.label, sortValue: (f) => STAGE_BY_KEY[f.stage]?.label },
   { field: "createdBy", header: "Created by", default: true },
   { field: "created", header: "Created", default: true, render: (f) => toDmy(f.created), sortValue: (f) => f.created?.getTime() ?? 0 },
   { field: "daysOpen", header: "Days open", align: "right", default: true },
+  { field: "projectStart", header: "Project start", render: (f) => toDmy(f.projectStart) || "–", sortValue: (f) => f.projectStart?.getTime() ?? 0 },
+  { field: "plannedEnd", header: "Expected delivery", render: (f) => toDmy(f.plannedEnd) || "–", sortValue: (f) => f.plannedEnd?.getTime() ?? 0 },
+  { field: "projectEnd", header: "Completed on", render: (f) => toDmy(f.projectEnd) || "–", sortValue: (f) => f.projectEnd?.getTime() ?? 0 },
+  { field: "durationDays", header: "Duration (days)", align: "right", render: (f) => f.durationDays ?? f.ongoingDays ?? "–", sortValue: (f) => f.durationDays ?? f.ongoingDays ?? -1 },
+  { field: "overdueDays", header: "Days overdue", align: "right", render: (f) => f.overdueDays ?? "–" },
+  { field: "eauction", header: "E-auction", render: (f) => (f.eauction ? "Yes" : "No") },
   { field: "suppliersInvited", header: "Suppliers invited", align: "right", render: (f) => f.suppliers.size, sortValue: (f) => f.suppliers.size },
   { field: "turnaroundDays", header: "Quote turnaround", align: "right", render: (f) => fmtDays(f.turnaroundDays) },
   { field: "awardedValue", header: "Awarded value (EUR)", align: "right", default: true, render: (f) => (f.awardedValue ? fmtEurFull(f.awardedValue) : "–") },
@@ -33,7 +44,9 @@ const COLUMNS = [
 ];
 
 const exportValue = (c, f) => {
-  if (c.field === "created") return toDmy(f.created);
+  if (["created", "projectStart", "plannedEnd", "projectEnd"].includes(c.field)) return toDmy(f[c.field]);
+  if (c.field === "durationDays") return f.durationDays ?? f.ongoingDays ?? "";
+  if (c.field === "eauction") return f.eauction ? "Yes" : "No";
   if (c.field === "stage") return STAGE_BY_KEY[f.stage]?.label;
   if (c.field === "suppliersInvited") return f.suppliers.size;
   if (c.field === "awardedValue") return f.awardedValue ? Math.round(f.awardedValue) : "";
@@ -56,7 +69,7 @@ export default function DetailGrid({ rows, state, onReset }) {
     const q = search.trim().toLowerCase();
     const list = q
       ? rows.filter((f) =>
-          [f.enquiryId, f.projectNo, f.projectDesc, f.clientName, f.statusName, f.createdBy, f.countryName]
+          [f.enquiryId, f.projectNo, f.projectDesc, f.clientName, f.statusName, f.createdBy, f.countryName, f.categoryName, f.clientContactName, f.clientContactEmail, f.entity, f.buLabel, f.globalBu]
             .some((v) => v?.toLowerCase().includes(q)))
       : rows;
     const col = COLUMNS.find((c) => c.field === sort.field);
