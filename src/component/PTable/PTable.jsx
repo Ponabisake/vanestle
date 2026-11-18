@@ -112,8 +112,7 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
   const [formData, setFormData] = useState({
     open: false,
     itemNumber: null,
-    supplierB: "",
-    supplierC: "",
+    supplier: [],
     suppliers: [],
     selectedSuppliers: {},
     item: [],
@@ -164,33 +163,23 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
 
   // handle supplierBc 
 
-  const handleChange = async (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  }
-
   const handleSubmit = async () => {
     const items = formData.item || [];
-    const supplierB = items.find((x) => x.supplierId === formData?.supplierB);
-    const supplierC = items.find((x) => x.supplierId === formData?.supplierC);
 
-    const payload = {
-      Id: items?.[0]?.enquiryDetailsId,
-      SupplierB: supplierB?.supplierName || "",
-      SupplierBNegAmount: supplierB?.negQuote?.toString() || "",
-      SupplierBInitAmount: supplierB?.initialQuote?.toString() || "",
-      SupplierC: supplierC?.supplierName || "",
-      SupplierCNegAmount: supplierC?.negQuote?.toString() || "",
-      SupplierCInitAmount: supplierC?.initialQuote?.toString() || "",
-    };
+    const payload = { Id: items?.[0]?.enquiryDetailsId, };
+    formData.supplier.forEach((supplier, index) => {
+      const fieldName = String.fromCharCode(66 + index);
+      const selected = items.find(x => x.supplierId === supplier.value);
+      payload[`Supplier${fieldName}`] = selected?.supplierName || "";
+      payload[`Supplier${fieldName}NegAmount`] = selected?.negQuote?.toString() || "";
+      payload[`Supplier${fieldName}InitAmount`] = selected?.initialQuote?.toString() || "";
+    });
+
     try {
       const response = await PostApi(ProjectEnquiry_API.UpdatePreviewQuotes, payload);
       if (isSuccess(response)) {
         toast(Labels.status.success, response.data);
-        setFormData((prev) => ({
+        setFormData(prev => ({
           ...prev,
           open: false,
         }));
@@ -198,41 +187,51 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
     } catch (error) {
       toast(Labels.status.failure, Labels.message.somethingWentWrong);
     }
-  }
-  const handleSupplierBC = (group) => {
+  };
+  const handleSupplier = (group) => {
     const itemNumber = group.items?.[0]?.itemNumber;
     if (!itemNumber) return;
     const items = group.items || [];
-    // All suppliers for this item
-    const allSuppliers = [...new Map(items.filter((x) => x.supplierId && x.supplierName).map((x) => [
-      x.supplierId, { value: x.supplierId, label: x.supplierName, },])).values(),
-    ];
 
-    // Existing selected supplier
-    // supplierId === isCalculateId
+    // All unique suppliers for this item
+    const allSuppliers = [...new Map(items.filter((x) => x.supplierId && x.supplierName)
+      .map((x) => [x.supplierId, {
+        value: x.supplierId,
+        label: x.supplierName,
+      },])).values(),];
+
+    // Existing calculated supplier
     const existingSupplier = items.find((x) => x.supplierId === x.isCalculateId);
     const existingSupplierId = existingSupplier?.supplierId || null;
+
+    // Previously selected suppliers
     const selectedForItem = formData.selectedSuppliers?.[itemNumber] || [];
+    const excludedSupplierIds = [existingSupplierId, ...selectedForItem.map((x) =>
+      typeof x === "object" ? x.supplierId : x
+    ),].filter(Boolean);
 
-    // Existing API-selected supplier + manually selected suppliers
-    const excludedSupplierIds = [existingSupplierId, ...selectedForItem
-      .map((x) => typeof x === "object" ? x.supplierId : x),
-    ].filter(Boolean);
-
+    // Available suppliers
     const availableSuppliers = allSuppliers.filter((supplier) => !excludedSupplierIds.includes(supplier.value));
     const availableSupplierIds = availableSuppliers.map((supplier) => supplier.value);
     const availableItems = items.filter((item) => availableSupplierIds.includes(item.supplierId));
+
+    // Dynamic supplier count
+    const supplierFields = Array.from({ length: allSuppliers.length }, (_, index) => ({
+      name: String.fromCharCode(66 + index),
+      value: "",
+    })
+    );
 
     setFormData((prev) => ({
       ...prev,
       open: true,
       itemNumber,
-      supplierB: "",
-      supplierC: "",
+      supplier: supplierFields,
       suppliers: availableSuppliers,
       item: availableItems,
     }));
   };
+
   const renderCell = (col, data, rowIndex, meta = {}) => {
     const content = loading ? (
       <Skeleton variant="text" width="80%" height={24} />
@@ -265,7 +264,7 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
       sx={{
         cursor: onClick ? "pointer" : "default",
         "&:hover": { backgroundColor: "#F4F6FA" },
-        backgroundColor: row.bgcolor ? row.bgcolor : index % 2 ? "#F4F6FA": "#fff"
+        backgroundColor: row.bgcolor ? row.bgcolor : index % 2 ? "#F4F6FA" : "#fff"
       }}
     >
       {visibleColumns.map((col, i) => (
@@ -289,83 +288,89 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
     </TableRow>
   );
 
-  const renderGroup = (group, index) => (
-    <React.Fragment key={`group-${index}`}>
-      <TableRow>
-        <TableCell
-          colSpan={totalCols}
-          sx={{
-            background: "#F6E4D4",
-            fontWeight: 700,
-            fontSize: "16px",
-            border: "0"
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
+  const getSupplierLabel = (group) => {
+    const count = new Set((group.items || []).filter(x => x.supplierId && x.supplierName).map(x => x.supplierId)).size;
+    const names = Array.from({ length: count }, (_, i) => String.fromCharCode(66 + i));
+    return `Supplier ${names.slice(0, -1).join(", ")}${count > 1 ? " & " : ""}${names.at(-1) || ""}`;
+  };
+
+  const renderGroup = (group, index) => {
+    return (
+      <React.Fragment key={`group-${index}`}>
+        <TableRow>
+          <TableCell
+            colSpan={totalCols}
+            sx={{
+              background: "#F6E4D4",
+              fontWeight: 700,
+              fontSize: "16px",
+              border: 0,
             }}
           >
-            <span>
-              {group.subTitle}
-            </span>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>{group.subTitle}</span>
 
-            {group.supplierLink && (
-              <a
-                onClick={() => handleSupplierBC(group)}
-                style={{
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  color: CommonColors.blue.main,
-                }}
-              >
-                Supplier B & C
-              </a>
-            )}
-          </div>
-        </TableCell>
-      </TableRow>
-      {group.items?.map((item, i) => (
-        <TableRow
-          key={`item-${index}-${i}`}
-          onClick={() => onClick?.(item)}
-          sx={{
-            cursor: onClick ? "pointer" : "default",
-            backgroundColor: item.isCalculateId && item.supplierId === item.isCalculateId ? "#E9E9F1" : i % 2 ? "#F4F6FA" : "#fff",
-          }}
-        >
-          {visibleColumns.map((col, cIndex) => {
-            if (col.rowSpan && i !== 0) return null;
-            return (
-              <TableCell key={cIndex} rowSpan={col.rowSpan ? group.items.length : 1}
-                align={col.align || "left"}
-                sx={{
-                  fontSize: Labels.fontSize.sm, py: 1.8,
-                  verticalAlign: "middle", borderLeft: col.rowSpan ? "1px solid #e5e7eb" : "",
-                  backgroundColor: col.rowSpan ? "#fff" : "",
-                  fontWeight: !col.rowSpan && item.isCalculateId && item.supplierId === item.isCalculateId ? "bold" : "normal",
-                  whiteSpace: "nowrap",
-                  border: 0
-                }}
-              >
-                {renderCell(col, item, item.rowId, { isFirstCol: cIndex === 0 })}
-              </TableCell>
-            );
-          })}
-          {chooserSpacer}
+              {group.supplierLink && (
+                <a
+                  onClick={() => handleSupplier(group)}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: CommonColors.blue.main,
+                  }}
+                >
+                  {getSupplierLabel(group)}
+                </a>
+              )}
+            </div>
+          </TableCell>
         </TableRow>
-      ))}
-    </React.Fragment>
-  );
+        {group.items?.map((item, i) => (
+          <TableRow
+            key={`item-${index}-${i}`}
+            onClick={() => onClick?.(item)}
+            sx={{
+              cursor: onClick ? "pointer" : "default",
+              backgroundColor: item.isCalculateId && item.supplierId === item.isCalculateId ? "#E9E9F1" : i % 2 ? "#F4F6FA" : "#fff",
+            }}
+          >
+            {visibleColumns.map((col, cIndex) => {
+              if (col.rowSpan && i !== 0) return null;
+              return (
+                <TableCell key={cIndex} rowSpan={col.rowSpan ? group.items.length : 1}
+                  align={col.align || "left"}
+                  sx={{
+                    fontSize: Labels.fontSize.sm, py: 1.8,
+                    verticalAlign: "middle", borderLeft: col.rowSpan ? "1px solid #e5e7eb" : "",
+                    backgroundColor: col.rowSpan ? "#fff" : "",
+                    fontWeight: !col.rowSpan && item.isCalculateId && item.supplierId === item.isCalculateId ? "bold" : "normal",
+                    whiteSpace: "nowrap",
+                    border: 0
+                  }}
+                >
+                  {renderCell(col, item, item.rowId, { isFirstCol: cIndex === 0 })}
+                </TableCell>
+              );
+            })}
+            {chooserSpacer}
+          </TableRow>
+        ))}
+      </React.Fragment>
+    )
+  }
 
   // a filter can shrink the rows below the current page: show the last page that still has rows
   const currentPage = Math.min(page, Math.max(0, Math.ceil(filteredRows.length / rowsPerPage) - 1));
   const paginatedRows = filteredRows.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
-  const supplierB = formData.supplierB;
-  const supplierC = formData.supplierC;
+  const suppliers = formData.supplier.slice(0, -1);
+  const hasDuplicateSupplier = new Set(suppliers.map(x => x.value).filter(Boolean)).size !== suppliers.filter(x => x.value).length;
   return (
     <>
       <Paper elevation={0} sx={{ mt: 3, borderRadius: "6px", overflow: "hidden" }}>
@@ -397,8 +402,11 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
               <TableHead>
                 <TableRow sx={{ background: "#CF7729" }}>
                   {visibleColumns.map((col, i) => (
+
                     <TableCell key={i} align={col.align || "left"} sx={{ fontWeight: 700, fontSize: Labels.fontSize.sm, color: CommonColors.white, py: 2, textWrap: Labels.rap.nowrap }}>
-                      {col.header}
+                      <Tooltip title={col.tooltip || ""} arrow placement="right">
+                        {col.header}
+                      </Tooltip>
                     </TableCell>
                   ))}
                   {chooserEnabled && (
@@ -555,70 +563,73 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
 
       <PDialog
         open={formData.open}
-        onClose={() => setFormData((prev) => ({
-          ...prev,
-          open: false,
-        }))}
-        title={"Choose Supplier"}
+        onClose={() =>
+          setFormData((prev) => ({
+            ...prev,
+            open: false,
+          }))
+        }
+        title="Choose Supplier"
         showCloseIcon={true}
         maxWidth="sm"
         actions={
-          < PGrid className="d-flex align-items-center justify-content-end gap-2" >
+          <PGrid className="d-flex align-items-center justify-content-end gap-2">
             <PButton
               fullWidth
               label={getLabel("lbl125")}
               variant="outlined"
-              onClick={() => setFormData((prev) => ({
-                ...prev,
-                open: false
-              }))}
+              onClick={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  open: false,
+                }))
+              }
               color={CommonColors.grey.main}
               width={120}
             />
+
             <PButton
               fullWidth
-              label={"Ok"}
+              label="Ok"
               variant={Labels.contained}
-              onClick={(e) => handleSubmit(e)}
+              onClick={handleSubmit}
               color={CommonColors.dark_blue}
               width={120}
               startIcon={<img src={arrow} alt="arrow" className="icon" />}
-              disabled={supplierB === supplierC}
+              disabled={hasDuplicateSupplier || suppliers.some(x => !x.value)}
             />
-          </PGrid >
+          </PGrid>
         }
       >
-        <PGrid container className={Labels.margin.mb4}>
-          <PGrid item xs={12} sm={6} md={12}>
-            <PDropdown
-              name={"supplierB"}
-              label={`${"Supplier B"}`}
-              value={formData.supplierB}
-              onChange={handleChange}
-              options={formData.suppliers}
-              width={100}
-              flag={Labels.flag.auto}
-            />
-          </PGrid>
+        <PGrid container className="gap-4">
+          {formData.supplier.map((supplier, index) => (
+            <PGrid item xs={12} key={supplier.name}>
+              <PDropdown
+                name={supplier.name}
+                label={`Supplier ${supplier.name}`}
+                value={supplier.value}
+                options={formData.suppliers}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData(prev => ({
+                    ...prev,
+                    supplier: prev.supplier.map(s =>
+                      s.name === name ? { ...s, value } : s
+                    )
+                  }));
+                }}
+                disabled={true}
+                readOnly={index === formData.supplier.length - 1}
+              />
+            </PGrid>
+          ))}
         </PGrid>
-        <PGrid container className={Labels.margin.mb4}>
-          <PGrid item xs={12} sm={6} md={12}>
-            <PDropdown
-              name={"supplierC"}
-              label={`${"Supplier C"}`}
-              value={formData.supplierC}
-              onChange={handleChange}
-              options={formData.suppliers}
-              width={100}
-              flag={Labels.flag.auto}
-            />
-          </PGrid>
-        </PGrid>
-        {supplierB && supplierC && supplierB === supplierC && (
+
+        {hasDuplicateSupplier && (
           <PGrid container className={Labels.margin.mb3}>
-            <PGrid item xs={12} md={12} sm={8}>
+            <PGrid item xs={12}>
               <PTypography
-                labelText={"Please select different suppliers."}
+                labelText="Please select different suppliers."
                 weight={FontWeight.bold}
                 color={CommonColors.red.main}
               />

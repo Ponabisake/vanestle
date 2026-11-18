@@ -88,7 +88,7 @@ const ProjectEnquiry = () => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [dynamicData, setDynamicData] = useState({});
-    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id , attachment} = useSelector((state) => state.userDetails.user);
+    const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id, attachment } = useSelector((state) => state.userDetails.user);
 
     const actionFlag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
     const today = formatDate(new Date());
@@ -111,7 +111,7 @@ const ProjectEnquiry = () => {
         project: false,
         inputPS: false,
         psFlag: false,
-        isCalculate: true,
+        isCalculate: false,
 
         rfqFlag: true,
 
@@ -169,43 +169,28 @@ const ProjectEnquiry = () => {
         status: [],
 
         //calculations
-        calculateRows: [{ field: "cost", header: `${getLabel("lbl340")} (${symbol})`, type: "rupee", align: "right" }, { field: "sell", header: `${getLabel("lbl341")} (${symbol})`, type: "rupee", align: "right" }, { field: "margin", header: `${getLabel("lbl342")} (${symbol})`, type: "rupee", align: "right" }, { field: "markupPercent", header: `${getLabel("lbl343")} ${Labels.symbols.percent}`, align: "right" }, { field: "marginPercent", header: `${getLabel("lbl342")} ${Labels.symbols.percent}`, align: "right" }],
         calculationDetails: [],
 
         //logs
-        historyLogsCloumns: [{ field: "modifiedDate", header: `${getLabel("lbl361")}` }, { field: "userName", header: getLabel("lbl362") }, { field: "field", header: getLabel("lbl363") }
-            , { field: "oldValue", header: getLabel("lbl364") }, { field: "newValue", header: getLabel("lbl365") }],
         historyLogs: [],
-        lineItemLogsCloumns: [{ field: "modifiedDate", header: getLabel("lbl361") }, { field: "userName", header: getLabel("lbl362") }, { field: "field", header: getLabel("lbl363") }
-            , { field: "oldValue", header: getLabel("lbl364") }, { field: "newValue", header: getLabel("lbl365") }, { field: "itemNumber", header: getLabel("lbl317"), align: "right", render: (row) => Number.parseInt(row.itemNumber, 10) }],
         lineItemLogs: [],
-        calculateSupplierlogsRows: [{ field: "supplierName", header: getLabel("lbl344") }, { field: "itemName", header: getLabel("lbl66") }, { field: "supplierType", header: getLabel("lbl345") }, { field: "smetaAccredited", header: getLabel("lbl346") }
-            , { field: "gmpAccredited", header: getLabel("lbl347") }, { field: "natureofsupplier", header: getLabel("lbl348") },
-        ],
         calculationSupplierlogs: [],
 
         //project savings list
         projectSavings: [],
         savingsSummary: [],
-
-        savingsSummaryColumns: [{ field: "savingDisplay", header: `${getLabel("lbl355")} ( ${getLabel("lbl354")} )`, align: "right" }, { field: "savingPercentDisplay", header: `${getLabel("lbl355")} ${Labels.symbols.percent} ( ${getLabel("lbl354")} )`, align: "right" },
-        { field: "savingExclfeeDisplay", header: `${getLabel("lbl355")} ( ${getLabel("lbl353")} )`, align: "right" }, { field: "savingExclfeePercentDisplay", header: `${getLabel("lbl355")} ${Labels.symbols.percent} ( ${getLabel("lbl353")} )`, align: "right" }],
         savingsCalculation: [{ field: "label" }, { field: "value", align: "right" }],
         savingsResponseDto: { totalPreviousPrice: 0, totalSellPrice: 0, totalSaving: 0, totalSavingPercent: 0 },
         savingsReasons: [],
         yesOrNo: [{ label: "Yes", value: 1 }, { label: "No", value: 2, selected: true }],
 
         //History Tool
-        historySearchesCloumns: [{ field: "enquriyID", header: "Action" }, { field: "qty", header: "Qty", align: "right" }, { field: "country", header: "Country" }, { field: "specifications", header: "Specifications" },
-        { field: "referencePrice", header: "Reference Price", align: "right" }, { field: "materialUsed", header: "Material Used" }, { field: "poNumber", header: "PO Number" }, { field: "subCategory", header: "Sub Category" }, { field: "brand", header: "Brand" }],
-        historySearches: [],
+        // historySearchesCloumns: [{ field: "enquriyID", header: "Action" }, { field: "qty", header: "Qty", align: "right" }, { field: "country", header: "Country" }, { field: "specifications", header: "Specifications" },
+        // { field: "referencePrice", header: "Reference Price", align: "right" }, { field: "materialUsed", header: "Material Used" }, { field: "poNumber", header: "PO Number" }, { field: "subCategory", header: "Sub Category" }, { field: "brand", header: "Brand" }],
+        // historySearches: [],
 
-        //RevisedQuotes
-        revisedQuotesCloumns: [{ field: "supplierName", header: getLabel("lbl333") }, { field: "supplierPrice", header: `${getLabel("lbl359")} (${symbol})`, type: "rupee", align: "right" },
-        { field: "dateOfChange", header: getLabel("lbl360") }],
+        //Quotes
         revisedQuotes: [],
-
-        //RequestQuotes
         requestQuotes: [],
 
         //Delivery Order
@@ -252,6 +237,17 @@ const ProjectEnquiry = () => {
             : []),
     ]
 
+    const calculationDetails = [{ field: "cost", header: `${getLabel("lbl340")} (${symbol})`, type: "rupee", align: "right" }, { field: "sell", header: `${getLabel("lbl341")} (${symbol})`, type: "rupee", align: "right" }, { field: "margin", header: `${getLabel("lbl342")} (${symbol})`, type: "rupee", align: "right" }, { field: "markupPercent", header: `${getLabel("lbl343")} ${Labels.symbols.percent}`, align: "right", tooltip: "(Margin/Cost)*100" }, { field: "marginPercent", header: `${getLabel("lbl342")} ${Labels.symbols.percent}`, align: "right", tooltip: "(Margin/(Cost+MFee))*100" }]
+    const calculationSupplierlogs = [{ field: "supplierName", header: getLabel("lbl344") }, { field: "itemName", header: getLabel("lbl66") }, { field: "supplierType", header: getLabel("lbl345") }, { field: "smetaAccredited", header: getLabel("lbl346") }
+        , { field: "gmpAccredited", header: getLabel("lbl347") }, { field: "natureofsupplier", header: getLabel("lbl348") },]
+    const historyLogs = [{ field: "modifiedDate", header: `${getLabel("lbl361")}` }, { field: "userName", header: getLabel("lbl362") }, { field: "field", header: getLabel("lbl363") }
+        , { field: "oldValue", header: getLabel("lbl364") }, { field: "newValue", header: getLabel("lbl365") }]
+    const lineItemLogs = [{ field: "modifiedDate", header: getLabel("lbl361") }, { field: "userName", header: getLabel("lbl362") }, { field: "field", header: getLabel("lbl363") }
+        , { field: "oldValue", header: getLabel("lbl364") }, { field: "newValue", header: getLabel("lbl365") }, { field: "itemNumber", header: getLabel("lbl317"), align: "right", render: (row) => Number.parseInt(row.itemNumber, 10) }]
+    const savingsSummary = [{ field: "savingDisplay", header: `${getLabel("lbl355")} ( ${getLabel("lbl354")} )`, align: "right" }, { field: "savingPercentDisplay", header: `${getLabel("lbl355")} ${Labels.symbols.percent} ( ${getLabel("lbl354")} )`, align: "right" }
+        , { field: "savingExclfeeDisplay", header: `${getLabel("lbl355")} ( ${getLabel("lbl353")} )`, align: "right" }, { field: "savingExclfeePercentDisplay", header: `${getLabel("lbl355")} ${Labels.symbols.percent} ( ${getLabel("lbl353")} )`, align: "right" }]
+    const revisedQuotes = [{ field: "supplierName", header: getLabel("lbl333") }, { field: "supplierPrice", header: `${getLabel("lbl359")} (${symbol})`, type: "rupee", align: "right" }
+        , { field: "dateOfChange", header: getLabel("lbl360") }]
 
     const iconStyle = {
         //border: createOrderFlag ? "1px solid #e2e8f0" : "1px solid #f90707",
@@ -321,6 +317,9 @@ const ProjectEnquiry = () => {
                     Country: country
                 });
 
+                rfqCalculated = projectResponse.calculationDetails?.length > 0;
+                hasDeliveryOrder = projectResponse.deliveryOrder?.length > 0;
+
                 const revisedQuotes = [...new Map(projectResponse.revisedQuotes.map(x => [x.itemNumber, x])).values()]
                     .map(x => ({
                         isSubTitle: true,
@@ -334,7 +333,7 @@ const ProjectEnquiry = () => {
                         return {
                             isSubTitle: true,
                             subTitle: x.itemName,
-                            supplierLink: items.length >= 2 && response.statusId >= 4,
+                            supplierLink: items.length >= 1 && rfqCalculated,
                             items
                         };
                     });
@@ -360,8 +359,7 @@ const ProjectEnquiry = () => {
                         items: projectResponse.previewQuotes.filter(y => y.itemNumber === x.itemNumber)
                     }));
 
-                rfqCalculated = projectResponse.calculationDetails?.length > 0;
-                hasDeliveryOrder = projectResponse.deliveryOrder?.length > 0;
+
 
                 setFormDataList(prev => ({
                     ...prev,
@@ -676,9 +674,8 @@ const ProjectEnquiry = () => {
         }));
         setFormData(prev => ({
             ...prev,
-            isCalculate: isValid === true ? false : true
+            isCalculate: isValid
         }))
-
     };
 
     let filteredData = formDataList.supplierMaster;
@@ -934,13 +931,22 @@ const ProjectEnquiry = () => {
             ...prev,
             requestQuotes: prev.requestQuotes.map(group => ({
                 ...group,
-                items: group.items.map(item =>
-                    item.supplierQuotesId === Id
-                        ? ((field === "negQuote" && Number(data) > Number(item.initialQuote)) ||
+                items: group.items.map(item => {
+                    if (field === "pmgSellPrice" && item.enquiryDetailsId === enquiryId) {
+                        return item.supplierId === item.isCalculateId
+                            ? { ...item, pmgSellPrice: data }
+                            : { ...item, pmgSellPrice: "" };
+                    }
+
+                    return item.supplierQuotesId === Id
+                        ? (
+                            (field === "negQuote" && Number(data) > Number(item.initialQuote)) ||
                             (field === "negUnitPrice" && Number(data) > Number(item.iniUnitPrice))
                         )
-                            ? item : { ...item, [field]: data } : item
-                )
+                            ? item
+                            : { ...item, [field]: data }
+                        : item;
+                })
             }))
         }));
 
@@ -949,48 +955,54 @@ const ProjectEnquiry = () => {
             validateFlag: data === ""
         }));
     };
-
     const isSupplier = userType?.toLowerCase() === Labels.userType.supplier.toLowerCase();
     const isQuote = formData.quote == 1 && (isSupplier || formData.rfq);
     const isUnit = formData.quote == 2 && (isSupplier || formData.rfq);
 
     const requestQuotes = [
-        { field: "supplierName", header: "Supplier" },
+        { field: "supplierName", header: `${getLabel("lbl333")}` },
         {
             field: "initialQuote",
-            header: `Ini.Quote (${symbol})`,
+            header: `${getLabel("lbl334")} (${symbol})`,
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isQuote && renderEditableField("initialQuote")),
+            ...(isQuote && formData.psFlag && renderEditableField("initialQuote")),
         },
         {
             field: "negQuote",
-            header: `Neg.Quote (${symbol})`,
+            header: `${getLabel("lbl335")} (${symbol})`,
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isQuote && renderEditableField("negQuote")),
+            ...(isQuote && formData.psFlag && renderEditableField("negQuote")),
         },
         {
             field: "iniUnitPrice",
-            header: `Ini.unit Price (${symbol})`,
+            header: `${getLabel("lbl336")} (${symbol})`,
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isUnit && renderEditableField("iniUnitPrice")),
+            ...(isUnit && formData.psFlag && renderEditableField("iniUnitPrice")),
         },
         {
             field: "negUnitPrice",
-            header: `Neg.unit Price (${symbol})`,
+            header: `${getLabel("lbl337")} (${symbol})`,
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isUnit && renderEditableField("negUnitPrice")),
+            ...(isUnit && formData.psFlag && renderEditableField("negUnitPrice")),
         },
 
-        { field: "negUnitPriceFee", header: `Neg.unit Price with MFee (${symbol})`, type: "rupee", ishide: true, align: "right" },
-        { field: "pmgSellPrice", header: `PMG Sell Price (${symbol})`, rowSpan: true, type: "rupee", align: "right" }
+        { field: "negUnitPriceFee", header: `${getLabel("lbl338")} (${symbol})`, type: "rupee", ishide: true, align: "right" },
+        {
+            field: "pmgSellPrice",
+            header: `${getLabel("lbl339")} (${symbol})`,
+            rowSpan: true,
+            type: "rupee",
+            align: "right",
+            ...(!formData.psFlag && formData.rfq && renderEditableField("pmgSellPrice"))
+        }
     ];
 
     //savings reason functionality
@@ -1166,8 +1178,13 @@ const ProjectEnquiry = () => {
         };
 
         //RFQ Suppliers
-        const supplierQuotes = formDataList.requestQuotes.flatMap(group =>
-            group.items.map(item => ({
+        const allItems = formDataList.requestQuotes.flatMap(group => group.items);
+        const isPmgUpdated = allItems.some(item => item.supplierId === item.isCalculateId
+            && item.pmgSellPrice !== "" && item.pmgSellPrice != null);
+
+        const supplierQuotes = allItems
+            .filter(item => !isPmgUpdated || item.supplierId === item.isCalculateId)
+            .map(item => ({
                 enqId: item.enquiryId,
                 quoteId: item.supplierQuotesId,
                 supplierQuoteAmountPriceOrQuantity: formData.quote,
@@ -1177,9 +1194,9 @@ const ProjectEnquiry = () => {
                 intialprice: item.initialQuote?.toString(),
                 negoprice: item.negQuote?.toString(),
                 initialUnitprice: item.iniUnitPrice?.toString(),
-                negoUnitprice: item.negUnitPrice?.toString()
-            }))
-        );
+                negoUnitprice: item.negUnitPrice?.toString(),
+                pmgSellPrice: item.pmgSellPrice?.toString()
+            }));
 
         //input project savings
         const projectQuotes = formDataList.projectSavings.flatMap(group =>
@@ -1325,6 +1342,7 @@ const ProjectEnquiry = () => {
             };
         });
     };
+
     const renderQuoteEditableField = (field) => ({
         render: (row) => {
             return (
@@ -1351,7 +1369,7 @@ const ProjectEnquiry = () => {
     });
 
     const supplierQuotes = [
-        { field: "itemName", header: "Item Name" },
+        { field: "itemName", header: getLabel("lbl66") },
         { field: "totalPrice", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("totalPrice")), type: "rupee", align: "right" },
         { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")), type: "rupee", align: "right" },
     ]
@@ -1359,7 +1377,10 @@ const ProjectEnquiry = () => {
     return (
         <>
             <Box sx={{ py: 3 }}>
-                <PSapStatus enqId={id} active={sapActive} onChange={handleSapChange} />
+                {flag && (
+                    <PSapStatus enqId={id} active={sapActive} onChange={handleSapChange} />
+                )}
+
                 <PGrid container className="peBoxWrapper mx-auto d-flex justify-content-center row-y-10">
                     <PGrid item xs={12} md={7} sm={12}>
                         <Box style={{ background: "#512668", minHeight: "282px" }} sx={{ borderRadius: "6px", display: "flex", alignItems: "start", padding: "30px 20px 30px 20px", flexDirection: "column", justifyContent: "space-between", flexWrap: "wrap" }}>
@@ -1872,55 +1893,52 @@ const ProjectEnquiry = () => {
                         {/* RFQ Section */}
                         {[1, 2, 3].includes(formData.statusId) && (
                             <PGrid container className="d-flex align-items-center justify-content-between mb-3">
-                                <PGrid item xs={12} sm={6} md={6}>
-                                    <PTypography
-                                        labelText={getLabel("lbl170")}
-                                        flag={Labels.fontFlags.normalText}
-                                        color={CommonColors.primary}
-                                        weight={FontWeight.bold}
-                                    />
-                                    <PTypography
-                                        labelText={getLabel("lbl171")}
-                                        flag={Labels.fontFlags.smallText}
-                                        color={CommonColors.primary}
-                                        weight={FontWeight.regular}
-                                    />
-                                </PGrid>
+                                {!formData.marginFlag && (
+                                    <PGrid item xs={12} sm={6} md={6}>
+                                        <PTypography
+                                            labelText={getLabel("lbl170")}
+                                            flag={Labels.fontFlags.normalText}
+                                            color={CommonColors.primary}
+                                            weight={FontWeight.bold}
+                                        />
+                                        <PTypography
+                                            labelText={getLabel("lbl171")}
+                                            flag={Labels.fontFlags.smallText}
+                                            color={CommonColors.primary}
+                                            weight={FontWeight.regular}
+                                        />
+                                    </PGrid>
+                                )}
+                                {/* Award Jobs Section */}
+                                {formData.marginFlag && (
+                                    <PGrid item xs={12} sm={6} md={6}>
+                                        <PTypography
+                                            labelText={getLabel("lbl235")}
+                                            flag={Labels.fontFlags.normalText}
+                                            color={CommonColors.primary}
+                                            weight={FontWeight.bold}
+                                        />
+                                        <PTypography
+                                            labelText={getLabel("lbl236")}
+                                            flag={Labels.fontFlags.smallText}
+                                            color={CommonColors.primary}
+                                            weight={FontWeight.regular}
+                                        />
+                                    </PGrid>
+                                )}
                                 <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
-                                    {!formData.marginFlag && (renderActionButtons("rfq"))}
-                                </PGrid>
-                            </PGrid>
-                        )}
-
-                        {/* Award Jobs Section */}
-                        {formData.statusId >= 4 && (
-                            <PGrid container className="d-flex align-items-center justify-content-between mb-3">
-                                <PGrid item xs={12} sm={6} md={6}>
-                                    <PTypography
-                                        labelText={getLabel("lbl235")}
-                                        flag={Labels.fontFlags.normalText}
-                                        color={CommonColors.primary}
-                                        weight={FontWeight.bold}
-                                    />
-                                    <PTypography
-                                        labelText={getLabel("lbl236")}
-                                        flag={Labels.fontFlags.smallText}
-                                        color={CommonColors.primary}
-                                        weight={FontWeight.regular}
-                                    />
-                                </PGrid>
-                                <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
-                                    <PButton
-                                        label={getLabel("lbl237")}
-                                        variant="contained"
-                                        color={CommonColors.dark_blue}
-                                        onClick={() => setFormData((prev) => ({
-                                            ...prev,
-                                            preview: true,
-                                        }))}
-                                        width={300}
-                                        startIcon={<img src={arrow} alt="arrow" className="icon" />}
-                                    />
+                                    {(!formData.marginFlag || !formData.psFlag) && renderActionButtons("rfq")}
+                                    {formData.marginFlag && (
+                                        <PPillButton
+                                            label={getLabel("lbl237")}
+                                            onClick={() => setFormData((prev) => ({
+                                                ...prev,
+                                                preview: true,
+                                            }))}
+                                            width={500}
+                                            icon={false}
+                                        />
+                                    )}
                                 </PGrid>
                             </PGrid>
                         )}
@@ -1954,7 +1972,7 @@ const ProjectEnquiry = () => {
                                         color={CommonColors.grey.main}
                                         onClick={(e) => handleCalculate(e, "calculate")}
                                         width={300}
-                                        disabled={formData.isCalculate}
+                                        disabled={!formData.isCalculate}
                                     />
                                     <PButton
                                         label={getLabel("lbl174")}
@@ -1971,12 +1989,12 @@ const ProjectEnquiry = () => {
                             <>
                                 <PGrid container className={Labels.margin.mb4}>
                                     <PGrid item xs={12} sm={6} md={12}>
-                                        <PTable columns={formDataList.calculateRows} rows={formDataList.calculationDetails} showPagination={false} />
+                                        <PTable columns={calculationDetails} rows={formDataList.calculationDetails} showPagination={false} />
                                     </PGrid>
                                 </PGrid>
                                 <PGrid container className={Labels.margin.mb4}>
                                     <PGrid item xs={12} sm={6} md={12}>
-                                        <PTable columns={formDataList.calculateSupplierlogsRows} rows={formDataList.calculationSupplierlogs} />
+                                        <PTable columns={calculationSupplierlogs} rows={formDataList.calculationSupplierlogs} />
                                     </PGrid>
                                 </PGrid>
                             </>
@@ -2014,7 +2032,7 @@ const ProjectEnquiry = () => {
                             </PGrid>
                             <PGrid container className={Labels.margin.mb3}>
                                 <PGrid item xs={12} sm={6} md={12}>
-                                    <PTable columns={formDataList.savingsSummaryColumns} rows={formDataList.savingsSummary} showPagination={false} loading={tableLoading.projectSavings} />
+                                    <PTable columns={savingsSummary} rows={formDataList.savingsSummary} showPagination={false} loading={tableLoading.projectSavings} />
                                 </PGrid>
                             </PGrid>
                             <PGrid container className={Labels.margin.mb3}>
@@ -2344,7 +2362,7 @@ const ProjectEnquiry = () => {
                         <Divider sx={{ mb: 2 }} />
                         <PGrid container className={Labels.margin.mb4}>
                             <PGrid item xs={12} sm={6} md={12}>
-                                <PTable columns={formDataList.revisedQuotesCloumns} rows={formDataList.revisedQuotes} showPagination={false} />
+                                <PTable columns={revisedQuotes} rows={formDataList.revisedQuotes} showPagination={false} />
                             </PGrid>
                         </PGrid>
                     </div>
@@ -2358,7 +2376,7 @@ const ProjectEnquiry = () => {
                         <Divider sx={{ mb: 2 }} />
                         <PGrid container className={Labels.margin.mb4}>
                             <PGrid item xs={12} sm={6} md={12}>
-                                <PTable columns={formDataList.lineItemLogsCloumns} rows={formDataList.lineItemLogs} />
+                                <PTable columns={lineItemLogs} rows={formDataList.lineItemLogs} />
                             </PGrid>
                         </PGrid>
 
@@ -2372,7 +2390,7 @@ const ProjectEnquiry = () => {
                         <Divider sx={{ mb: 2 }} />
                         <PGrid container className={Labels.margin.mb4}>
                             <PGrid item xs={12} sm={6} md={12}>
-                                <PTable columns={formDataList.historyLogsCloumns} rows={formDataList.historyLogs} />
+                                <PTable columns={historyLogs} rows={formDataList.historyLogs} />
                             </PGrid>
                         </PGrid>
                     </div>
@@ -2384,7 +2402,7 @@ const ProjectEnquiry = () => {
                             <SectionHeading accent={PmgColors.gold} label={getLabel("lbl182")} />
                         </PGrid>
                         <Divider sx={{ mb: 2 }} />
-                        <PEnquiryAttachments enqId={id} userId={userID} userType={userType}/>
+                        <PEnquiryAttachments enqId={id} userId={userID} userType={userType} />
                     </div>
                 )}
 
