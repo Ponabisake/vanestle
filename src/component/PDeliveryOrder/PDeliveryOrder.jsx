@@ -93,6 +93,7 @@ const PDeliveryOrder = (props) => {
                     remarks: data.remarks ?? "",
                     id: 0
                 }));
+                setErrors({});
             }
             else {
                 setFormData((prev) => ({

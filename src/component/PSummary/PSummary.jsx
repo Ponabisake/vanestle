@@ -16,9 +16,11 @@ import { isSuccess, toast } from "../../utils/commonFunction/common";
 import { LineItems_API } from "../../utils/api/apiUrl";
 import { PostApi } from "../../utils/api/networking";
 import { useSelector } from "react-redux";
+import { useLanguage } from "../../utils/constants/language";
 
 export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layout = "row", duplicate = false, showFlag = true, lineItems = [] }) => {
     const navigate = useNavigate();
+    const { getLabel } = useLanguage();
     const [activeStep, setActiveStep] = useState(currentStep);
     const [activeItemIndex, setActiveItemIndex] = useState({ 3: 0 });
     const [open, setOpen] = useState(false);
@@ -31,7 +33,7 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
     };
 
     const visibleSections = sections.filter((section) => section.step == currentStep);
-    const hybridModel = sections.find((section) => section.step === 2)?.items.find((item) => item.label === "Hybrid")?.value;
+    const hybridModel = sections.find((section) => section.step === 2)?.items.find((item) => item.label === getLabel("lbl94"))?.value;
     const handleEdit = (step, enquiryId = null) => {
         const data = lineItems.find(item => item.enqdetailsId === enquiryId);
         if (step === 3 && data) {
@@ -47,8 +49,8 @@ export const PSummary = ({ sections = [], currentStep = 3, refreshSummary, layou
         const route = routeMap[step] || labelRoutes.home;
         navigate(route);
     };
+    
     const SummaryItem = ({ label, value, layout }) => (
-
         <PGrid container className={Labels.margin.mb2}>
             {label === "" ? (
                 <PGrid item xs={12} sm={12} md={12}>

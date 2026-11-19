@@ -250,10 +250,10 @@ const ProjectEnquiry = () => {
         , { field: "dateOfChange", header: getLabel("lbl360") }]
 
     const iconStyle = {
-        //border: createOrderFlag ? "1px solid #e2e8f0" : "1px solid #f90707",
+        bgcolor: "#ffffff",
         border: "1px solid #e2e8f0",
         color: "#64748b",
-        "&:hover": { bgcolor: "#f8fafc" },
+        "&:hover": { border: "#ffffff" },
         width: 48,
         height: 48,
     };
@@ -333,7 +333,7 @@ const ProjectEnquiry = () => {
                         return {
                             isSubTitle: true,
                             subTitle: x.itemName,
-                            supplierLink: items.length >= 1 && rfqCalculated,
+                            supplierLink: items.length >= 1 && rfqCalculated && response.statusId >= 2,
                             items
                         };
                     });
@@ -468,6 +468,9 @@ const ProjectEnquiry = () => {
         { label: getLabel("lbl163"), value: formData.projectNo },
         ...(sapActive && sapStatus?.sapProjectNo ? [{ label: "SAP Project No", value: sapStatus.sapProjectNo }] : [])
     ]
+    const itemCount = statusInfo.length;
+    const boxHeight = itemCount <= 2 ? "290px" : "360px";
+
     //Change Function
     const handleChange = async (e) => {
         const { name, value } = e.target;
@@ -551,7 +554,7 @@ const ProjectEnquiry = () => {
         files: item.files,
     }));
 
-    const sections = getSummarySections({ menuId, lineItems, getLabel });
+    const sections = getSummarySections({ menuId, enquiryDetails, lineItems, getLabel });
 
     //Edit & cancel section function
     const handleSlaChange = useCallback((data) => {
@@ -1374,6 +1377,7 @@ const ProjectEnquiry = () => {
         { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")), type: "rupee", align: "right" },
     ]
 
+
     return (
         <>
             <Box sx={{ py: 3 }}>
@@ -1383,9 +1387,23 @@ const ProjectEnquiry = () => {
 
                 <PGrid container className="peBoxWrapper mx-auto d-flex justify-content-center row-y-10">
                     <PGrid item xs={12} md={7} sm={12}>
-                        <Box style={{ background: "#512668", minHeight: "282px" }} sx={{ borderRadius: "6px", display: "flex", alignItems: "start", padding: "30px 20px 30px 20px", flexDirection: "column", justifyContent: "space-between", flexWrap: "wrap" }}>
+                        <Box
+                            style={{ background: "#512668", minHeight: boxHeight, height: boxHeight }}
+                            sx={{
+                                borderRadius: "6px",
+                                display: "flex",
+                                alignItems: "start",
+                                padding: "30px 20px 30px 20px",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                            }}
+                        >
                             {statusInfo.map((item, i) => (
-                                <Box className={`peBox-${i}`} sx={{ display: "flex", alignItems: "start", flexDirection: "column", gap: 1.5 }} key={i}>
+                                <Box
+                                    className={`peBox-${i}`}
+                                    sx={{ display: "flex", alignItems: "start", flexDirection: "column", gap: 0.5 }}
+                                    key={i}
+                                >
                                     <PTypography
                                         labelText={`${item.label} :`}
                                         weight={FontWeight.regular}
@@ -1645,7 +1663,7 @@ const ProjectEnquiry = () => {
                                                                         <Tooltip title={getLabel("lbl303")} arrow >
                                                                             <IconButton sx={iconStyle}
                                                                                 onClick={(e) => handleSubmit(e, "order")}
-                                                                                disabled={!createOrderFlag && !formData.poNo}
+                                                                                disabled={!createOrderFlag  || !formData.poNo}
                                                                             >
                                                                                 <PostAddIcon />
                                                                             </IconButton>

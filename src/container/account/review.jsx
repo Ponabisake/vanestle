@@ -110,19 +110,20 @@ const Review = () => {
 
     const showSkeleton = !hasLoaded;
 
-    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, "" ,userType);
-    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, userType);
+    const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, "", userType);
+    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, true, userType);
     const lineItems = getLineneItems({}, {}, getLabel, getOptionLabel, formDataList.lineItems, userType);
 
     const handleOpen = (data = {}) => {
         setFormData(data);
         setOpenUpdateLineItems(true);
     };
-
+    const hybridModel = enquiryDetails.find((item) => item.label === getLabel("lbl94"))?.value;
     const handleEdit = (step, enquiryId = null) => {
         const data = formDataList.lineItems.find(item => item.enqdetailsId === enquiryId);
         if (step === 3 && data) {
-            handleOpen(data);
+            const updateData = {...data, hybrid : hybridModel};
+            handleOpen(updateData);
             return;
         }
         const routeMap = {

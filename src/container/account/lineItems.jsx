@@ -211,7 +211,7 @@ const LineItems = () => {
     const totalSize = flatSize * (+formData.quantity || 0);
 
     const clientInfo = getClientInfo({}, {}, {}, getLabel, getOptionLabel, formDataList.clientInfo, userType);
-    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails, userType);
+    const enquiryDetails = getEnquiryDetails({}, {}, {}, getLabel, getOptionLabel, formDataList.enquiryDetails,false,userType);
     const rawLineItems = getLineneItems(formData, formDataList, getLabel, getOptionLabel, formDataList.lineItems, userType);
     const lineItems = rawLineItems.map((item, index) => ({
         subTitle: `${item.itemTitle}`,

@@ -53,7 +53,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
         if (open && data?.printornonprint) {
             LineItemsMaster(data.printornonprint);
         }
-        if (open && data?.savingstype) {
+        if (open && data?.savingstype && data.hybrid) {
             SavingsReasonMaster(data.savingstype);
         }
     }, [open, data]);
@@ -162,7 +162,7 @@ const UpdateLineItems = ({ open, onClose, data = {}, step, refreshSummary }) => 
             [name]: ""
         }));
     };
-
+    
     const LineItemsValidation = () => {
         const requiredFields = [
             Labels.lineItems.itemName,
