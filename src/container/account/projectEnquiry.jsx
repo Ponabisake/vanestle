@@ -333,7 +333,7 @@ const ProjectEnquiry = () => {
                         return {
                             isSubTitle: true,
                             subTitle: x.itemName,
-                            supplierLink: items.length >= 1 && rfqCalculated && response.statusId >= 2,
+                            supplierLink: items.length >= 1 && rfqCalculated && [1, 2].includes(response.statusId),
                             items
                         };
                     });
@@ -1376,8 +1376,7 @@ const ProjectEnquiry = () => {
         { field: "totalPrice", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("totalPrice")), type: "rupee", align: "right" },
         { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")), type: "rupee", align: "right" },
     ]
-
-
+    
     return (
         <>
             <Box sx={{ py: 3 }}>
@@ -1663,7 +1662,7 @@ const ProjectEnquiry = () => {
                                                                         <Tooltip title={getLabel("lbl303")} arrow >
                                                                             <IconButton sx={iconStyle}
                                                                                 onClick={(e) => handleSubmit(e, "order")}
-                                                                                disabled={!createOrderFlag  || !formData.poNo}
+                                                                                disabled={!createOrderFlag || !formData.poNo}
                                                                             >
                                                                                 <PostAddIcon />
                                                                             </IconButton>
@@ -1909,57 +1908,60 @@ const ProjectEnquiry = () => {
                         </PGrid>
 
                         {/* RFQ Section */}
-                        {[1, 2, 3].includes(formData.statusId) && (
-                            <PGrid container className="d-flex align-items-center justify-content-between mb-3">
-                                {!formData.marginFlag && (
-                                    <PGrid item xs={12} sm={6} md={6}>
-                                        <PTypography
-                                            labelText={getLabel("lbl170")}
-                                            flag={Labels.fontFlags.normalText}
-                                            color={CommonColors.primary}
-                                            weight={FontWeight.bold}
-                                        />
-                                        <PTypography
-                                            labelText={getLabel("lbl171")}
-                                            flag={Labels.fontFlags.smallText}
-                                            color={CommonColors.primary}
-                                            weight={FontWeight.regular}
-                                        />
-                                    </PGrid>
-                                )}
-                                {/* Award Jobs Section */}
-                                {formData.marginFlag && (
-                                    <PGrid item xs={12} sm={6} md={6}>
-                                        <PTypography
-                                            labelText={getLabel("lbl235")}
-                                            flag={Labels.fontFlags.normalText}
-                                            color={CommonColors.primary}
-                                            weight={FontWeight.bold}
-                                        />
-                                        <PTypography
-                                            labelText={getLabel("lbl236")}
-                                            flag={Labels.fontFlags.smallText}
-                                            color={CommonColors.primary}
-                                            weight={FontWeight.regular}
-                                        />
-                                    </PGrid>
-                                )}
-                                <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
-                                    {(!formData.marginFlag || !formData.psFlag) && renderActionButtons("rfq")}
-                                    {formData.marginFlag && (
-                                        <PPillButton
-                                            label={getLabel("lbl237")}
-                                            onClick={() => setFormData((prev) => ({
-                                                ...prev,
-                                                preview: true,
-                                            }))}
-                                            width={500}
-                                            icon={false}
-                                        />
-                                    )}
+
+                        <PGrid container className="d-flex align-items-center justify-content-between mb-3">
+                            {!formData.marginFlag && [1, 2].includes(formData.statusId) && (
+                                <PGrid item xs={12} sm={6} md={6}>
+                                    <PTypography
+                                        labelText={getLabel("lbl170")}
+                                        flag={Labels.fontFlags.normalText}
+                                        color={CommonColors.primary}
+                                        weight={FontWeight.bold}
+                                    />
+
+                                    <PTypography
+                                        labelText={getLabel("lbl171")}
+                                        flag={Labels.fontFlags.smallText}
+                                        color={CommonColors.primary}
+                                        weight={FontWeight.regular}
+                                    />
                                 </PGrid>
+                            )}
+                            {/* Award Jobs Section */}
+                            {formData.marginFlag && (
+                                <PGrid item xs={12} sm={6} md={6}>
+                                    <PTypography
+                                        labelText={getLabel("lbl235")}
+                                        flag={Labels.fontFlags.normalText}
+                                        color={CommonColors.primary}
+                                        weight={FontWeight.bold}
+                                    />
+
+                                    <PTypography
+                                        labelText={getLabel("lbl236")}
+                                        flag={Labels.fontFlags.smallText}
+                                        color={CommonColors.primary}
+                                        weight={FontWeight.regular}
+                                    />
+                                </PGrid>
+                            )}
+                            <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
+                                {(!formData.marginFlag || !formData.psFlag) && [1, 2, 3, 4, 5, 6].includes(formData.statusId)
+                                    && renderActionButtons("rfq")
+                                }
+                                {formData.marginFlag && (
+                                    <PPillButton
+                                        label={getLabel("lbl237")}
+                                        onClick={() => setFormData((prev) => ({
+                                            ...prev,
+                                            preview: true,
+                                        }))}
+                                        width={500}
+                                        icon={false}
+                                    />
+                                )}
                             </PGrid>
-                        )}
+                        </PGrid>
 
                         <Divider sx={{ mb: 2 }} />
                         <PGrid container className={Labels.margin.mb4}>
