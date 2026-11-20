@@ -310,6 +310,16 @@
   color: white !important;
 }
 
+/* Disabled (not loading): the !important rules above would otherwise make it look enabled */
+.outlined-btn.Mui-disabled:not(.is-busy) {
+  background: #F3F4F6 !important;
+  color: #9CA3AF !important;
+  border-color: #D1D5DB !important;
+}
+.outlined-btn.Mui-disabled:not(.is-busy)::before {
+  left: -100%;
+}
+
 hr {
   border: 0;
   border-top: 1px solid #707070 !important;

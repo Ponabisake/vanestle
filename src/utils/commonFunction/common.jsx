@@ -70,6 +70,14 @@ export const getOptionLabel = (options = [], value) => {
   return map[value] || "";
 };
 
+/**
+ * The options a form offers from an Admin → Drop-down Lists list (Year, Type of Job, Project Attribute, Savings Type):
+ * the API also sends deactivated values (flagged `inactive`) so a record that stores one keeps showing it; they are
+ * offered only when they are the field's current value.
+ */
+export const activeOptions = (options = [], value) =>
+  (options || []).filter((o) => !o.inactive || (value !== "" && value != null && o.value == value));
+
 export const getOptionValue = (options = [], label) => {
   const map = Object.fromEntries(options.map(o => [o.label, o.value]));
   return map[label] || "";

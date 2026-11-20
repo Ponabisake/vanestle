@@ -17,11 +17,13 @@ import { connect } from "react-redux";
 import { AppNavigation } from "../../navigations/appNavigation";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import PMGLogo from "../../utils/assets/images/pmglogo.svg";
-import VALogo from "../../utils/assets/images/valogo.svg";
+import PSiteLogo from "../../component/PSiteLogo/PSiteLogo";
 import { PostApi } from "../../utils/api/networking";
 import { Account_API } from "../../utils/api/apiUrl";
 import PGrid from "../../component/PGrid/PGrid";
 import { useLanguage } from "../../utils/constants/language";
+import { useSiteStatus } from "../../utils/api/siteStatus";
+import PMaintenanceProgress from "../../component/PMaintenanceProgress/PMaintenanceProgress";
 
 function Login(props) {
   const { navigate } = props;
@@ -29,6 +31,7 @@ function Login(props) {
   const [openRecover, setOpenRecover] = useState(false);
   const [selected, setSelected] = useState(false);
   const { getLabel } = useLanguage();
+  const { maintenanceMode } = useSiteStatus();
   const userNameRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -179,8 +182,12 @@ function Login(props) {
             userType: user?.usertype,
             menuId: 0,
             symbol: currency[user?.currency],
+            // admin console users (userType Admin) only: the menus their admin type may open
+            adminMenus: user?.adminMenus || [],
+            // sent back in the PMG-Session header (the API checks it while the site is in maintenance)
+            sessionToken: user?.sessionToken || "",
           });
-          navigate(labelRoutes.vaDashboard);
+          navigate(user?.usertype?.toLowerCase() === Labels.userType.admin ? labelRoutes.adminDashboard : labelRoutes.vaDashboard);
         } else {
           setErrors((prev) => ({
             ...prev,
@@ -244,9 +251,12 @@ function Login(props) {
         <div className="login-container">
           <div className="login-left">
             <div className="logo-group mt-5">
-              <img src={VALogo} alt="Logo" style={{ height: 70 }} />
+              {/* the logo uploaded in the admin console (else the built-in VA logo) */}
+              <PSiteLogo height={70} editable={false} />
               <img src={PMGLogo} alt="Logo" style={{ height: 70 }} />
             </div>
+            {/* maintenance mode (Site Settings): the upgrade progress beside the sign-in box (admins can still sign in) */}
+            <div className={`login-row${maintenanceMode ? " has-maintenance" : ""}`}>
             {formData.default ? (
               <div className="login-box">
                 <div className="text-center title">Change Password</div>
@@ -386,14 +396,17 @@ function Login(props) {
                   }}
                 />
                 <div className="position-relative" >
-                  <div className="forgot-password position-absolute top-0">
-                    <PTypography
-                      labelText={Labels.loginPage.forgotPassword}
-                      color={CommonColors.dark_blue}
-                      flag={Labels.fontFlags.normalText}
-                      onClick={handleOpenRecover}
-                    />
-                  </div>
+                  {/* closed during maintenance (the legacy site sent Forgot Password to the maintenance page too) */}
+                  {!maintenanceMode && (
+                    <div className="forgot-password position-absolute top-0">
+                      <PTypography
+                        labelText={Labels.loginPage.forgotPassword}
+                        color={CommonColors.dark_blue}
+                        flag={Labels.fontFlags.normalText}
+                        onClick={handleOpenRecover}
+                      />
+                    </div>
+                  )}
 
                   <PButton
                     type="submit"
@@ -407,6 +420,8 @@ function Login(props) {
                 </div>
               </div>
             )}
+            {maintenanceMode && <PMaintenanceProgress />}
+            </div>
           </div>
         </div >
       </form >

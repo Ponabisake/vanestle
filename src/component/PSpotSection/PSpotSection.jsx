@@ -243,7 +243,7 @@ const PSpotSection = ({ response, onSaved }) => {
                 )}
 
                 {[1].includes(Number(row.flag)) && (
-                    <PPillButton iconOnly label="Non-Compare" icon={<RuleOutlinedIcon sx={actionIconSx} />}
+                    <PPillButton iconOnly label="No - Compare" icon={<RuleOutlinedIcon sx={actionIconSx} />}
                         onClick={() => setFormData((prev) => ({
                             ...prev,
                             nonCompare: true,

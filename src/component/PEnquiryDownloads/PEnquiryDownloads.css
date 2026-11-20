@@ -1,0 +1,78 @@
+/* Project Enquiry → Downloads (PEnquiryDownloads) */
+.ped-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 420px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: #2d2f75;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ped-file:hover:not(:disabled) .ped-file-name {
+  text-decoration: underline;
+}
+.ped-file:focus-visible {
+  outline: 2px solid #2d2f75;
+  outline-offset: 2px;
+}
+.ped-file:disabled {
+  cursor: progress;
+}
+.ped-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.ped-tag {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: #f0eef5;
+  color: #4b4d8a;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ped-tag.is-purchaseOrder {
+  background: #fdf1e6;
+  color: #a65d1d;
+}
+.ped-tag.is-deliveryOrder {
+  background: #e8f4ee;
+  color: #2f6b4b;
+}
+.ped-muted {
+  color: #9ca3af;
+}
+.ped-action.MuiIconButton-root {
+  color: #2d2f75;
+}
+.ped-action.ped-save.MuiIconButton-root {
+  color: #2f6b4b;
+}
+.ped-actions {
+  display: inline-flex;
+  gap: 2px;
+  white-space: nowrap;
+}
+/* Inline date editor: fixed width in the table cell; PDatepicker's (empty) label line is not needed */
+.ped-date-edit {
+  width: 200px;
+  max-width: 100%;
+}
+.ped-date-edit > .MuiTypography-root:empty {
+  display: none;
+}
+.ped-date-edit .MuiOutlinedInput-root {
+  height: 40px;
+}
+.ped-date-edit .MuiInputAdornment-root .MuiIconButton-root {
+  height: 40px !important;
+  width: 40px !important;
+}

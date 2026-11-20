@@ -11,7 +11,7 @@ import { CommonColors } from "../../utils/constants/colors";
 import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import PTextField from "../../component/PTextField/PTextField";
-import { allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
+import { activeOptions, allowDecimal, allowOnlyNumbers, getEnquirySteps, getOptionLabel, getOptionValue, isSuccess, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,10 @@ const LineItems = () => {
     const [open, setOpen] = useState(false);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    // SPOT switched on for the enquiry's country (tblCountry.SPOTNeeded, set on the VAAPI console Country page).
+    // Off: the No. of Materials field is hidden and not sent, so no SPOT rows are created for the item.
+    // On: the existing type-of-job rules for No. of Materials apply unchanged (only this check is added in front).
+    const [spotEnabled, setSpotEnabled] = useState(false);
 
     const [formDataList, setFormDataList] = useState({
         typeOfJob: [{ label: "Strategic", value: 1 }, { label: "Tactical", value: 2 }, { label: "Operational", value: 3 }, { label: "Non-Addressable", value: 4 }],
@@ -244,6 +248,7 @@ const LineItems = () => {
                     enquiryDetails: data.enqProjectinfo,
                     lineItems: data.enqlineItems,
                 }))
+                setSpotEnabled(data.countrySpotNeeded === "Yes");
             }
         } catch (error) {
             toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -494,7 +499,7 @@ const LineItems = () => {
                     Eauction: getOptionLabel(formDataList.yesOrNo, formData.eAuction),
                     printingmethod: getOptionLabel(formDataList.printingMethod, formData.printingMethod),
                     typeofitem: formData.typeOfItem == "" ? "N/A" : getOptionLabel(formDataList.typeOfItem, formData.typeOfItem),
-                    Noofmaterials: formData.noOfMaterials == "" ? null : formData.noOfMaterials,
+                    Noofmaterials: !spotEnabled || formData.noOfMaterials == "" ? null : formData.noOfMaterials,
                     DigitalInnovation: getOptionLabel(formDataList.yesNoNa, formData.digitalInnovation),
                     Innovation: getOptionLabel(formDataList.yesNoNa, formData.innovation),
                     Sourcinglocation: getOptionLabel(formDataList.sourcingLocation, formData.sourcingLocation),
@@ -615,7 +620,7 @@ const LineItems = () => {
             Labels.lineItems.eAuction,
             Labels.lineItems.printingMethod,
             Labels.lineItems.typeOfItem,
-            ...(formData.typeOfJob == 4 ? [] : [Labels.lineItems.noOfMaterials]),
+            ...(!spotEnabled || formData.typeOfJob == 4 ? [] : [Labels.lineItems.noOfMaterials]),
             Labels.lineItems.harmonizedOrder,
             Labels.lineItems.digitalInnovation,
             Labels.lineItems.innovation,
@@ -788,7 +793,7 @@ const LineItems = () => {
                                     onChange={handleChange}
                                     helperText={errors?.category}
                                     name={Labels.lineItems.category}
-                                    options={formDataList.category}
+                                    options={activeOptions(formDataList.category, formData.category)}
                                     flag={Labels.flag.auto}
                                 />
 
@@ -1256,7 +1261,7 @@ const LineItems = () => {
                                 />
                             </PGrid>
 
-                            {["", 1, 2, 3].includes(formData.typeOfJob) && (
+                            {spotEnabled && ["", 1, 2, 3].includes(formData.typeOfJob) && (
                                 <PGrid item xs={12} sm={6} md={4} >
                                     <PTextField
                                         label={`${getLabel("lbl113")} ${Labels.symbols.required}`}
@@ -1324,7 +1329,7 @@ const LineItems = () => {
                                     onChange={handleChange}
                                     helperText={errors?.savingsType}
                                     name={Labels.lineItems.savingsType}
-                                    options={formDataList.savingsType}
+                                    options={activeOptions(formDataList.savingsType, formData.savingsType)}
                                     flag={Labels.flag.auto}
                                     readOnly={hybird}
                                 />

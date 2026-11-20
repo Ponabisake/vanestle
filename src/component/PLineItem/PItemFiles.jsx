@@ -13,8 +13,6 @@ import { toast } from "../../utils/commonFunction/common";
 import { Labels } from "../../utils/constants/labels";
 
 const IMAGE_EXT = ["jpg", "jpeg", "png", "gif", "webp", "bmp"];
-// Types the preview dialog can show from a downloaded copy (Office files need a public URL)
-const PREVIEW_EXT = [...IMAGE_EXT, "pdf", "msg", "txt", "csv"];
 
 const extOf = (name = "") => name.split(".").pop().toLowerCase();
 
@@ -35,7 +33,8 @@ const FileIcon = ({ name }) => {
 
 /**
  * The files attached to a line item (step 3), from GetDetails → enqlineItems[].quoteFiles.
- * Clicking a file previews it (images, PDF, .msg, text); the download icon saves it.
+ * Clicking a file previews it (any type: PPreviewDialog shows what the browser can, else a Download card);
+ * the download icon saves it.
  * Files are fetched with the API headers, once per file.
  */
 export function PItemFiles({ enqDetailsId, files = [] }) {
@@ -67,8 +66,8 @@ export function PItemFiles({ enqDetailsId, files = [] }) {
     try {
       setBusy(file.fileName);
       const url = await load(file.fileName);
-      if (!forceDownload && PREVIEW_EXT.includes(extOf(file.fileName))) {
-        setPreview({ name: file.fileName, url });
+      if (!forceDownload) {
+        setPreview({ name: file.fileName, url, size: file.size });
       } else {
         const a = document.createElement("a");
         a.href = url;

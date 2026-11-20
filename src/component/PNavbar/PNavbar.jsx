@@ -16,8 +16,8 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Language } from "@mui/icons-material";
 import { Labels } from "../../utils/constants/labels";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import VALogo from "../../utils/assets/images/valogo.svg";
+import { useNavigate, useLocation } from "react-router-dom";
+import PSiteLogo from "../PSiteLogo/PSiteLogo";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useLanguage } from "../../utils/constants/language";
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -26,6 +26,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Account_API } from "../../utils/api/apiUrl";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { PmgColors } from "../PHeadingAccent/PHeadingAccent";
+import { isAdminUser } from "../../container/admin/adminMenu";
+import { openAdminQuickSearch, quickSearchShortcut } from "../../container/admin/adminSearchEvents";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 
 // Language switcher entries: code badge, name in its own script, English name
 const LANGUAGES = [
@@ -41,14 +44,18 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
   const location = useLocation();
   const dispatch = useDispatch();
   const { getLabel, changeLanguage, language } = useLanguage();
-  const { userType, menuId } = useSelector((state) => state.userDetails.user);
+  const user = useSelector((state) => state.userDetails.user);
+  const { userType, menuId } = user;
+  const isAdmin = isAdminUser(user);
+  const homeRoute = isAdmin ? labelRoutes.adminDashboard : labelRoutes.vaDashboard;
   const [openMenu, setOpenMenu] = useState(null);
 
   const [menuState, setMenuState] = useState({
     anchorEl: null,
     type: null
   });
-  const menuItems = [
+  // Admin console: the pages are in the admin sidebar; the navbar offers the quick search instead of menus
+  const menuItems = isAdmin ? [] : [
     ...([1, 2, 3].includes(menuId)
       ? [{
         name: menuId === 1 ? getLabel("lbl259") : menuId === 2 ? getLabel("lbl260") : getLabel("lbl261"),
@@ -103,7 +110,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
     ),
   ];
 
-  const isDashboard = location.pathname === labelRoutes.vaDashboard;
+  const isDashboard = location.pathname === homeRoute;
   const open = Boolean(menuState.anchorEl);
 
   const handleOpenMenu = (event, type) => {
@@ -128,6 +135,14 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
 
   const handleMenuClick = (name) => {
     setOpenMenu(prev => (prev === name ? null : name));
+    dispatch({
+      type: userDetails,
+      payload: {
+        id: 0,
+        enquiryId: "",
+        attachment: 0
+      },
+    });
   }
 
   const handleMenuClose = (name) => {
@@ -138,6 +153,10 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
 
   const handleNavigation = (item) => {
     setOpenMenu(null);
+    if (item.admin) {
+      navigate(item.route);
+      return;
+    }
     if (item.menuId === 3 && item.name === getLabel("lbl224")) {
       window.open(Account_API.Echo, "_blank");
       return;
@@ -159,10 +178,25 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
       }}
       >
         <Box>
-          <Link to={labelRoutes.vaDashboard}><img src={VALogo} alt="Logo" style={{ height: 69, width: 65 }} /></Link>
+          <PSiteLogo to={homeRoute} />
         </Box>
 
-        {!isDashboard && (<Box className="navbar-menu">
+        {isAdmin && (
+          <Box component="button" type="button" onClick={openAdminQuickSearch} aria-label="Search admin pages"
+            sx={{
+              flex: 1, maxWidth: 440, mx: { xs: 1, md: 4 }, display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1.25,
+              height: 42, px: 2, borderRadius: "999px", cursor: "pointer", fontFamily: "inherit", fontSize: 14, color: "#6b7280",
+              border: "1px solid #dcd9e8", bgcolor: "#f7f7fb", textAlign: "left",
+              transition: "border-color .15s ease, box-shadow .15s ease",
+              "&:hover, &:focus-visible": { borderColor: "#16133F", boxShadow: "0 4px 14px rgba(22,19,63,0.12)", outline: "none" },
+            }}>
+            <SearchRoundedIcon sx={{ fontSize: 20, color: "#2D2F75" }} />
+            <Box component="span" sx={{ flex: 1 }}>Find an admin page…</Box>
+            <Box component="kbd" sx={{ fontSize: 11, fontFamily: "inherit", color: "#6b7280", border: "1px solid #dcd9e8", borderRadius: "6px", px: 0.75, py: 0.2, bgcolor: "#fff" }}>{quickSearchShortcut()}</Box>
+          </Box>
+        )}
+
+        {!isAdmin && !isDashboard && (<Box className="navbar-menu">
           {menuItems.map((item, index) => (
             <Box key={`${item.menuId}-${item.route}-${index}`}
               className="menu-item"
@@ -242,7 +276,7 @@ const PNavbar = ({ name = "User", email = "", avatar = "", notificationCount = 0
 
           {!isDashboard && (
             <IconButton
-              onClick={() => navigate(labelRoutes.vaDashboard)}
+              onClick={() => navigate(homeRoute)}
               sx={{
                 color: "#16133F",
                 border: "1px solid #16133F",

@@ -22,7 +22,8 @@ export const Labels = {
   userType: {
     agency: "agency",
     client: "client",
-    supplier: "supplier"
+    supplier: "supplier",
+    admin: "admin"
   },
 
   role: {

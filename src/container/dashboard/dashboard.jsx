@@ -1034,7 +1034,7 @@ const dashboard = () => {
                 ) : (
                   chartData.length > 0 && (
                     <Suspense fallback={<Skeleton variant="rectangular" height={350} sx={{ borderRadius: 2 }} />}>
-                      <SelectedChart data={chartData} onSliceClick={handleChartClick} />
+                      <SelectedChart data={chartData} onSliceClick={handleChartClick} activeId={formData.status} />
                     </Suspense>
                   )
                 )}

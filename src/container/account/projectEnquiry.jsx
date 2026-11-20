@@ -12,7 +12,7 @@ import { useLocation } from "react-router-dom";
 import PDropdown from "../../component/PDropdown/PDropdown";
 import { getClientInfo, getEnquiryDetails, getLineneItems, getSummarySections } from "../../utils/constants/summary";
 import { ClientInfo_API, Dashboard_API, EnquiryDetails_API, LineItems_API, Suppliers_API, ProjectEnquiry_API } from "../../utils/api/apiUrl";
-import { formatDate, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast } from "../../utils/commonFunction/common";
+import { activeOptions, formatDate, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast } from "../../utils/commonFunction/common";
 import { PSummary } from "../../component/PSummary/PSummary";
 import PTable from "../../component/PTable/PTable";
 import { GetApi, PostApi } from "../../utils/api/networking";
@@ -29,7 +29,10 @@ import PriceChangeIcon from "@mui/icons-material/PriceChange";
 import HistoryIcon from "@mui/icons-material/History";
 import BoltIcon from "@mui/icons-material/Bolt";
 import AttachmentIcon from "@mui/icons-material/Attachment";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import PEnquiryAttachments from "../../component/PEnquiryAttachments/PEnquiryAttachments";
+import PEnquiryDownloads, { DOWNLOADS_FROM_STATUS } from "../../component/PEnquiryDownloads/PEnquiryDownloads";
+import PreviewDialog from "../../component/PDialog/PPreviewDialog";
 import PProjectQuotation from "../../component/PProjectQuotation/PProjectQuotation";
 import PSlaTemplate from "../../component/PSlaTemplate/PSlaTemplate";
 import PSpotSection from "../../component/PSpotSection/PSpotSection";
@@ -43,6 +46,10 @@ import { useSelector } from "react-redux";
 import PCard from "../../component/PCard/PCard";
 import CircularProgress from "@mui/material/CircularProgress";
 import PSapStatus from "../../component/PSapStatus/PSapStatus";
+import PSupplierQuotePreview from "../../component/PSupplierQuotePreview/PSupplierQuotePreview";
+import PAlternateSuppliersDialog from "../../component/PSupplierQuotePreview/PAlternateSuppliersDialog";
+import { ALTERNATE_SLOTS, alternateItems, maxSlotCount, slotsLabel } from "../../component/PSupplierQuotePreview/supplierSlots";
+import { exportSupplierQuotes } from "../../component/PSupplierQuotePreview/supplierQuoteExport";
 
 // Inline input used inside the Project Savings table cells: soft rounded field,
 // PMG-orange hover/focus ring, numeric values right-aligned.
@@ -88,6 +95,7 @@ const ProjectEnquiry = () => {
     const { getLabel } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [dynamicData, setDynamicData] = useState({});
+    const [quotationPreview, setQuotationPreview] = useState(null); // Preview Quotation: { name, file: Blob, size }
     const { country, userID, fkID, currency, userType, menuId, symbol, enquiryId, userName, email, id, attachment } = useSelector((state) => state.userDetails.user);
 
     const actionFlag = isNotEmpty(id) && id !== 0 ? Labels.flag.Update : Labels.flag.Insert;
@@ -105,14 +113,15 @@ const ProjectEnquiry = () => {
         fee: false,
         job: false,
         suppliers: false,
+        // Choose Suppliers B – E dialog; altAfterCalculate = opened by Calculate Project Savings (offers Skip)
+        altSuppliers: false,
+        altAfterCalculate: false,
         calculateFlag: false,
         validateFlag: false,
         marginFlag: false,
         project: false,
         inputPS: false,
-        psFlag: false,
-        isCalculate: false,
-
+        psFlag : false,
         rfqFlag: true,
 
         //dialog state
@@ -196,12 +205,7 @@ const ProjectEnquiry = () => {
         //Delivery Order
         deliveryOrder: [],
 
-        //Perview Quotes Suppliers
-        previewQuotes: [{ field: "supplierA", header: "Supplier A" }, { field: "supplierAInitAmount", header: "Supplier A Init. Amount", align: "right" },
-        { field: "supplierANegAmount", header: "Supplier A Neg. Amount", align: "right" }, { field: "supplierB", header: "Supplier B" },
-        { field: "supplierBInitAmount", header: "Supplier B Init. Amount", align: "right" }, { field: "supplierBNegAmount", header: "Supplier B Neg. Amount", align: "right" },
-        { field: "supplierC", header: "Supplier C" }, { field: "supplierCInitAmount", header: "Supplier C Init. Amount", align: "right" },
-        { field: "supplierCNegAmount", header: "Supplier C Neg. Amount", align: "right" }],
+        //Preview Supplier Quotes (rendered by PSupplierQuotePreview)
         previewSupplierQuotes: [],
 
         //Project Quotations (rendered by PProjectQuotation)
@@ -218,6 +222,8 @@ const ProjectEnquiry = () => {
     const createOrderFlag = formDataList.deliveryOrder?.length > 0;
     const flag = userType?.toLowerCase() === Labels.userType.agency
     const isSpot = formData.isSpot > 0;
+    // SPOT blocks "Submit quotation to client" only when the job has SPOT rows that are not filled in yet
+    const spotPending = isSpot && Number(formData.isSpotCompleted) === 0;
     const tabs = [
         { label: "Job Summary", icon: <WorkOutlineIcon /> },
         { label: "Line Items", icon: <Inventory2Icon /> },
@@ -232,6 +238,7 @@ const ProjectEnquiry = () => {
         ...(flag ? [{ label: "SLA", icon: <HandshakeIcon /> }] : []),
         ...(flag ? [{ label: "Revised Quotes", icon: <PriceChangeIcon /> }] : []),
         ...(flag ? [{ label: "Logs", icon: <HistoryIcon /> }] : []),
+        ...(flag && formData.statusId >= DOWNLOADS_FROM_STATUS ? [{ label: "Downloads", icon: <FileDownloadOutlinedIcon /> }] : []),
         ...(flag || userType?.toLowerCase() === Labels.userType.supplier || attachment
             ? [{ label: "Attachment", icon: <AttachmentIcon /> }]
             : []),
@@ -284,7 +291,10 @@ const ProjectEnquiry = () => {
         fetchData(true);
     }, []);
 
-    const fetchData = async (isInitialLoad = false) => {
+    // keepTab: stay on the current tab even when the job moved to a new stage (the caller moves on itself)
+    // returns { requestQuotes } (agency) so a caller can act on the fresh data before the state update lands
+    const fetchData = async (isInitialLoad = false, { keepTab = false } = {}) => {
+        const fetched = {};
         try {
             setLoading(true);
 
@@ -319,6 +329,7 @@ const ProjectEnquiry = () => {
 
                 rfqCalculated = projectResponse.calculationDetails?.length > 0;
                 hasDeliveryOrder = projectResponse.deliveryOrder?.length > 0;
+                const psFlag = (projectResponse.savingsResponseDto.details ?? []).every(item => Number(item.previousPrice) > 0);
 
                 const revisedQuotes = [...new Map(projectResponse.revisedQuotes.map(x => [x.itemNumber, x])).values()]
                     .map(x => ({
@@ -328,15 +339,12 @@ const ProjectEnquiry = () => {
                     }));
 
                 const requestQuotes = [...new Map(projectResponse.requestQuotes.map(x => [x.itemNumber, x])).values()]
-                    .map(x => {
-                        const items = projectResponse.requestQuotes.filter(y => y.itemNumber === x.itemNumber).filter(Boolean);
-                        return {
-                            isSubTitle: true,
-                            subTitle: x.itemName,
-                            supplierLink: items.length >= 1 && rfqCalculated && [1, 2].includes(response.statusId),
-                            items
-                        };
-                    });
+                    .map(x => ({
+                        isSubTitle: true,
+                        subTitle: x.itemName,
+                        items: projectResponse.requestQuotes.filter(y => y.itemNumber === x.itemNumber).filter(Boolean)
+                    }));
+                
 
                 const projectSavings = [...new Map(projectResponse.savingsResponseDto.details.map(x => [x.itemNumber, x])).values()]
                     .map(x => ({
@@ -360,7 +368,6 @@ const ProjectEnquiry = () => {
                     }));
 
 
-
                 setFormDataList(prev => ({
                     ...prev,
                     supplierMaster: supplierResponse,
@@ -368,7 +375,6 @@ const ProjectEnquiry = () => {
                     savingsReasons: projectResponse.savingReasons,
                     historyLogs: projectResponse.historyLogs,
                     lineItemLogs: projectResponse.lineItemLogs,
-                    //historySearches: projectResponse.historySearches,
                     revisedQuotes: revisedQuotes,
                     requestQuotes: requestQuotes,
                     calculationDetails: projectResponse.calculationDetails,
@@ -386,7 +392,7 @@ const ProjectEnquiry = () => {
                     calculateFlag: projectResponse.requestQuotes[0].initialQuote > 0,
                     rfqFlag: projectResponse.calculationDetails?.length === 0,
                     marginFlag: projectResponse.calculationDetails?.length > 0,
-                    psFlag: !projectResponse.savingsResponseDto.details[0]?.previousPrice > 0,
+                    psFlag : psFlag,
                 }));
                 await clientInfoMaster(response.enqClientinfo.divisionid);
             }
@@ -428,9 +434,9 @@ const ProjectEnquiry = () => {
 
             setFormData(prev => ({
                 ...prev,
-                // first load, or the job moved to a new stage -> jump to that stage's tab
+                // first load, or the job moved to a new stage -> jump to that stage's tab (unless the caller keeps it)
                 stageTab,
-                activeTab: isInitialLoad || prev.stageTab !== stageTab ? stageTab : prev.activeTab,
+                activeTab: isInitialLoad || (!keepTab && prev.stageTab !== stageTab) ? stageTab : prev.activeTab,
                 quote: response.enqProjectinfo?.quoteBy,
                 statusId: response.statusId,
                 projectStatus: response.jobstatus,
@@ -453,6 +459,7 @@ const ProjectEnquiry = () => {
             handleLoading("savingReason", false);
             handleLoading("projectSavings", false);
         }
+        return fetched;
     };
 
     // SAP: after "Submit quotation to client" with Send to SAP = Yes the job may only move on (approval) once SAP has
@@ -614,12 +621,16 @@ const ProjectEnquiry = () => {
                 setLoading(true);
                 const response = await PostApi(ProjectEnquiry_API.CalculateSavings, payload);
                 if (isSuccess(response)) {
-                    // RFQ calculated -> fetchData moves to Project Savings (or stays on RFQ when the job has no savings)
-                    await fetchData();
+                    // RFQ calculated -> stay on RFQ and ask for the alternate suppliers first; saving or skipping that
+                    // dialog moves on to the stage tab (Project Savings, or RFQ when the job has no savings).
+                    // Nobody to pick (no other supplier quoted for a calculated item) -> move on straight away.
+                    const { requestQuotes: fresh } = await fetchData(false, { keepTab: true });
                     setFormDataList(prev => ({
                         ...prev,
                         selectedSupplierRows: [],
                     }));
+                    if (maxSlotCount(alternateItems(fresh)) > 0) openAltSuppliers(true);
+                    else setFormData(prev => ({ ...prev, activeTab: prev.stageTab || prev.activeTab }));
                 }
             } catch (error) {
                 toast(Labels.status.failure, Labels.message.somethingWentWrong);
@@ -628,6 +639,27 @@ const ProjectEnquiry = () => {
             }
 
         }
+    };
+
+    // ---- Suppliers B – E ----------------------------------------------------------------------------------------
+    const openAltSuppliers = (afterCalculate = false) => setFormData(prev => ({
+        ...prev,
+        activeTab: "RFQ",
+        altSuppliers: true,
+        altAfterCalculate: afterCalculate,
+    }));
+
+    // closes the dialog; after Calculate (Save or Skip) the job continues on its stage tab
+    const closeAltSuppliers = (moveOn) => setFormData(prev => ({
+        ...prev,
+        altSuppliers: false,
+        altAfterCalculate: false,
+        ...(moveOn && prev.altAfterCalculate ? { activeTab: prev.stageTab || prev.activeTab } : {}),
+    }));
+
+    const handleAltSaved = async (changed) => {
+        if (changed) await fetchData(false, { keepTab: true });
+        closeAltSuppliers(true);
     };
 
     const clientInfoMaster = async (globalBUMapping) => {
@@ -670,16 +702,15 @@ const ProjectEnquiry = () => {
     };
 
     const handleRFQ = (rows) => {
-        const isValid = rows.length > 0;
         setFormDataList(prev => ({
             ...prev,
             selectedSupplierRows: rows,
         }));
-        setFormData(prev => ({
-            ...prev,
-            isCalculate: isValid
-        }))
     };
+
+    // Calculate Project Savings needs at least one supplier picked in the RFQ table: the selection
+    // checkboxes must be showing (not yet calculated) and enabled (not in RFQ edit mode)
+    const canCalculate = formData.rfqFlag && !formData.rfq && formDataList.selectedSupplierRows?.length > 0;
 
     let filteredData = formDataList.supplierMaster;
     // Remove already selected/old suppliers
@@ -894,16 +925,13 @@ const ProjectEnquiry = () => {
             }
             else {
                 const response = await PostApi(ProjectEnquiry_API.GetPreviewQuotes, { enquiryId: id });
+                // Word document (legacy GenerateQuotation: HTML served as application/msword, .doc), shown in the
+                // preview; its Download saves the .doc
                 if (response instanceof Blob) {
-                    const pdfUrl = URL.createObjectURL(response);
-                    const a = document.createElement("a");
-                    a.href = pdfUrl;
                     const dateTime = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
-                    a.download = `Quotation_${id}_${dateTime}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+                    setQuotationPreview({ name: `Quotation_${id}_${dateTime}.doc`, file: response, size: response.size });
+                } else {
+                    toast(Labels.status.failure, response?.message || Labels.message.somethingWentWrong);
                 }
             }
         } catch (error) {
@@ -915,18 +943,20 @@ const ProjectEnquiry = () => {
 
     //RFQ functionality
     const renderEditableField = (field) => ({
-        render: (row) => (
-            <PTextField
-                name={field}
-                value={row[field] == null || row[field] === 0 ? "" : row[field]}
-                onChange={(e) => handleInputChange(e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
-                    .replace(/^(\d*\.\d{0,2}).*$/, "$1"), row.supplierQuotesId, row.enquiryId, field)}
-                placeHolder="0.00"
-                inputProps={{ inputMode: "decimal" }}
-                width={130}
-                sx={editableCellSx(true)}
-            />
-        )
+        render: (row) => {
+            return (
+                <PTextField
+                    name={field}
+                    value={row[field] == null || row[field] === 0 ? "" : row[field]}
+                    onChange={(e) => handleInputChange(e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1")
+                        .replace(/^(\d*\.\d{0,2}).*$/, "$1"), row.supplierQuotesId, row.enquiryId, field)}
+                    placeHolder="0.00"
+                    inputProps={{ inputMode: "decimal" }}
+                    width={130}
+                    sx={editableCellSx(true)}
+                />
+            )
+        }
     });
 
     const handleInputChange = (data, Id, enquiryId, field) => {
@@ -961,6 +991,10 @@ const ProjectEnquiry = () => {
     const isSupplier = userType?.toLowerCase() === Labels.userType.supplier.toLowerCase();
     const isQuote = formData.quote == 1 && (isSupplier || formData.rfq);
     const isUnit = formData.quote == 2 && (isSupplier || formData.rfq);
+    // Project Savings input: every row needs a Savings Reference Price (> 0) before it can be saved
+    const allRefPricesFilled = (formDataList.projectSavings ?? [])
+        .flatMap(group => group.items ?? [])
+        .every(item => Number(item.previousPrice) > 0);
 
     const requestQuotes = [
         { field: "supplierName", header: `${getLabel("lbl333")}` },
@@ -970,7 +1004,7 @@ const ProjectEnquiry = () => {
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isQuote && formData.psFlag && renderEditableField("initialQuote")),
+            ...(isQuote && !formData.psFlag && renderEditableField("initialQuote")),
         },
         {
             field: "negQuote",
@@ -978,7 +1012,7 @@ const ProjectEnquiry = () => {
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isQuote && formData.psFlag && renderEditableField("negQuote")),
+            ...(isQuote && !formData.psFlag && renderEditableField("negQuote")),
         },
         {
             field: "iniUnitPrice",
@@ -986,7 +1020,7 @@ const ProjectEnquiry = () => {
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isUnit && formData.psFlag && renderEditableField("iniUnitPrice")),
+            ...(isUnit && !formData.psFlag && renderEditableField("iniUnitPrice")),
         },
         {
             field: "negUnitPrice",
@@ -994,7 +1028,7 @@ const ProjectEnquiry = () => {
             type: "rupee",
             align: "right",
             ishide: true,
-            ...(isUnit && formData.psFlag && renderEditableField("negUnitPrice")),
+            ...(isUnit && !formData.psFlag && renderEditableField("negUnitPrice")),
         },
 
         { field: "negUnitPriceFee", header: `${getLabel("lbl338")} (${symbol})`, type: "rupee", ishide: true, align: "right" },
@@ -1004,7 +1038,7 @@ const ProjectEnquiry = () => {
             rowSpan: true,
             type: "rupee",
             align: "right",
-            ...(!formData.psFlag && formData.rfq && renderEditableField("pmgSellPrice"))
+            ...(formData.psFlag && formData.rfq && renderEditableField("pmgSellPrice"))
         }
     ];
 
@@ -1028,7 +1062,7 @@ const ProjectEnquiry = () => {
                     value={value}
                     onChange={(e) => handleSaveReasonChange(e, row, field)}
                     name={field}
-                    options={formDataList.savingsType}
+                    options={activeOptions(formDataList.savingsType, value)}
                     flag={Labels.flag.auto}
                 />
             );
@@ -1054,10 +1088,35 @@ const ProjectEnquiry = () => {
     { field: "savingsType", header: getLabel("lbl117"), ...(formData.project ? renderSavingsType("savingsType") : {}) },
     { field: "savingsReason", header: getLabel("lbl118"), ...(formData.project ? renderSavingsReason("savingsReason") : {}) }];
 
-    // Project Savings input: every row needs a Savings Reference Price (> 0) before it can be saved
-    const allRefPricesFilled = (formDataList.projectSavings ?? [])
-        .flatMap(group => group.items ?? [])
-        .every(item => Number(item.previousPrice) > 0);
+    // Suppliers B – E are mandatory for an item whose savings reason is Cost Avoidance, except Urgent Job / Dictated
+    // reasons and job type (Printornonprint) "Others". A savings-reason row with id 0 is "All items".
+    // Only items with a selected Supplier A that another supplier also quoted for count: otherwise nobody to pick.
+    const altItems = alternateItems(formDataList.requestQuotes);
+    const altSlotMax = maxSlotCount(altItems);
+    const altLabel = slotsLabel(altSlotMax); // "Supplier B & C" … "Supplier B, C, D & E"
+    const altSupplierRule = (() => {
+        const lineItems = formDataList.lineItems || [];
+        const needsAlt = (row) => row.savingsType?.trim().toLowerCase() === "cost avoidance"
+            && !!row.savingsReason?.trim() && !/urgent|dictated/i.test(row.savingsReason);
+        const quotedByOthers = new Set(altItems.filter(item => item.slotCount > 0).map(item => item.enquiryDetailsId));
+
+        const requiredIds = new Set();
+        (formDataList.savingsReasons || []).filter(needsAlt).forEach(row => {
+            lineItems
+                .filter(item => !row.id || item.enqdetailsId === row.id)
+                .filter(item => item.printornonprint?.trim().toLowerCase() !== "others")
+                .forEach(item => quotedByOthers.has(item.enqdetailsId) && requiredIds.add(item.enqdetailsId));
+        });
+
+        const saved = (formDataList.previewSupplierQuotes || []).flatMap(group => group.items || []);
+        const missing = lineItems.filter(item => requiredIds.has(item.enqdetailsId) && !saved.some(row =>
+            (row.id ? row.id === item.enqdetailsId : row.itemNumber === item.itemNumber)
+            && ALTERNATE_SLOTS.some(slot => row[`supplier${slot}`]?.trim())));
+        return { requiredIds, missing };
+    })();
+    const altMissingNames = altSupplierRule.missing.map(item => `Item ${item.itemNumber} - ${item.itemName ?? ""}`).join(", ");
+
+
 
     //Action button function
     const renderActionButtons = (flag) => (
@@ -1198,7 +1257,8 @@ const ProjectEnquiry = () => {
                 negoprice: item.negQuote?.toString(),
                 initialUnitprice: item.iniUnitPrice?.toString(),
                 negoUnitprice: item.negUnitPrice?.toString(),
-                pmgSellPrice: item.pmgSellPrice?.toString()
+                pmgSellPrice: item.pmgSellPrice?.toString(),
+                userId: userID // tblUser.Id, for the line item log
             }));
 
         //input project savings
@@ -1208,7 +1268,8 @@ const ProjectEnquiry = () => {
                 previousSupplier: item.previousSupplier,
                 previousPrice: item.previousPrice,
                 note: item.reasonForSaving,
-                BaselineQuantity: item.baselineQuantity
+                BaselineQuantity: item.baselineQuantity,
+                userId: userID // tblUser.Id, for the line item log
             }))
         );
 
@@ -1280,6 +1341,11 @@ const ProjectEnquiry = () => {
                     break;
 
                 case "project":
+                    // Cost Avoidance reasons need Suppliers B – E chosen on the RFQ tab first
+                    if (altSupplierRule.missing.length) {
+                        toast(Labels.status.failure, `Choose ${altLabel} on the RFQ tab first (Cost Avoidance): ${altMissingNames}`);
+                        return;
+                    }
                     activeTab = "Project Savings";
                     response = await PostApi(ProjectEnquiry_API.UpdateSavingsReasons, savingsReasons);
                     break;
@@ -1376,7 +1442,7 @@ const ProjectEnquiry = () => {
         { field: "totalPrice", header: `Initial Quote (${symbol})`, ...(isQuote && renderQuoteEditableField("totalPrice")), type: "rupee", align: "right" },
         { field: "unitPrice", header: `Unit Price (${symbol})`, ...(isUnit && renderQuoteEditableField("unitPrice")), type: "rupee", align: "right" },
     ]
-    
+
     return (
         <>
             <Box sx={{ py: 3 }}>
@@ -1529,7 +1595,7 @@ const ProjectEnquiry = () => {
                     </PGrid>
                 )}
 
-                {showProjectSaving && formData.psFlag && flag && (
+                {showProjectSaving && !formData.psFlag && flag && (
                     <PGrid container className={Labels.margin.mb3}>
                         <PGrid item xs={12} md={12} sm={8}>
                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
@@ -1640,7 +1706,7 @@ const ProjectEnquiry = () => {
                                                                 flag={Labels.flag.auto}
                                                             />
                                                         </>
-                                                    ) : item.label === getLabel("lbl304") && job ? (
+                                                    ) : item.label === getLabel("lbl304") && [6].includes(formData.statusId) ? (
                                                         <>
                                                             <PGrid container >
                                                                 <PGrid item xs={12} md={6} xl={9}>
@@ -1946,17 +2012,26 @@ const ProjectEnquiry = () => {
                                 </PGrid>
                             )}
                             <PGrid item xs={12} sm={6} md={6} className="d-flex justify-content-end gap-2">
-                                {(!formData.marginFlag || !formData.psFlag) && [1, 2, 3, 4, 5, 6].includes(formData.statusId)
+                                {(!formData.marginFlag) && [1, 2, 3, 4, 5, 6].includes(formData.statusId)
                                     && renderActionButtons("rfq")
                                 }
+                                {formData.statusId < 6 && altSlotMax > 0 && (
+                                    <PButton
+                                        label={altLabel}
+                                        variant="outlined"
+                                        color={CommonColors.dark_blue}
+                                        onClick={() => openAltSuppliers()}
+                                        sx={{ minWidth: 200, whiteSpace: "nowrap" }}
+                                    />
+                                )}
                                 {formData.marginFlag && (
-                                    <PPillButton
+                                    <PButton
                                         label={getLabel("lbl237")}
                                         onClick={() => setFormData((prev) => ({
                                             ...prev,
                                             preview: true,
                                         }))}
-                                        width={500}
+                                        width={350}
                                         icon={false}
                                     />
                                 )}
@@ -1992,7 +2067,7 @@ const ProjectEnquiry = () => {
                                         color={CommonColors.grey.main}
                                         onClick={(e) => handleCalculate(e, "calculate")}
                                         width={300}
-                                        disabled={!formData.isCalculate}
+                                        disabled={!canCalculate}
                                     />
                                     <PButton
                                         label={getLabel("lbl174")}
@@ -2040,6 +2115,26 @@ const ProjectEnquiry = () => {
                                     <PTable columns={savingsReasons} rows={formDataList.savingsReasons} showPagination={false} loading={tableLoading.savingReason} />
                                 </PGrid>
                             </PGrid>
+                            {altSupplierRule.missing.length > 0 && !tableLoading.savingReason && (
+                                <Alert
+                                    severity="warning"
+                                    className={Labels.margin.mb4}
+                                    action={
+                                        <PButton
+                                            label={`Choose ${altLabel}`}
+                                            variant="outlined"
+                                            color={CommonColors.dark_blue}
+                                            onClick={() => openAltSuppliers()}
+                                            height={36}
+                                            sx={{ padding: "4px 14px", fontSize: "0.85rem", whiteSpace: "nowrap" }}
+                                        />
+                                    }
+                                    sx={{ alignItems: "center" }}
+                                >
+                                    Cost Avoidance savings need at least one alternate supplier ({altLabel}) for {altMissingNames}.
+                                    Choose them on the RFQ tab to proceed.
+                                </Alert>
+                            )}
                             <PGrid container className={Labels.margin.mb0}>
                                 <PGrid item xs={12} sm={12} md={12} className="d-flex justify-content-end">
                                     {renderActionButtons("inputPS")}
@@ -2120,7 +2215,7 @@ const ProjectEnquiry = () => {
                             </PGrid>
                         </div>
 
-                        {!formData.psFlag && (
+                        {formData.psFlag && (
                             <>
                                 <div className={Labels.margin.mb5}
                                     style={{
@@ -2250,17 +2345,27 @@ const ProjectEnquiry = () => {
                                                 </div>
                                             </PGrid>
                                         </PGrid>
-                                        {[0].includes(formData.isSpotCompleted) && (
-                                            <PGrid container className={Labels.margin.mb3}>
-                                                <PGrid item xs={12} sm={6} md={6}>
-                                                    <PTypography
-                                                        labelText={getLabel("lbl240")}
-                                                        flag={Labels.fontFlags.smallText}
-                                                        color={CommonColors.red.main}
-                                                        weight={FontWeight.bold}
+                                        {spotPending && (
+                                            <Alert
+                                                severity="warning"
+                                                className={Labels.margin.mb3}
+                                                action={
+                                                    <PButton
+                                                        label="Go to SPOT"
+                                                        variant="outlined"
+                                                        color={CommonColors.dark_blue}
+                                                        onClick={() => {
+                                                            setFormData(prev => ({ ...prev, activeTab: "SPOT" }));
+                                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                                        }}
+                                                        height={36}
+                                                        sx={{ padding: "4px 14px", fontSize: "0.85rem", whiteSpace: "nowrap" }}
                                                     />
-                                                </PGrid>
-                                            </PGrid>
+                                                }
+                                                sx={{ alignItems: "center" }}
+                                            >
+                                                {getLabel("lbl240")}. Complete it on the SPOT tab to submit the quotation.
+                                            </Alert>
                                         )}
 
                                         <Divider sx={{ mb: 2 }} />
@@ -2301,7 +2406,7 @@ const ProjectEnquiry = () => {
                                                 onClick={(e) => handleQuotation(e, 3)}
                                                 width={320}
                                                 startIcon={<img src={arrow} alt="arrow" className="icon" />}
-                                                disabled={formData.isSpotCompleted == 0}
+                                                disabled={spotPending}
                                             />
                                         </PGrid>
                                     </div>
@@ -2340,7 +2445,7 @@ const ProjectEnquiry = () => {
                                                     <PButton
                                                         label={getLabel("lbl246")}
                                                         variant="contained"
-                                                        color={CommonColors.dark_blue}
+                                                        color={CommonColors.red.dark}
                                                         onClick={(e) => handleQuotation(e, 4)}
                                                         width={300}
                                                         startIcon={<img src={arrow} alt="arrow" className="icon" />}
@@ -2413,6 +2518,19 @@ const ProjectEnquiry = () => {
                                 <PTable columns={historyLogs} rows={formDataList.historyLogs} />
                             </PGrid>
                         </PGrid>
+                    </div>
+                )}
+
+                <PreviewDialog open={!!quotationPreview} onClose={() => setQuotationPreview(null)}
+                    files={quotationPreview ? [quotationPreview] : []} currentIndex={0} setCurrentIndex={() => { }} />
+
+                {formData.activeTab === "Downloads" && (
+                    <div className={Labels.margin.mb0}>
+                        <PGrid container className={Labels.margin.mb3}>
+                            <SectionHeading accent={PmgColors.purple} label="Quotations & Purchase orders" />
+                        </PGrid>
+                        <Divider sx={{ mb: 2 }} />
+                        <PEnquiryDownloads enquiryId={id} statusId={formData.statusId} projectNo={formDataList.enquiryDetails?.projectNo} />
                     </div>
                 )}
 
@@ -2678,56 +2796,17 @@ const ProjectEnquiry = () => {
                     </PGrid>
                 </PDialog>
 
-                {/* History Tool dialog */}
-                {/* <PDialog
-                    open={formData.historyTool}
-                    onClose={() => setFormData((prev) => ({
-                        ...prev,
-                        historyTool: false,
-                        historySearchTool: ""
-                    }))}
-                    title={getLabel("lbl257")}
-                    showCloseIcon={true}
-                    maxWidth="lg"
-                    actions={
-                        < PGrid className="d-flex align-items-center justify-content-end gap-2" >
-                            <PButton
-                                fullWidth
-                                label={getLabel("lbl125")}
-                                variant="outlined"
-                                onClick={() => setFormData((prev) => ({
-                                    ...prev,
-                                    historyTool: false
-                                }))}
-                                color={CommonColors.grey.main}
-                                width={120}
-                            />
-                            <PButton
-                                fullWidth
-                                label={getLabel("lbl200")}
-                                variant={Labels.contained}
-                                onClick={handleSendChoose}
-                                color={CommonColors.green.main}
-                                width={200}
-
-                            />
-                        </PGrid >
-                    }
-
-                >
-                    <PGrid container className={Labels.margin.mb4}>
-                        <PGrid item xs={12} sm={6} md={6}>
-                            <PSearch width="100%" placeholder={"Search by EnquiryId, Material Used, PO Number, Qty, Brands, Sub category"}
-                                onChange={(e) => setFormData((prev) => ({
-                                    ...prev,
-                                    historySearchTool: e.target.value
-                                }))} />
-                        </PGrid>
-                    </PGrid>
-                    <PGrid item xs={12} sm={6} md={12}>
-                        <PTable columns={formDataList.historySearchesCloumns} rows={historyToolData} showCheckbox={true} onValidationChange={handleHistory} selectedRows={formDataList.selectedHistroyRows} />
-                    </PGrid>
-                </PDialog> */}
+                {/* Choose Suppliers B – E (after Calculate Project Savings, or from the RFQ tab) */}
+                <PAlternateSuppliersDialog
+                    open={formData.altSuppliers}
+                    requestQuotes={formDataList.requestQuotes}
+                    previewQuotes={formDataList.previewSupplierQuotes}
+                    requiredIds={altSupplierRule.requiredIds}
+                    skippable={formData.altAfterCalculate}
+                    onSaved={handleAltSaved}
+                    onSkip={() => closeAltSuppliers(true)}
+                    onClose={() => closeAltSuppliers(false)}
+                />
 
                 {/* Preview Supplier Quotes dialog */}
                 <PDialog
@@ -2740,11 +2819,26 @@ const ProjectEnquiry = () => {
                     showCloseIcon={true}
                     maxWidth="lg"
                 >
-                    <PGrid container className={Labels.margin.mb4}>
-                        <PGrid item xs={12} sm={6} md={12}>
-                            <PTable columns={formDataList.previewQuotes} rows={formDataList.previewSupplierQuotes} showPagination={false} />
-                        </PGrid>
-                    </PGrid>
+                    {formDataList.previewSupplierQuotes?.length > 0 && (
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+                            <PButton
+                                label="Export to Excel"
+                                variant="outlined"
+                                color={CommonColors.dark_blue}
+                                startIcon={<FileDownloadOutlinedIcon fontSize="small" />}
+                                onClick={() => exportSupplierQuotes(formDataList.previewSupplierQuotes, `Supplier_Quotes_${enquiryId || id}`)}
+                                height={40}
+                                sx={{ padding: "6px 16px" }}
+                            />
+                        </Box>
+                    )}
+                    <Box className={Labels.margin.mb4}>
+                        <PSupplierQuotePreview
+                            groups={formDataList.previewSupplierQuotes}
+                            symbol={symbol}
+                            slotCounts={new Map(altItems.map(item => [item.itemNumber, item.slotCount]))}
+                        />
+                    </Box>
                 </PDialog>
 
                 <style>

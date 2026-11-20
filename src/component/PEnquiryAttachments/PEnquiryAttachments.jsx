@@ -34,7 +34,6 @@ const EXTENSIONS = [
 const MAX_TOTAL_BYTES = 100 * 1024 * 1024; // legacy limit per enquiry; the API sends the one it applies
 const MAX_FILES_PER_PICK = 10;
 const IMAGE_EXT = ["jpg", "jpeg", "png", "gif", "webp", "bmp"];
-const PREVIEW_EXT = [...IMAGE_EXT, "pdf", "msg", "txt", "csv"];
 // Letters (any language), digits, spaces and - _ . ( ) only, as the API checks
 const SPECIAL_CHARS = /[^\p{L}\p{N} ._()-]/u;
 
@@ -171,8 +170,9 @@ export default function PEnquiryAttachments({ enqId, userId, userType }) {
     try {
       setBusyId(file.id);
       const url = await fetchFile(file);
-      if (!forceDownload && PREVIEW_EXT.includes(extOf(file.fileName))) {
-        setPreview({ name: file.fileName, url });
+      // a click previews any file type (the preview has its own Download); the download icon saves it
+      if (!forceDownload) {
+        setPreview({ name: file.fileName, url, size: file.fileSize });
       } else {
         const a = document.createElement("a");
         a.href = url;

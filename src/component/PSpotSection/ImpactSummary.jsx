@@ -38,11 +38,12 @@ const outcomeFor = (color) => {
   return OUTCOME.neutral;
 };
 
-function FigureRow({ label, text }) {
+// label shown as a small tinted tag so "Selected" / "Compared" stand out from the figure text
+function FigureRow({ label, text, color = "#4A4E69", tint = "#F1F0F6" }) {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0.5 }}>
       {label && (
-        <Box component="span" sx={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8A8FA3" }}>
+        <Box component="span" sx={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color, background: tint, px: 0.9, py: 0.25, borderRadius: "6px" }}>
           {label}
         </Box>
       )}
@@ -95,7 +96,7 @@ function ImpactCard({ line }) {
         <Box sx={{ fontSize: 14, color: "#8A8FA3", fontStyle: "italic" }}>Not applicable for this material</Box>
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
-          {hasEnv && <FigureRow label={compareMode ? "Selected material" : ""} text={line.environmental} />}
+          {hasEnv && <FigureRow label={compareMode ? "Selected material" : ""} text={line.environmental} color={metric.color} tint={metric.tint} />}
           {compareMode && (
             <FigureRow
               label="Compared material"

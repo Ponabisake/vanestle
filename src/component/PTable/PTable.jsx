@@ -6,17 +6,6 @@ import PColumnChooser from "../PColumnChooser/PColumnChooser";
 import { Labels } from "../../utils/constants/labels";
 import { CommonColors } from "../../utils/constants/colors";
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
-import PDropdown from "../PDropdown/PDropdown";
-import PGrid from "../PGrid/PGrid";
-import PButton from "../PButton/PButton";
-import PDialog from "../PDialog/PDialog";
-import { useLanguage } from "../../utils/constants/language";
-import PTypography from "../PTypography/PTypography";
-import { FontWeight } from "../../utils/constants/fonts";
-import { PostApi } from "../../utils/api/networking";
-import { ProjectEnquiry_API } from "../../utils/api/apiUrl";
-import { isSuccess, toast } from "../../utils/commonFunction/common";
-import arrow from "../../utils/assets/images/arrow_white.svg";
 
 /** Tables with at least this many hideable columns get the column chooser automatically. */
 export const COLUMN_CHOOSER_MIN_COLUMNS = 8;
@@ -108,16 +97,6 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
       disabled: !isHideable(col) || (visible && visibleColumns.length <= 1),
     };
   });
-  const { getLabel } = useLanguage();
-  const [formData, setFormData] = useState({
-    open: false,
-    itemNumber: null,
-    supplier: [],
-    suppliers: [],
-    selectedSuppliers: {},
-    item: [],
-  });
-
   // Parent Select All
   const handleRowSelect = (row) => {
     let update;
@@ -159,77 +138,6 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
     }
 
     return text.length > 30 ? <Tooltip title={text}><span>{text.length > 30 ? `${text.slice(0, 30)}...` : text}</span></Tooltip> : <span>{text}</span>;
-  };
-
-  // handle supplierBc 
-
-  const handleSubmit = async () => {
-    const items = formData.item || [];
-
-    const payload = { Id: items?.[0]?.enquiryDetailsId, };
-    formData.supplier.forEach((supplier, index) => {
-      const fieldName = String.fromCharCode(66 + index);
-      const selected = items.find(x => x.supplierId === supplier.value);
-      payload[`Supplier${fieldName}`] = selected?.supplierName || "";
-      payload[`Supplier${fieldName}NegAmount`] = selected?.negQuote?.toString() || "";
-      payload[`Supplier${fieldName}InitAmount`] = selected?.initialQuote?.toString() || "";
-    });
-
-    try {
-      const response = await PostApi(ProjectEnquiry_API.UpdatePreviewQuotes, payload);
-      if (isSuccess(response)) {
-        toast(Labels.status.success, response.data);
-        setFormData(prev => ({
-          ...prev,
-          open: false,
-        }));
-      }
-    } catch (error) {
-      toast(Labels.status.failure, Labels.message.somethingWentWrong);
-    }
-  };
-  const handleSupplier = (group) => {
-    const itemNumber = group.items?.[0]?.itemNumber;
-    if (!itemNumber) return;
-    const items = group.items || [];
-
-    // All unique suppliers for this item
-    const allSuppliers = [...new Map(items.filter((x) => x.supplierId && x.supplierName)
-      .map((x) => [x.supplierId, {
-        value: x.supplierId,
-        label: x.supplierName,
-      },])).values(),];
-
-    // Existing calculated supplier
-    const existingSupplier = items.find((x) => x.supplierId === x.isCalculateId);
-    const existingSupplierId = existingSupplier?.supplierId || null;
-
-    // Previously selected suppliers
-    const selectedForItem = formData.selectedSuppliers?.[itemNumber] || [];
-    const excludedSupplierIds = [existingSupplierId, ...selectedForItem.map((x) =>
-      typeof x === "object" ? x.supplierId : x
-    ),].filter(Boolean);
-
-    // Available suppliers
-    const availableSuppliers = allSuppliers.filter((supplier) => !excludedSupplierIds.includes(supplier.value));
-    const availableSupplierIds = availableSuppliers.map((supplier) => supplier.value);
-    const availableItems = items.filter((item) => availableSupplierIds.includes(item.supplierId));
-
-    // Dynamic supplier count
-    const supplierFields = Array.from({ length: allSuppliers.length }, (_, index) => ({
-      name: String.fromCharCode(66 + index),
-      value: "",
-    })
-    );
-
-    setFormData((prev) => ({
-      ...prev,
-      open: true,
-      itemNumber,
-      supplier: supplierFields,
-      suppliers: availableSuppliers,
-      item: availableItems,
-    }));
   };
 
   const renderCell = (col, data, rowIndex, meta = {}) => {
@@ -288,12 +196,6 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
     </TableRow>
   );
 
-  const getSupplierLabel = (group) => {
-    const count = new Set((group.items || []).filter(x => x.supplierId && x.supplierName).map(x => x.supplierId)).size;
-    const names = Array.from({ length: count }, (_, i) => String.fromCharCode(66 + i));
-    return `Supplier ${names.slice(0, -1).join(", ")}${count > 1 ? " & " : ""}${names.at(-1) || ""}`;
-  };
-
   const renderGroup = (group, index) => {
     return (
       <React.Fragment key={`group-${index}`}>
@@ -317,18 +219,8 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
             >
               <span>{group.subTitle}</span>
 
-              {group.supplierLink && (
-                <a
-                  onClick={() => handleSupplier(group)}
-                  style={{
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    color: CommonColors.blue.main,
-                  }}
-                >
-                  {getSupplierLabel(group)}
-                </a>
-              )}
+              {/* optional link/button on the right of a group header, supplied by the page */}
+              {group.headerAction}
             </div>
           </TableCell>
         </TableRow>
@@ -343,6 +235,9 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
           >
             {visibleColumns.map((col, cIndex) => {
               if (col.rowSpan && i !== 0) return null;
+              const cellItem = col.rowSpan
+                ? (group.items?.find(r => r[col.field] !== undefined && r[col.field] !== null && r[col.field] !== "") ?? item)
+                : item;
               return (
                 <TableCell key={cIndex} rowSpan={col.rowSpan ? group.items.length : 1}
                   align={col.align || "left"}
@@ -355,7 +250,7 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
                     border: 0
                   }}
                 >
-                  {renderCell(col, item, item.rowId, { isFirstCol: cIndex === 0 })}
+                  {renderCell(col, cellItem, cellItem.rowId ?? item.rowId, { isFirstCol: cIndex === 0 })}
                 </TableCell>
               );
             })}
@@ -369,8 +264,6 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
   // a filter can shrink the rows below the current page: show the last page that still has rows
   const currentPage = Math.min(page, Math.max(0, Math.ceil(filteredRows.length / rowsPerPage) - 1));
   const paginatedRows = filteredRows.slice(currentPage * rowsPerPage, currentPage * rowsPerPage + rowsPerPage);
-  const suppliers = formData.supplier.slice(0, -1);
-  const hasDuplicateSupplier = new Set(suppliers.map(x => x.value).filter(Boolean)).size !== suppliers.filter(x => x.value).length;
   return (
     <>
       <Paper elevation={0} sx={{ mt: 3, borderRadius: "6px", overflow: "hidden" }}>
@@ -560,83 +453,6 @@ const PTable = ({ columns, rows, onClick, isChecked = false, showCheckbox = fals
           onReset={Object.keys(colPrefs).length ? () => updateColPrefs({}) : undefined}
         />
       )}
-
-      <PDialog
-        open={formData.open}
-        onClose={() =>
-          setFormData((prev) => ({
-            ...prev,
-            open: false,
-          }))
-        }
-        title="Choose Supplier"
-        showCloseIcon={true}
-        maxWidth="sm"
-        actions={
-          <PGrid className="d-flex align-items-center justify-content-end gap-2">
-            <PButton
-              fullWidth
-              label={getLabel("lbl125")}
-              variant="outlined"
-              onClick={() =>
-                setFormData((prev) => ({
-                  ...prev,
-                  open: false,
-                }))
-              }
-              color={CommonColors.grey.main}
-              width={120}
-            />
-
-            <PButton
-              fullWidth
-              label="Ok"
-              variant={Labels.contained}
-              onClick={handleSubmit}
-              color={CommonColors.dark_blue}
-              width={120}
-              startIcon={<img src={arrow} alt="arrow" className="icon" />}
-              disabled={hasDuplicateSupplier || suppliers.some(x => !x.value)}
-            />
-          </PGrid>
-        }
-      >
-        <PGrid container className="gap-4">
-          {formData.supplier.map((supplier, index) => (
-            <PGrid item xs={12} key={supplier.name}>
-              <PDropdown
-                name={supplier.name}
-                label={`Supplier ${supplier.name}`}
-                value={supplier.value}
-                options={formData.suppliers}
-                onChange={(e) => {
-                  const { name, value } = e.target;
-                  setFormData(prev => ({
-                    ...prev,
-                    supplier: prev.supplier.map(s =>
-                      s.name === name ? { ...s, value } : s
-                    )
-                  }));
-                }}
-                disabled={true}
-                readOnly={index === formData.supplier.length - 1}
-              />
-            </PGrid>
-          ))}
-        </PGrid>
-
-        {hasDuplicateSupplier && (
-          <PGrid container className={Labels.margin.mb3}>
-            <PGrid item xs={12}>
-              <PTypography
-                labelText="Please select different suppliers."
-                weight={FontWeight.bold}
-                color={CommonColors.red.main}
-              />
-            </PGrid>
-          </PGrid>
-        )}
-      </PDialog>
     </>
   );
 };

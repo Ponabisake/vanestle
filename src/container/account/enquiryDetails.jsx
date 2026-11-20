@@ -11,7 +11,7 @@ import PButton from "../../component/PButton/PButton";
 import PStepper from "../../component/PStepper/PStepper";
 import PTextField from "../../component/PTextField/PTextField";
 import PDatepicker from "../../component/PDatepicker/PDatepicker";
-import { formatDate, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast, notifyValidation } from "../../utils/commonFunction/common";
+import { activeOptions, formatDate, getEnquirySteps, getOptionLabel, getOptionValue, isNotEmpty, isSuccess, parseDate, toast, notifyValidation } from "../../utils/commonFunction/common";
 import { useLanguage } from "../../utils/constants/language";
 import { labelRoutes } from "../../navigations/labelRoutes";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -403,7 +403,7 @@ const EnquiryDetails = () => {
                                     value={formData.year}
                                     onChange={handleChange}
                                     helperText={errors?.year}
-                                    options={formDataList.year}
+                                    options={activeOptions(formDataList.year, formData.year)}
                                     flag={Labels.flag.auto}
                                 />
                             </PGrid>
@@ -439,7 +439,7 @@ const EnquiryDetails = () => {
                                     value={formData.projectAttribute}
                                     onChange={handleChange}
                                     helperText={errors?.projectAttribute}
-                                    options={formDataList.projectAttribute}
+                                    options={activeOptions(formDataList.projectAttribute, formData.projectAttribute)}
                                     width={100}
                                     flag={Labels.flag.auto}
                                 />

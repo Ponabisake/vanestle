@@ -125,3 +125,30 @@
     background-position: 0 0;
   }
 }
+
+/* Sign-in box, plus the maintenance progress panel beside it while the site is in maintenance (stacked when narrow) */
+.login-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+.login-row.has-maintenance {
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+.login-row.has-maintenance .login-box {
+  margin: 0;
+  flex: 1 1 380px;
+}
+.login-row.has-maintenance > section {
+  flex: 1 1 380px;
+}
+.login-row.has-maintenance > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+@media only screen and (max-width:839px){
+  .login-row.has-maintenance { gap: 16px; padding: 0 16px; }
+  .login-row.has-maintenance .login-box,
+  .login-row.has-maintenance > section { flex: 1 1 100%; }
+}
